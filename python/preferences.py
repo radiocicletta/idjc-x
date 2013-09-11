@@ -1488,6 +1488,7 @@ class mixprefs:
 
         self.show_stream_meters.set_active(True)
         self.show_microphones.set_active(True)
+        self.show_background_tracks_player.set_active(True)
         self.show_button_bar.set_active(True)
 
         self.activedict = {  # Widgets to save that have the get_active method.
@@ -1511,6 +1512,8 @@ class mixprefs:
             "rg_adjust"     : self.rg_adjust,
             "str_meters"    : self.show_stream_meters,
             "mic_meters"    : self.show_microphones,
+            "btn_bar"       : self.show_button_bar,
+            "bg_tracks"     : self.show_background_tracks_player,
             "mic_meters_no_void" : self.no_mic_void_space,
             "players_visible"    : self.parent.menu.playersmenu_i
             }
