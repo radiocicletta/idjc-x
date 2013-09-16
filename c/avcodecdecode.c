@@ -118,11 +118,6 @@ static void avcodecdecode_eject(struct xlplayer *xlplayer)
     {
     struct avcodecdecode_vars *self = xlplayer->dec_data;
     
-    if (self->resample)
-        {
-        xlplayer->src_state = src_delete(xlplayer->src_state);
-        free(xlplayer->src_data.data_out);
-        }
     if (self->floatsamples)
         free(self->floatsamples);
     avfilter_graph_free(&self->filter_graph);
@@ -155,34 +150,6 @@ static void avcodecdecode_init(struct xlplayer *xlplayer)
                 break;
             }
         }
-    if ((self->resample = (self->c->sample_rate != (int)xlplayer->samplerate)))
-        {
-        fprintf(stderr, "configuring resampler\n");
-        xlplayer->src_data.src_ratio = (double)xlplayer->samplerate / (double)self->c->sample_rate;
-        xlplayer->src_data.end_of_input = 0;
-        xlplayer->src_data.data_in = self->floatsamples;
-        xlplayer->src_data.output_frames = (AVCODEC_MAX_AUDIO_FRAME_SIZE / 2 * xlplayer->src_data.src_ratio + 512) / self->c->channels;
-        if (!(xlplayer->src_data.data_out = malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE * 2 * xlplayer->src_data.src_ratio + 512)))
-            {
-            fprintf(stderr, "avcodecdecode_init: malloc failure\n");
-            self->resample = FALSE;
-            avcodecdecode_eject(xlplayer);
-            xlplayer->playmode = PM_STOPPED;
-            xlplayer->command = CMD_COMPLETE;
-            return;
-            }
-        if ((xlplayer->src_state = src_new(xlplayer->rsqual, self->c->channels, &src_error)), src_error)
-            {
-            fprintf(stderr, "avcodecdecode_init: src_new reports %s\n", src_strerror(src_error));
-            free(xlplayer->src_data.data_out);
-            self->resample = FALSE;
-            avcodecdecode_eject(xlplayer);
-            xlplayer->playmode = PM_STOPPED;
-            xlplayer->command = CMD_COMPLETE;
-            return;
-            }
-        }
-fprintf(stderr, "avcodecdecode_init: completed\n");
     }
     
 static void avcodecdecode_play(struct xlplayer *xlplayer)
@@ -204,19 +171,6 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
             if (self->pkt.data)
                 av_free_packet(&self->pkt);
 
-            if (self->resample)       /* flush the resampler */
-                {
-                src_data->end_of_input = TRUE;
-                src_data->input_frames = 0;
-                if (src_process(xlplayer->src_state, src_data))
-                    {
-                    fprintf(stderr, "avcodecdecode_play: error occured during resampling\n");
-                    xlplayer->playmode = PM_EJECTING;
-                    return;
-                    }
-                xlplayer_demux_channel_data(xlplayer, src_data->data_out, src_data->output_frames_gen, channels, 1.f);
-                xlplayer_write_channel_data(xlplayer);
-                }
             xlplayer->playmode = PM_EJECTING;
             return;
             }
@@ -381,19 +335,7 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
                 return;
             }
         
-        if (self->resample)
-            {
-            src_data->input_frames = frames;
-            if (src_process(xlplayer->src_state, src_data))
-                {
-                fprintf(stderr, "avcodecdecode_play: error occured during resampling\n");
-                xlplayer->playmode = PM_EJECTING;
-                return;
-                }
-            xlplayer_demux_channel_data(xlplayer, src_data->data_out, frames = src_data->output_frames_gen, channels, 1.f);
-            }
-        else
-            xlplayer_demux_channel_data(xlplayer, self->floatsamples, frames, channels, 1.f);
+        xlplayer_demux_channel_data(xlplayer, self->floatsamples, frames, channels, 1.f);
             
         if (self->drop > 0)
             self->drop -= frames / (float)xlplayer->samplerate;
@@ -476,7 +418,6 @@ int avcodecdecode_reg(struct xlplayer *xlplayer)
 
     char filter_descr[80];
     snprintf(filter_descr, 80, "aresample=%u,aconvert=flt:stereo", xlplayer->samplerate);
-    fprintf(stderr, "%s\n", filter_descr);
     if (init_filters(self, filter_descr))
         goto fail;
     
