@@ -22,15 +22,15 @@
 #ifdef HAVE_AVCODEC
 #ifdef HAVE_AVFORMAT
 #ifdef HAVE_AVUTIL
+#ifdef HAVE_AVFILTER
 
-#ifdef FFMPEG_AVCODEC
-#include <ffmpeg/avcodec.h>
-#include <ffmpeg/avformat.h>
-#else
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavutil/dict.h>
-#endif
+#include <libavfilter/avfiltergraph.h>
+#include <libavfilter/avcodec.h>
+#include <libavfilter/buffersink.h>
+#include <libavfilter/buffersrc.h>
 
 #include "xlplayer.h"
 #include "mp3tagread.h"
@@ -50,11 +50,15 @@ struct avcodecdecode_vars
     float drop;
     struct mp3taginfo taginfo;
     struct chapter *current_chapter;
+    AVFilterContext *buffersink_ctx;
+    AVFilterContext *buffersrc_ctx;
+    AVFilterGraph *filter_graph;
     };
 
 int avcodecdecode_reg(struct xlplayer *xlplayer);
 void avformatinfo(char *pathname);
 
+#endif /* HAVE_AVFILTER */
 #endif /* HAVE_AVUTIL */
 #endif /* HAVE_AVFORMAT */
 #endif /* HAVE_AVCODEC */

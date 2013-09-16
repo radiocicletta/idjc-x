@@ -188,6 +188,7 @@ static int backend_main()
         }
     avcodec_register_all();
     av_register_all();
+    avfilter_register_all();
 #endif /* HAVE_AVFORMAT */
 #endif /* HAVE_AVCODEC */
 

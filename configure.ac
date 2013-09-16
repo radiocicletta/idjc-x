@@ -67,10 +67,21 @@ if test $makelibav != "no" ; then
             else
                AC_MSG_WARN([IDJC will be built without wma/mp4/ape support])
             fi)
+            
+   PKG_CHECK_MODULES([LIBAVFILTER], [libavfilter], AC_DEFINE(HAVE_AVFILTER, 1, [Set if libavfilter was found])
+            AC_SUBST(HAVE_AVFILTER, 1),
+            AC_SUBST(HAVE_AVFILTER, 0)
+
+            if test $makelibav = "yes" ; then
+               AC_MSG_ERROR([libavfilter not detected but specifically requested in configure options (libav)])
+            else
+               AC_MSG_WARN([IDJC will be built without wma/mp4/ape support])
+            fi)            
 else
    AC_SUBST(HAVE_AVCODEC, 0)
    AC_SUBST(HAVE_AVFORMAT, 0)
    AC_SUBST(HAVE_AVUTIL, 0)
+   AC_SUBST(HAVE_AVFILTER, 0)
 fi
 
 AC_ARG_ENABLE([speex],

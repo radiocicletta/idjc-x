@@ -22,6 +22,7 @@
 #ifdef HAVE_AVCODEC
 #ifdef HAVE_AVFORMAT
 #ifdef HAVE_AVUTIL
+#ifdef HAVE_AVFILTER
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,6 +44,76 @@ extern int dynamic_metadata_form[];
 
 static const struct timespec time_delay = { .tv_nsec = 10 };
 
+static int init_filters(struct avcodecdecode_vars *s, const char *filters_descr)
+    {
+    char args[512];
+    int ret;
+    AVFilter *abuffersrc  = avfilter_get_by_name("abuffer");
+    AVFilter *abuffersink = avfilter_get_by_name("ffabuffersink");
+    AVFilterInOut *outputs = avfilter_inout_alloc();
+    AVFilterInOut *inputs  = avfilter_inout_alloc();
+    const enum AVSampleFormat sample_fmts[] = { AV_SAMPLE_FMT_FLT, AV_SAMPLE_FMT_S16, -1 };
+    AVABufferSinkParams *abuffersink_params;
+    const AVFilterLink *outlink;
+    AVRational time_base = s->ic->streams[s->stream]->time_base;
+
+    s->filter_graph = avfilter_graph_alloc();
+
+    /* buffer audio source: the decoded frames from the decoder will be inserted here. */
+    if (!s->c->channel_layout)
+        s->c->channel_layout = av_get_default_channel_layout(s->c->channels);
+    snprintf(args, sizeof(args),
+            "time_base=%d/%d:sample_rate=%d:sample_fmt=%s:channel_layout=0x%"PRIx64,
+             time_base.num, time_base.den, s->c->sample_rate,
+             av_get_sample_fmt_name(s->c->sample_fmt), s->c->channel_layout);
+    ret = avfilter_graph_create_filter(&s->buffersrc_ctx, abuffersrc, "in",
+                                       args, NULL, s->filter_graph);
+    if (ret < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Cannot create audio buffer source %s\n", args);
+        return ret;
+    }
+
+    /* buffer audio sink: to terminate the filter chain. */
+    abuffersink_params = av_abuffersink_params_alloc();
+    abuffersink_params->sample_fmts     = sample_fmts;
+    ret = avfilter_graph_create_filter(&s->buffersink_ctx, abuffersink, "out",
+                                       NULL, abuffersink_params, s->filter_graph);
+    av_free(abuffersink_params);
+    if (ret < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Cannot create audio buffer sink\n");
+        return ret;
+    }
+
+    /* Endpoints for the filter graph. */
+    outputs->name       = av_strdup("in");
+    outputs->filter_ctx = s->buffersrc_ctx;
+    outputs->pad_idx    = 0;
+    outputs->next       = NULL;
+
+    inputs->name       = av_strdup("out");
+    inputs->filter_ctx = s->buffersink_ctx;
+    inputs->pad_idx    = 0;
+    inputs->next       = NULL;
+
+    if ((ret = avfilter_graph_parse(s->filter_graph, filters_descr,
+                                    &inputs, &outputs, NULL)) < 0)
+        return ret;
+
+    if ((ret = avfilter_graph_config(s->filter_graph, NULL)) < 0)
+        return ret;
+
+    /* Print summary of the sink buffer
+     * Note: args buffer is reused to store channel layout string */
+    outlink = s->buffersink_ctx->inputs[0];
+    av_get_channel_layout_string(args, sizeof(args), -1, outlink->channel_layout);
+    av_log(NULL, AV_LOG_INFO, "Output: srate:%dHz fmt:%s chlayout:%s\n",
+           (int)outlink->sample_rate,
+           (char *)av_x_if_null(av_get_sample_fmt_name(outlink->format), "?"),
+           args);
+
+    return 0;
+    }
+
 static void avcodecdecode_eject(struct xlplayer *xlplayer)
     {
     struct avcodecdecode_vars *self = xlplayer->dec_data;
@@ -54,6 +125,7 @@ static void avcodecdecode_eject(struct xlplayer *xlplayer)
         }
     if (self->floatsamples)
         free(self->floatsamples);
+    avfilter_graph_free(&self->filter_graph);
     while (pthread_mutex_trylock(&g.avc_mutex))
         nanosleep(&time_delay, NULL);
     avcodec_close(self->c);
@@ -378,9 +450,7 @@ int avcodecdecode_reg(struct xlplayer *xlplayer)
     if (avformat_find_stream_info(self->ic, NULL) < 0)
         {
         fprintf(stderr, "avcodecdecode_reg: call to avformat_find_stream_info failed\n");
-        avformat_close_input(&self->ic);
-        free(self);
-        return REJECTED;
+        goto fail;
         }
 
     while (pthread_mutex_trylock(&g.avc_mutex))
@@ -388,15 +458,11 @@ int avcodecdecode_reg(struct xlplayer *xlplayer)
     if ((self->stream = av_find_best_stream(self->ic, AVMEDIA_TYPE_AUDIO, -1, -1, &self->codec, 0)) < 0)
         {
         fprintf(stderr, "Cannot find an audio stream in the input file\n");
-        avformat_close_input(&self->ic);
-        free(self);
-        return REJECTED;
+        goto fail;
         }
     pthread_mutex_unlock(&g.avc_mutex);
 
     self->c = self->ic->streams[self->stream]->codec;
-    self->c->request_sample_fmt = AV_SAMPLE_FMT_FLT;
-    self->c->request_channel_layout = AV_CH_LAYOUT_STEREO_DOWNMIX;
 
     while (pthread_mutex_trylock(&g.avc_mutex))
         nanosleep(&time_delay, NULL);
@@ -404,11 +470,16 @@ int avcodecdecode_reg(struct xlplayer *xlplayer)
         {
         pthread_mutex_unlock(&g.avc_mutex);
         fprintf(stderr, "avcodecdecode_reg: could not open codec\n");
-        avformat_close_input(&self->ic);
-        free(self);
-        return REJECTED;
+        goto fail;
         }
     pthread_mutex_unlock(&g.avc_mutex);
+
+    char filter_descr[80];
+    snprintf(filter_descr, 80, "aresample=%u,aconvert=flt:stereo", xlplayer->samplerate);
+    fprintf(stderr, "%s\n", filter_descr);
+    if (init_filters(self, filter_descr))
+        goto fail;
+    
 
     if (!(self->floatsamples = malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE * 2)))
         {
@@ -422,8 +493,18 @@ int avcodecdecode_reg(struct xlplayer *xlplayer)
     xlplayer->dec_eject = avcodecdecode_eject;
     
     return ACCEPTED;
+    
+    fail:
+        avfilter_graph_free(&self->filter_graph);
+        if (self->c)
+            avcodec_close(self->c);
+        avformat_close_input(&self->ic);
+        free(self);
+        return REJECTED;
+    
     }
     
+#endif /* HAVE_AVFILTER */
 #endif /* HAVE_AVUTIL */
 #endif /* HAVE_AVFORMAT */
 #endif /* HAVE_AVCODEC */
