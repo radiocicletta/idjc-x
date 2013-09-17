@@ -21,7 +21,6 @@
 
 #ifdef HAVE_AVCODEC
 #ifdef HAVE_AVFORMAT
-#ifdef HAVE_AVUTIL
 #ifdef HAVE_AVFILTER
 
 #include <libavcodec/avcodec.h>
@@ -38,16 +37,10 @@
 struct avcodecdecode_vars
     {
     AVCodec *codec;
-    AVPacket pkt;
-    AVPacket pktcopy;
     AVCodecContext *c;
     AVFormatContext *ic;
-    int size;
-    int resample;
     unsigned int stream;
     AVFrame *frame;
-    float *floatsamples;
-    float drop;
     struct mp3taginfo taginfo;
     struct chapter *current_chapter;
     AVFilterContext *buffersink_ctx;
@@ -56,9 +49,7 @@ struct avcodecdecode_vars
     };
 
 int avcodecdecode_reg(struct xlplayer *xlplayer);
-void avformatinfo(char *pathname);
 
 #endif /* HAVE_AVFILTER */
-#endif /* HAVE_AVUTIL */
 #endif /* HAVE_AVFORMAT */
 #endif /* HAVE_AVCODEC */

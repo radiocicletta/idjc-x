@@ -194,11 +194,7 @@ static struct kvpdict kvpdict[] = {
 static struct commandmap commandmap[] = {
     { "jack_samplerate_request", audio_feed_jack_samplerate_request, NULL },
     { "encoder_lame_availability", encoder_init_lame, NULL},
-#ifdef HAVE_AVCODEC
-#ifdef HAVE_AVUTIL
     { "encoder_aac_availability", live_avcodec_encoder_aac_functionality, NULL},
-#endif
-#endif    
     { "get_report", get_report, NULL },
     { "encoder_start", encoder_start, &ev },
     { "encoder_stop", encoder_stop, NULL },

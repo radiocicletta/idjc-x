@@ -31,13 +31,11 @@
 
 #ifdef HAVE_AVCODEC
 #ifdef HAVE_AVFORMAT
-#ifdef FFMPEG_AVCODEC
-#include <ffmpeg/avcodec.h>
-#include <ffmpeg/avformat.h>
-#else
+#ifdef HAVE_AVFILTER
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
-#endif /* FFMPEG_AVCODEC */
+#include <libavfilter/avfilter.h>
+#endif /* HAVE_AVFILTER */
 #endif /* HAVE_AVFORMAT */
 #endif /* HAVE_AVCODEC */
 
@@ -181,6 +179,7 @@ static int backend_main()
 
 #ifdef HAVE_AVCODEC
 #ifdef HAVE_AVFORMAT
+#ifdef HAVE_AVFILTER
     if (pthread_mutex_init(&g.avc_mutex, NULL))
         {
         fprintf(stderr, "pthread_mutex_init failed\n");
@@ -189,6 +188,7 @@ static int backend_main()
     avcodec_register_all();
     av_register_all();
     avfilter_register_all();
+#endif /* HAVE_AVFILTER */
 #endif /* HAVE_AVFORMAT */
 #endif /* HAVE_AVCODEC */
 

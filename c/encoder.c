@@ -568,7 +568,7 @@ int encoder_start(struct threads_info *ti, struct universal_vars *uv, void *othe
                             break;
                         case ENCODER_CODEC_AAC:
                         case ENCODER_CODEC_AACPLUSV2:
-#if defined(HAVE_AVCODEC) && defined(HAVE_AVFORMAT) && defined(HAVE_AVUTIL)
+#if defined(HAVE_AVCODEC) && defined(HAVE_AVFORMAT)
                             encoder_init = live_avcodec_encoder_init;
 #endif
                             break;

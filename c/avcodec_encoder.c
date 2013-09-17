@@ -19,7 +19,6 @@
 
 #include "../config.h"
 #ifdef HAVE_AVCODEC
-#ifdef HAVE_AVUTIL
 
 #include <stdio.h>
 #include "main.h"
@@ -343,5 +342,12 @@ int live_avcodec_encoder_aac_functionality()
     return SUCCEEDED;
 }
 
-#endif /* HAVE_AVUTIL */
+#else
+
+int live_avcodec_encoder_aac_functionality()
+{
+    fprintf(g.out, "idjcsc: aac_functionality=0:0\n");
+    return SUCCEEDED;
+}
+
 #endif /* HAVE_AVCODEC */
