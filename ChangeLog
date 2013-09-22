@@ -1,3 +1,7 @@
+* Changes in version 0.8.10 *
+
+Updated to fix audio decoding with ffmpeg version 1.2 libav... libraries.
+
 * Changes in version 0.8.9 *
 
 Fixes for deprecation warnings in build system.
