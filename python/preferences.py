@@ -58,7 +58,6 @@ class CSLEntry(gtk.Entry):
         self.connect("key-press-event", self.cb_keypress)
 
 
-
 class InitialPlayerConfig(gtk.Frame):
     def __init__(self, title, player, prefix):
         self.player = player
@@ -104,7 +103,6 @@ class InitialPlayerConfig(gtk.Frame):
             prefix + "todj": self.to_dj
         }
 
-
     def apply(self):
         p = self.player
         
@@ -115,6 +113,75 @@ class InitialPlayerConfig(gtk.Frame):
         if self.remaining.get_active():
             p.digiprogress_click()
 
+
+class PanWidget(gtk.Frame):
+    def __init__(self, title, commandname):
+        gtk.Frame.__init__(self)
+        self.modes = (1, 2, 3)
+        sizegroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
+        set_tip(self, _('Stereo panning is the selection of where an audio '
+        'source sits from left to right within the stereo mix.\n\nThis control '
+        'maintains constant audio power throughout its range of travel, giving '
+        '-3dB attenuation in both audio channels at the half way point.\n\n'
+        'If you require 0dB straight down the middle then this feature should '
+        'be turned off.'))
+        self.valuesdict = {}
+        self.activedict = {}
+        
+        hbox = gtk.HBox()
+        self.pan_active = gtk.CheckButton(title)
+        self.activedict[commandname + "_pan_active"] = self.pan_active
+        hbox.pack_start(self.pan_active, False, False, 0)
+        self.pan_active.show()
+        self.set_label_widget(hbox)
+        hbox.show()
+        
+        panvbox = gtk.VBox()
+        panvbox.set_border_width(1)
+        self.add(panvbox)
+        panhbox = gtk.HBox()
+        panvbox.pack_start(panhbox, False, False)
+        panhbox.set_spacing(3)
+        panhbox.set_border_width(3)
+        l = gtk.Label(_('L'))
+        sizegroup.add_widget(l)
+        panhbox.pack_start(l, False, False)
+        panadj = gtk.Adjustment(50.0, 0.0, 100.0, 1, 10)
+        self.pan = gtk.HScale(panadj)
+        self.pan.set_draw_value(False)
+        self.valuesdict[commandname + "_pan"] = self.pan
+        panhbox.pack_start(self.pan)
+        r = gtk.Label(_('R'))
+        sizegroup.add_widget(r)
+        panhbox.pack_start(r, False, False)
+        self.pan.add_mark(50.0, gtk.POS_BOTTOM, None)
+        self.pan.add_mark(25.0, gtk.POS_BOTTOM, None)
+        self.pan.add_mark(75.0, gtk.POS_BOTTOM, None)
+        
+        label = gtk.Label(_('Presets'))
+        label.set_alignment(0.0, 0.5)
+        label.set_padding(3, 0)
+        panvbox.pack_start(label, False)
+        
+        self._presets = []
+        for i in range(PGlobs.num_panpresets):
+            preadj = gtk.Adjustment(50.0, 0.0, 100.0, 1, 10)
+            preset = gtk.HScale(preadj)
+            preset.set_draw_value(False)
+            self.valuesdict[commandname + "_panpreset" + str(i)] = preset
+            self._presets.append(preset)
+            panvbox.pack_start(preset, False)
+            
+    def load_preset(self, index):
+        try:
+            self.pan.set_value(self._presets[index].get_value())
+        except IndexError:
+            print "Attempt made to load a non existent pan preset"
+            
+    def set_values(self, value):
+        self.pan.set_value(value)
+        for each in self._presets:
+            each.set_value(value)
 
 
 class AGCControl(gtk.Frame):
@@ -361,52 +428,17 @@ class AGCControl(gtk.Frame):
         self.open.set_sensitive(False)
         self.fixups.append(lambda: self.open.emit("toggled"))
 
-        sizegroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
-        panframe = gtk.Frame()
-        panframe.modes = (1, 2, 3)
-        set_tip(panframe, _('Stereo panning is the selection of where an audio '
-        'source sits from left to right within the stereo mix.\n\nThis control '
-        'maintains constant audio power throughout its range of travel, giving '
-        '-3dB attenuation in both audio channels at the half way point.\n\n'
-        'If you require 0dB straight down the middle then this feature should '
-        'be turned off.'))
-        
-        hbox = gtk.HBox()
-        self.pan_active = gtk.CheckButton(_('Stereo Panning'))
-        self.activedict[self.commandname + "_pan_active"] = self.pan_active
-        hbox.pack_start(self.pan_active, False, False, 0)
-        self.pan_active.show()
-        self.pan_active.connect("toggled", self.sendnewstats, "pan_active")
-        panframe.set_label_widget(hbox)
-        hbox.show()
-        self.fixups.append(lambda: self.pan_active.emit("toggled"))
-        
-        panvbox = gtk.VBox()
-        panvbox.set_border_width(1)
-        panframe.add(panvbox)
-        panhbox = gtk.HBox()
-        panvbox.pack_start(panhbox, False, False)
-        panhbox.set_spacing(3)
-        panhbox.set_border_width(3)
-        l = gtk.Label(_('L'))
-        sizegroup.add_widget(l)
-        panhbox.pack_start(l, False, False)
-        panadj = gtk.Adjustment(50.0, 0.0, 100.0, 1, 10)
-        self.pan = gtk.HScale(panadj)
-        self.pan.set_draw_value(False)
-        self.pan.connect("value-changed", self.sendnewstats, "pan")
-        self.pan.emit("value-changed")
-        self.fixups.append(lambda: self.pan.emit("value-changed"))
-        self.valuesdict[self.commandname + "_pan"] = self.pan
-        panhbox.pack_start(self.pan)
-        r = gtk.Label(_('R'))
-        sizegroup.add_widget(r)
-        panhbox.pack_start(r, False, False)
-        self.pan.add_mark(50.0, gtk.POS_BOTTOM, None)
-        self.pan.add_mark(25.0, gtk.POS_BOTTOM, None)
-        self.pan.add_mark(75.0, gtk.POS_BOTTOM, None)
-        self.vbox.pack_start(panframe, False, False)
-        panframe.show_all()
+        self.pan = PanWidget(_('Stereo Panning'), commandname)
+        self.pan.pan_active.connect("toggled", self.sendnewstats, "pan_active")
+        self.fixups.append(lambda: self.pan.pan_active.emit("toggled"))
+        self.pan.pan.connect("value-changed", self.sendnewstats, "pan")
+        self.pan.pan.emit("value-changed")
+        self.fixups.append(lambda: self.pan.pan.emit("value-changed"))
+        self.valuesdict.update(self.pan.valuesdict)
+        self.activedict.update(self.pan.activedict)
+
+        self.vbox.pack_start(self.pan, False, False)
+        self.pan.show_all()
 
         # TC: A set of controls that perform audio signal matching.
         pairedframe = gtk.Frame(" %s " % _('Signal Matching'))
@@ -1470,12 +1502,12 @@ class mixprefs:
             mic_controls[2].mode.set_active(1)
             mic_controls[2].alt_name.set_text("Aux L")
             mic_controls[2].groups_adj.set_value(2)
-            mic_controls[2].pan_active.set_active(True)
-            mic_controls[2].pan.set_value(0)
+            mic_controls[2].pan.pan_active.set_active(True)
+            mic_controls[2].pan.set_values(0)
             mic_controls[3].mode.set_active(3)
             mic_controls[3].alt_name.set_text("Aux R")
-            mic_controls[3].pan_active.set_active(True)
-            mic_controls[3].pan.set_value(100)
+            mic_controls[3].pan.pan_active.set_active(True)
+            mic_controls[3].pan.set_values(100)
             t = parent.mic_opener.ix2button[2].opener_tab
             t.button_text.set_text("Aux")
             t.icb.set_filename(FGlobs.pkgdatadir / "jack2.png")

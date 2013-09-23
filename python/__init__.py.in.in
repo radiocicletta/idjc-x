@@ -104,6 +104,7 @@ class PGlobs(object):
     num_encoders = 6
     num_recorders = 2
     num_effects = 24
+    num_panpresets = 3
 
 
 def main():
