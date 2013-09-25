@@ -15,8 +15,6 @@
 #   along with this program in the file entitled COPYING.
 #   If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ['mixprefs']
-
 
 import os
 import shutil
@@ -33,6 +31,8 @@ from .gtkstuff import WindowSizeTracker, DefaultEntry
 from .prelims import ProfileManager
 from .utils import PathStr
 from .tooltips import set_tip, MAIN_TIPS
+
+__all__ = ['mixprefs', 'PanPresetChooser']
 
 
 _ = gettext.translation(FGlobs.package_name, FGlobs.localedir,
@@ -115,10 +115,13 @@ class InitialPlayerConfig(gtk.Frame):
 
 
 class PanWidget(gtk.Frame):
+    _instances = []
+    
     def __init__(self, title, commandname):
+        self._instances.append(self)
+        
         gtk.Frame.__init__(self)
         self.modes = (1, 2, 3)
-        sizegroup = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
         set_tip(self, _('Stereo panning is the selection of where an audio '
         'source sits from left to right within the stereo mix.\n\nThis control '
         'maintains constant audio power throughout its range of travel, giving '
@@ -139,21 +142,23 @@ class PanWidget(gtk.Frame):
         panvbox = gtk.VBox()
         panvbox.set_border_width(1)
         self.add(panvbox)
-        panhbox = gtk.HBox()
-        panvbox.pack_start(panhbox, False, False)
-        panhbox.set_spacing(3)
-        panhbox.set_border_width(3)
+
+        lr_hbox = gtk.HBox()
         l = gtk.Label(_('L'))
-        sizegroup.add_widget(l)
-        panhbox.pack_start(l, False, False)
+        l.set_alignment(0.0, 0.5)
+        l.set_padding(3, 0)
+        r = gtk.Label(_('R'))
+        r.set_alignment(1.0, 0.5)
+        r.set_padding(3, 0)
+        lr_hbox.pack_start(l)
+        lr_hbox.pack_end(r)
+        panvbox.pack_start(lr_hbox, False)
+
         panadj = gtk.Adjustment(50.0, 0.0, 100.0, 1, 10)
         self.pan = gtk.HScale(panadj)
         self.pan.set_draw_value(False)
         self.valuesdict[commandname + "_pan"] = self.pan
-        panhbox.pack_start(self.pan)
-        r = gtk.Label(_('R'))
-        sizegroup.add_widget(r)
-        panhbox.pack_start(r, False, False)
+        panvbox.pack_start(self.pan, False)
         self.pan.add_mark(50.0, gtk.POS_BOTTOM, None)
         self.pan.add_mark(25.0, gtk.POS_BOTTOM, None)
         self.pan.add_mark(75.0, gtk.POS_BOTTOM, None)
@@ -177,11 +182,58 @@ class PanWidget(gtk.Frame):
             self.pan.set_value(self._presets[index].get_value())
         except IndexError:
             print "Attempt made to load a non existent pan preset"
+
+    @classmethod
+    def load_presets(cls, index):
+        for self in cls._instances:
+            self.load_preset(index)
             
     def set_values(self, value):
         self.pan.set_value(value)
         for each in self._presets:
             each.set_value(value)
+
+
+class PanPresetButton(gtk.Button):
+    def __init__(self, labeltext):
+        self._labeltext = labeltext
+        gtk.Button.__init__(self)
+        self._label = gtk.Label(labeltext)
+        self.add(self._label)
+    
+    def highlight(self):
+        self._label.set_markup("<span foreground='red'>%s</span>" % self._labeltext)
+
+    def unhighlight(self):
+        self._label.set_text(self._labeltext)
+
+
+class PanPresetChooser(gtk.HBox):
+    def __init__(self):
+        gtk.HBox.__init__(self)
+        self.set_spacing(1)
+
+        self.buttons = []
+        for i in range(PGlobs.num_panpresets):
+            button = PanPresetButton(str(i + 1))
+            self.pack_start(button, False)
+            button.show()
+            self.buttons.append(button)
+            button.connect_object("clicked", PanWidget.load_presets, i)
+            button.connect("clicked", self._cb_clicked)
+            
+        set_tip(self, _('The pan preset selection buttons.\n\n'
+        'In the stereo image at a click the DJ can be on the left and a guest '
+        'on the right and when the guest is gone at a click the DJ can be '
+        'central again.\n\n'
+        'Note: preconfiguration of pan preset settings is required.'))
+        
+    def _cb_clicked(self, clicked_button):
+        for button in self.buttons:
+            if button is clicked_button:
+                button.highlight()
+            else:
+                button.unhighlight()
 
 
 class AGCControl(gtk.Frame):

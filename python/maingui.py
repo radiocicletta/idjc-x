@@ -3113,12 +3113,10 @@ class MainWindow(dbus.service.Object):
  
         self.hbox10.pack_start(phonebox, False)
         phonebox.show()
- 
-        pixbuf3 = gtk.gdk.pixbuf_new_from_file(FGlobs.pkgdatadir / "jack2.png")
-        pixbuf3 = pixbuf3.scale_simple(32, 20, gtk.gdk.INTERP_BILINEAR)
-        image = gtk.Image()
-        image.set_from_pixbuf(pixbuf3)
-        image.show()
+         
+        self.pan_preset_chooser = PanPresetChooser()
+        self.hbox10.pack_start(self.pan_preset_chooser, False)
+        self.pan_preset_chooser.show_all()
         
         # microphone open/unmute dynamic widget cluster thingy
         self.mic_opener = MicOpener(self, self.flash_test)
