@@ -3115,6 +3115,7 @@ class MainWindow(dbus.service.Object):
         phonebox.show()
          
         self.pan_preset_chooser = PanPresetChooser()
+        self.pan_preset_chooser.viewlevels = (5,)
         self.hbox10.pack_start(self.pan_preset_chooser, False)
         self.pan_preset_chooser.show_all()
         

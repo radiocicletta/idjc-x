@@ -126,8 +126,10 @@ class PanWidget(gtk.Frame):
         'source sits from left to right within the stereo mix.\n\nThis control '
         'maintains constant audio power throughout its range of travel, giving '
         '-3dB attenuation in both audio channels at the half way point.\n\n'
-        'If you require 0dB straight down the middle then this feature should '
-        'be turned off.'))
+        'If you require 0dB straight down the middle or require a stereo '
+        'source remain as stereo then this feature should be turned off.\n\n'
+        'Paired channels should be set to 100% left/right unless narrowing of '
+        'the stereo field is the intention.'))
         self.valuesdict = {}
         self.activedict = {}
         
@@ -143,39 +145,27 @@ class PanWidget(gtk.Frame):
         panvbox.set_border_width(1)
         self.add(panvbox)
 
-        lr_hbox = gtk.HBox()
-        l = gtk.Label(_('L'))
-        l.set_alignment(0.0, 0.5)
-        l.set_padding(3, 0)
-        r = gtk.Label(_('R'))
-        r.set_alignment(1.0, 0.5)
-        r.set_padding(3, 0)
-        lr_hbox.pack_start(l)
-        lr_hbox.pack_end(r)
-        panvbox.pack_start(lr_hbox, False)
-
-        panadj = gtk.Adjustment(50.0, 0.0, 100.0, 1, 10)
+        panadj = gtk.Adjustment(50.0, 0.0, 100.0, 1, 1, 0)
         self.pan = gtk.HScale(panadj)
-        self.pan.set_draw_value(False)
+        self.pan.set_digits(0)
+        self.pan.connect("format-value", self._cb_format_value)
         self.valuesdict[commandname + "_pan"] = self.pan
-        panvbox.pack_start(self.pan, False)
-        self.pan.add_mark(50.0, gtk.POS_BOTTOM, None)
-        self.pan.add_mark(25.0, gtk.POS_BOTTOM, None)
-        self.pan.add_mark(75.0, gtk.POS_BOTTOM, None)
+        panvbox.pack_start(self.pan, False, padding=2)
         
         label = gtk.Label(_('Presets'))
         label.set_alignment(0.0, 0.5)
-        label.set_padding(3, 0)
+        label.set_padding(3, 3)
         panvbox.pack_start(label, False)
         
         self._presets = []
         for i in range(PGlobs.num_panpresets):
-            preadj = gtk.Adjustment(50.0, 0.0, 100.0, 1, 10)
+            preadj = gtk.Adjustment(50.0, 0.0, 100.0, 1, 1, 0)
             preset = gtk.HScale(preadj)
-            preset.set_draw_value(False)
+            preset.set_digits(0)
+            preset.connect("format-value", self._cb_format_value)
             self.valuesdict[commandname + "_panpreset" + str(i)] = preset
             self._presets.append(preset)
-            panvbox.pack_start(preset, False)
+            panvbox.pack_start(preset, False, padding=2)
             
     def load_preset(self, index):
         try:
@@ -192,7 +182,17 @@ class PanWidget(gtk.Frame):
         self.pan.set_value(value)
         for each in self._presets:
             each.set_value(value)
+            
+    def _cb_format_value(self, scale, value):
+        if value == 50:
+            return u"\u25C8"
 
+        pc = str(abs(int(value) * 2 - 100))
+        if value < 50:
+            return u"\u25C4 %s%%" % pc
+        
+        return u"%s%% \u25BA" % pc
+        
 
 class PanPresetButton(gtk.Button):
     def __init__(self, labeltext):
@@ -213,6 +213,10 @@ class PanPresetChooser(gtk.HBox):
         gtk.HBox.__init__(self)
         self.set_spacing(1)
 
+        label = gtk.Label(u"\u25C4")
+        self.pack_start(label)
+        label.show()
+
         self.buttons = []
         for i in range(PGlobs.num_panpresets):
             button = PanPresetButton(str(i + 1))
@@ -221,6 +225,10 @@ class PanPresetChooser(gtk.HBox):
             self.buttons.append(button)
             button.connect_object("clicked", PanWidget.load_presets, i)
             button.connect("clicked", self._cb_clicked)
+
+        label = gtk.Label(u"\u25BA")
+        self.pack_start(label)
+        label.show()
             
         set_tip(self, _('The pan preset selection buttons.\n\n'
         'In the stereo image at a click the DJ can be on the left and a guest '
