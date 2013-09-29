@@ -22,12 +22,13 @@ import gettext
 import itertools
 
 import gtk
+import glib
 
 from idjc import FGlobs, PGlobs
 from . import licence_window
 from . import songdb
 from . import midicontrols
-from .gtkstuff import WindowSizeTracker, DefaultEntry
+from .gtkstuff import WindowSizeTracker, DefaultEntry, threadslock
 from .prelims import ProfileManager
 from .utils import PathStr
 from .tooltips import set_tip, MAIN_TIPS
@@ -132,6 +133,7 @@ class PanWidget(gtk.Frame):
         'the stereo field is the intention.'))
         self.valuesdict = {}
         self.activedict = {}
+        self._source_id = None
         
         hbox = gtk.HBox()
         self.pan_active = gtk.CheckButton(title)
@@ -169,9 +171,22 @@ class PanWidget(gtk.Frame):
             
     def load_preset(self, index):
         try:
-            self.pan.set_value(self._presets[index].get_value())
+            target = self._presets[index].get_value()
         except IndexError:
             print "Attempt made to load a non existent pan preset"
+        else:
+            if self._source_id:
+                glib.source_remove(self._source_id)
+                
+            self._source_id = glib.timeout_add(5, self._timeout, target)
+
+    @threadslock
+    def _timeout(self, target):
+        current_value = self.pan.get_value()
+        new_value = current_value + cmp(target, current_value)
+        self.pan.set_value(new_value)
+
+        return new_value != target
 
     @classmethod
     def load_presets(cls, index):
