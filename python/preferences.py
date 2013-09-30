@@ -873,7 +873,7 @@ class mixprefs:
         self.notebook.set_current_page(self.notebook.page_num(self.aboutframe))
         self.window.present()
 
-    def fixup_mic_controls(self):
+    def mic_controls_backend_update(self):
         """Send mic preferences to the backend.
         
         This needs to be called whenever the backend is restarted.
@@ -881,6 +881,12 @@ class mixprefs:
         for mic in self.mic_controls:
             for fixup in mic.fixups:
                 fixup()
+                
+    def voip_pan_backend_update(self, widget=None):
+        widget = self.voip_pan
+        stringtosend = "VPAN=%d\nACTN=voippan\nend\n" % (widget.pan.get_value()
+                                    if widget.pan_active.get_active() else -1)
+        self.parent.mixer_write(stringtosend)
 
     def __init__(self, parent):
         self.parent = parent
@@ -1454,8 +1460,15 @@ class mixprefs:
             mic_controls[-1].set_partner(mic_controls[-2])  
         parent.mic_opener.finalise()
 
-        panevbox.pack_start(vbox, False, False, 0)
+        panevbox.pack_start(vbox, False)
         vbox.show()
+                
+        self.voip_pan = PanWidget(_('VoIP panning + mono downmix'), "voip_pan_widget")
+        self.voip_pan.pan_active.connect("toggled", self.voip_pan_backend_update)
+        self.voip_pan.pan.connect("value-changed", self.voip_pan_backend_update)
+        self.voip_pan.set_border_width(3)
+        panevbox.pack_start(self.voip_pan, False)
+        self.voip_pan.show_all()
                 
         label = gtk.Label(_('Channels'))
         self.notebook.append_page(scrolled_window, label)
@@ -1628,7 +1641,7 @@ class mixprefs:
         for each in itertools.chain(mic_controls, 
                             (self.parent.freewheel_button, self.songdbprefs,
                             self.lpconfig, self.rpconfig, opener_settings,
-                            label_subst)):
+                            label_subst, self.voip_pan)):
             self.activedict.update(each.activedict)
 
         self.valuesdict = {  # These widgets all have the get_value method.
@@ -1649,7 +1662,7 @@ class mixprefs:
             }
 
         for each in itertools.chain(mic_controls, (opener_settings,
-                                                            self.songdbprefs)):
+                                            self.songdbprefs, self.voip_pan)):
             self.valuesdict.update(each.valuesdict)
 
         self.textdict = {  # These widgets all have the get_text method.

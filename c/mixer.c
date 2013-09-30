@@ -110,6 +110,9 @@ static struct peakfilter *str_pf_l, *str_pf_r;
 static unsigned int port_connection_count;
 /* counts the number of times port connection counts have been reported */
 static unsigned int port_reports;
+/* voip pan/downmix related */
+static int voip_pan_f;
+static float voip_pan_l, voip_pan_r;
 
 static jack_nframes_t alarm_size;
 
@@ -170,7 +173,7 @@ static char *flag;
 static char *channel_mode_string;
 static char *use_jingles_vol_2;
 static char *jackport, *jackport2, *jackfilter;
-static char *effect_ix;
+static char *effect_ix, *voip_pan;
 static char *session_event_string, *session_commandline;
 
 static struct smoothing_volume jingles_headroom_smoothing;
@@ -217,6 +220,7 @@ static struct kvpdict kvpdict[] = {
             { "JPRT", &jackport, NULL },
             { "JPT2", &jackport2, NULL },
             { "EFCT", &effect_ix, NULL },
+            { "VPAN", &voip_pan, NULL },
             { "ACTN", &action, NULL },                   /* Action to take */
             { "session_event", &session_event_string, NULL },
             { "session_command", &session_commandline, NULL },
@@ -753,6 +757,13 @@ int mixer_process_audio(jack_nframes_t nframes, void *arg)
                 compressor_gain = db2level(limiter(&incoming_phone_limiter, *lprp *= voip_lc_aud, *rprp *= voip_rc_aud));
                 *lprp *= compressor_gain;
                 *rprp *= compressor_gain;
+                if (voip_pan_f)
+                    {
+                    float dnmix = (*lprp + *rprp) / 2.0f;
+                    
+                    *lprp = dnmix * voip_pan_l;
+                    *rprp = dnmix * voip_pan_r;
+                    }
 
                 /* The main mix */
                 *dolp = (plr_l->ls_str + plr_r->ls_str) * *jh * df + *lprp + *lpsp + lc_s_auxmix + plr_i->ls_str * idf * *jhi;
@@ -829,6 +840,13 @@ int mixer_process_audio(jack_nframes_t nframes, void *arg)
                     compressor_gain = db2level(limiter(&incoming_phone_limiter, *lprp *= voip_lc_aud, *rprp *= voip_rc_aud));
                     *lprp *= compressor_gain;
                     *rprp *= compressor_gain;
+                    if (voip_pan_f)
+                        {
+                        float dnmix = (*lprp + *rprp) / 2.0f;
+                        
+                        *lprp = dnmix * voip_pan_l;
+                        *rprp = dnmix * voip_pan_r;
+                        }
                     
                     COMMON_MIX2();
 
@@ -1419,6 +1437,23 @@ int mixer_main()
     if (!(strcmp(action, "speexwritetagrequest")))
         speex_tag_write(speexpathname, speexcreatedby, speextaglist);
 #endif
+
+    if (!strcmp(action, "voippan"))
+        {
+        int voippanval = atoi(voip_pan);
+        
+        if (voippanval == -1)
+            voip_pan_f = 0;
+        else
+            {
+            double x = voippanval * M_PI_2 / 100.0;
+            
+            voip_pan_l = (float)cos(x);
+            voip_pan_r = (float)sin(x);
+            
+            voip_pan_f = 1;
+            }
+        }
 
     if (!strcmp(action, "mixstats"))
         {

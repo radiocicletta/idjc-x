@@ -1,5 +1,7 @@
 * Changes in version 0.8.10 *
 
+Added VoIP panning facility.
+
 Added pan presets for quick pan setting changes.
 
 Updated to fix audio decoding with ffmpeg version 1.2 libav... libraries.
