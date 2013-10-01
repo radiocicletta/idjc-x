@@ -174,6 +174,10 @@ static void mic_process_stage4(struct mic *self)
     self->mrc = self->rc * m;
     self->mlcm = self->lcm * m;
     self->mrcm = self->rcm * m;
+    self->lmunpm = self->munpm * self->lgain;
+    self->rmunpm = self->munpm * self->rgain;
+    self->lmunpmdj = self->munpmdj * self->lgain;
+    self->rmunpmdj = self->munpmdj * self->rgain;
 
     self->aunp = self->unp * a;
     self->aunpm = self->unpm * a;

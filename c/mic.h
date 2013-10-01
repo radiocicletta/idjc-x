@@ -24,8 +24,8 @@ struct mic
     {
     /* outputs */
     float unp;       /* barely processed audio without muting */
-    float unpm;      /* barely processed audio with muting */
-    float unpmdj;    /* barely processed audio for the dj mix */
+    float unpm;      /* barely processed audio with channel muting */
+    float unpmdj;    /* barely processed audio with channel and dj mix muting */
     float lrc;       /* both audio channels without muting */
     float lc;        /* audio left channel without muting */
     float rc;        /* audio right channel without muting */
@@ -35,7 +35,11 @@ struct mic
     /* mic specific output */
     float munp;       /* barely processed audio without muting */
     float munpm;      /* barely processed audio with muting */
+    float lmunpm;     /* barely processed left audio with muting and panning */
+    float rmunpm;     /* barely processed right audio with muting and panning */
     float munpmdj;    /* barely processed audio for the dj mix */
+    float lmunpmdj;   /* munpmdj with left channel panning */
+    float rmunpmdj;   /* munpmdj with right channel panning */
     float mlrc;       /* both audio channels without muting */
     float mlc;        /* audio left channel without muting */
     float mrc;        /* audio right channel without muting */

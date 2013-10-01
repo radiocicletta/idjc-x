@@ -437,8 +437,8 @@ int mixer_process_audio(jack_nframes_t nframes, void *arg)
     float df;           /* main player ducking factor */
     float idf;          /* interlude player ducking factor */
     /* the following are used to calculate the microphone mix */
-    sample_t lc_s_micmix = 0.0f, rc_s_micmix = 0.0f, d_micmix = 0.0f;
-    sample_t lc_s_auxmix = 0.0f, rc_s_auxmix = 0.0f;
+    sample_t lc_s_micmix, rc_s_micmix, dl_micmix, dr_micmix;
+    sample_t lc_s_auxmix, rc_s_auxmix;
     /* the following are used to apply the output of the compressor code to the audio levels */
     sample_t compressor_gain = 1.0;
     /* a counter variable used to trigger the volume smoothing on a regular basis */
@@ -516,7 +516,7 @@ int mixer_process_audio(jack_nframes_t nframes, void *arg)
         pthread_mutex_unlock(&midi_mutex);
         }
 
-    /* get the data for the jack ports */
+    /* get the data pointers for the jack ports */
     {
         struct jack_ports *p = &g.port;
         
@@ -565,8 +565,8 @@ int mixer_process_audio(jack_nframes_t nframes, void *arg)
     xlplayer_read_start_all(players, nframes, players_roster);
     xlplayer_read_start_all(plr_j, nframes, plr_j_roster);
     
-    /* there are four mixer modes and the only seemingly efficient way to do them is */
-    /* to basically copy a lot of code four times over hence the huge size */
+    /* there are four mixer modes with a lot of shared code */
+    /* to keep things smaller and more maintainable macros have been used */
     if (simple_mixer == FALSE && mixermode == NO_PHONE)  /* Fully featured mixer code */
         {
         memset(lps_buffer, 0, nframes * sizeof (sample_t)); /* send silence to VOIP */
@@ -580,13 +580,14 @@ int mixer_process_audio(jack_nframes_t nframes, void *arg)
                 update_smoothed_volumes();
                 
             df = powf(mic_process_all(mics), dfmod);
-            for (micp = mics, lc_s_micmix = rc_s_micmix = lc_s_auxmix = rc_s_auxmix = d_micmix = 0.0f; *micp; micp++)
+            for (micp = mics, lc_s_micmix = rc_s_micmix = lc_s_auxmix = rc_s_auxmix = dl_micmix = dr_micmix = 0.0f; *micp; micp++)
                 {
                 lc_s_micmix += (*micp)->mlcm;
                 rc_s_micmix += (*micp)->mrcm;
                 lc_s_auxmix += (*micp)->alcm;
                 rc_s_auxmix += (*micp)->arcm;
-                d_micmix += (*micp)->munpmdj;
+                dl_micmix += (*micp)->lmunpmdj;
+                dr_micmix += (*micp)->rmunpmdj;
                 }
          
             /* ducking calculation */
@@ -669,8 +670,8 @@ int mixer_process_audio(jack_nframes_t nframes, void *arg)
 
             if (stream_monitor == FALSE)
                 {
-                *lap = ((plr_l->ls_aud + plr_r->ls_aud) * *jh + e_ls) * df + d_micmix + lc_s_auxmix + plr_i->ls_aud * idf * *jhi;
-                *rap = ((plr_l->rs_aud + plr_r->rs_aud) * *jh + e_rs) * df + d_micmix + rc_s_auxmix + plr_i->rs_aud * idf * *jhi;
+                *lap = ((plr_l->ls_aud + plr_r->ls_aud) * *jh + e_ls) * df + dl_micmix + lc_s_auxmix + plr_i->ls_aud * idf * *jhi;
+                *rap = ((plr_l->rs_aud + plr_r->rs_aud) * *jh + e_rs) * df + dr_micmix + rc_s_auxmix + plr_i->rs_aud * idf * *jhi;
                 compressor_gain = db2level(limiter(&audio_limiter, *lap, *rap));
                 *lap *= compressor_gain;
                 *rap *= compressor_gain;
@@ -733,13 +734,14 @@ int mixer_process_audio(jack_nframes_t nframes, void *arg)
                     update_smoothed_volumes();
             
                 mic_process_all(mics);
-                for (micp = mics, lc_s_micmix = rc_s_micmix = lc_s_auxmix = rc_s_auxmix = d_micmix = 0.0f; *micp; micp++)
+                for (micp = mics, lc_s_micmix = rc_s_micmix = lc_s_auxmix = rc_s_auxmix = dl_micmix = dr_micmix = 0.0f; *micp; micp++)
                     {
                     lc_s_micmix += (*micp)->mlcm;
                     rc_s_micmix += (*micp)->mrcm;
                     lc_s_auxmix += (*micp)->alcm;
                     rc_s_auxmix += (*micp)->arcm;
-                    d_micmix += (*micp)->munpmdj;
+                    dl_micmix += (*micp)->lmunpmdj;
+                    dr_micmix += (*micp)->rmunpmdj;
                     }
 
                 /* No ducking but headroom still must apply */
@@ -779,8 +781,8 @@ int mixer_process_audio(jack_nframes_t nframes, void *arg)
 
                 if (stream_monitor == FALSE)
                     {
-                    *lap = (plr_l->ls_aud + plr_r->ls_aud) * *jh * df + *lprp + lc_s_auxmix + plr_i->ls_aud * idf * *jhi + d_micmix + e_ls;
-                    *rap = (plr_l->rs_aud + plr_r->rs_aud) * *jh * df + *rprp + rc_s_auxmix + plr_i->rs_aud * idf * *jhi + d_micmix + e_rs;
+                    *lap = (plr_l->ls_aud + plr_r->ls_aud) * *jh * df + *lprp + lc_s_auxmix + plr_i->ls_aud * idf * *jhi + dl_micmix + e_ls;
+                    *rap = (plr_l->rs_aud + plr_r->rs_aud) * *jh * df + *rprp + rc_s_auxmix + plr_i->rs_aud * idf * *jhi + dr_micmix + e_rs;
                     compressor_gain = db2level(limiter(&audio_limiter, *lap, *rap));
                     *lap *= compressor_gain;
                     *rap *= compressor_gain;
@@ -808,13 +810,14 @@ int mixer_process_audio(jack_nframes_t nframes, void *arg)
                         update_smoothed_volumes();
 
                     mic_process_all(mics);
-                    for (micp = mics, lc_s_micmix = rc_s_micmix = lc_s_auxmix = rc_s_auxmix = d_micmix = 0.0f; *micp; micp++)
+                    for (micp = mics, lc_s_micmix = rc_s_micmix = lc_s_auxmix = rc_s_auxmix = dl_micmix = dr_micmix = 0.0f; *micp; micp++)
                         {
                         lc_s_micmix += (*micp)->mlc;
                         rc_s_micmix += (*micp)->mrc;
                         lc_s_auxmix += (*micp)->alcm;
                         rc_s_auxmix += (*micp)->arcm;
-                        d_micmix += (*micp)->munpm;
+                        dl_micmix += (*micp)->lmunpm;
+                        dr_micmix += (*micp)->rmunpm;
                         }
                     
                     /* No ducking */
@@ -852,8 +855,8 @@ int mixer_process_audio(jack_nframes_t nframes, void *arg)
 
                     if (stream_monitor == FALSE) /* the DJ can hear the VOIP phone call */
                         {
-                        *lap = (*lsp * mb_lc_aud) + e_ls + d_micmix + (lc_s_auxmix *mb_lc_aud) + *lprp;
-                        *rap = (*rsp * mb_lc_aud) + e_rs + d_micmix + (rc_s_auxmix *mb_rc_aud) + *rprp;
+                        *lap = (*lsp * mb_lc_aud) + e_ls + dl_micmix + (lc_s_auxmix *mb_lc_aud) + *lprp;
+                        *rap = (*rsp * mb_lc_aud) + e_rs + dr_micmix + (rc_s_auxmix *mb_rc_aud) + *rprp;
                         compressor_gain = db2level(limiter(&audio_limiter, *lap, *rap));
                         *lap *= compressor_gain;
                         *rap *= compressor_gain;
@@ -881,13 +884,14 @@ int mixer_process_audio(jack_nframes_t nframes, void *arg)
                             update_smoothed_volumes();
 
                         df = powf(mic_process_all(mics), dfmod);
-                        for (micp = mics, lc_s_micmix = rc_s_micmix = lc_s_auxmix = rc_s_auxmix = d_micmix = 0.0f; *micp; micp++)
+                        for (micp = mics, lc_s_micmix = rc_s_micmix = lc_s_auxmix = rc_s_auxmix = dl_micmix = dr_micmix = 0.0f; *micp; micp++)
                             {
                             lc_s_micmix += (*micp)->mlcm;
                             rc_s_micmix += (*micp)->mrcm;
                             lc_s_auxmix += (*micp)->alcm;
                             rc_s_auxmix += (*micp)->arcm;
-                            d_micmix += (*micp)->munpmdj;
+                            dl_micmix += (*micp)->lmunpmdj;
+                            dr_micmix += (*micp)->rmunpmdj;
                             }
 
                         /* ducking calculation */
@@ -916,8 +920,8 @@ int mixer_process_audio(jack_nframes_t nframes, void *arg)
 
                         if (stream_monitor == FALSE)
                             {
-                            *lap = ((plr_l->ls_aud + plr_r->ls_aud) * *jh + e_ls) * df + d_micmix + lc_s_auxmix + plr_i->ls_aud * idf * *jhi;
-                            *rap = ((plr_l->rs_aud + plr_r->rs_aud) * *jh + e_ls) * df + d_micmix + rc_s_auxmix + plr_i->rs_aud * idf * *jhi;
+                            *lap = ((plr_l->ls_aud + plr_r->ls_aud) * *jh + e_ls) * df + dl_micmix + lc_s_auxmix + plr_i->ls_aud * idf * *jhi;
+                            *rap = ((plr_l->rs_aud + plr_r->rs_aud) * *jh + e_ls) * df + dr_micmix + rc_s_auxmix + plr_i->rs_aud * idf * *jhi;
                             compressor_gain = db2level(limiter(&audio_limiter, *lap, *rap));
                             *lap *= compressor_gain;
                             *rap *= compressor_gain;

@@ -1,5 +1,7 @@
 * Changes in version 0.8.10 *
 
+Microphones in DJ audio are now panned.
+
 Added VoIP panning facility.
 
 Added pan presets for quick pan setting changes.
