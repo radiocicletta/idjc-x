@@ -335,9 +335,29 @@ class EffectConfigDialog(gtk.FileChooserDialog):
         vbox.pack_start(hbox, False)
         
         ca.show_all()
+        self.connect("notify::visible", self._cb_notify_visible)
         self.connect("delete-event", lambda w, e: w.hide() or True)
         self.connect("response", self._cb_response)
         self.add_filter(self.file_filter)
+
+    def set_filename(self, filename):
+        self._stored_filename = filename
+        gtk.FileChooserDialog.set_filename(self, filename)
+
+    def _cb_notify_visible(self, *args):
+        # Make sure filename is shown in the location box.
+
+        if self.get_visible():
+            filename = self.get_filename()
+            if filename is None:
+                try:
+                    if self._stored_filename is not None:
+                        self.set_filename(self._stored_filename)
+                except AttributeError:
+                    pass
+        else:
+            self._stored_filename = self.get_filename()
+                    
 
     def _cb_response(self, dialog, response_id):
         dialog.hide()
