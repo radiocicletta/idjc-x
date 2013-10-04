@@ -1,5 +1,7 @@
 * Changes in version 0.8.10 *
 
+Increased player buffer run-out warning to 0.3 seconds. Fixes gapless playback.
+
 Microphones in DJ audio are now panned.
 
 Added VoIP panning facility.

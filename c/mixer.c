@@ -1124,8 +1124,8 @@ void mixer_init(void)
     int n = 0;
     int ne = atoi(getenv("num_effects"));
 
-    if(! ((players[n++] = plr_l = xlplayer_create(sr, MAIN_RB_SIZE, "left", &g.app_shutdown, &volume, 0, &left_stream, &left_audio, 0.1f)) &&
-            (players[n++] = plr_r = xlplayer_create(sr, MAIN_RB_SIZE, "right", &g.app_shutdown, &volume2, 0, &right_stream, &right_audio, 0.1f))))
+    if(! ((players[n++] = plr_l = xlplayer_create(sr, MAIN_RB_SIZE, "left", &g.app_shutdown, &volume, 0, &left_stream, &left_audio, 0.3f)) &&
+            (players[n++] = plr_r = xlplayer_create(sr, MAIN_RB_SIZE, "right", &g.app_shutdown, &volume2, 0, &right_stream, &right_audio, 0.3f))))
         {
         fprintf(stderr, "failed to create main player modules\n");
         exit(5);
@@ -1155,7 +1155,7 @@ void mixer_init(void)
         plr_j[i]->fade_mode = 3;
         }
     
-    if (!(players[n++] = plr_i = xlplayer_create(sr, MAIN_RB_SIZE, "interlude", &g.app_shutdown, &interludevol, 0, &inter_stream, &inter_audio, 0.25f)))
+    if (!(players[n++] = plr_i = xlplayer_create(sr, MAIN_RB_SIZE, "interlude", &g.app_shutdown, &interludevol, 0, &inter_stream, &inter_audio, 0.3f)))
         {
         fprintf(stderr, "failed to create interlude player module\n");
         exit(5);
