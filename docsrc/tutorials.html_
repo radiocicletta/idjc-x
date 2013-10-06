@@ -8,5 +8,7 @@ ui('Tutorials', 'tutorials-nav')
 <li class="content-page"><a href="tutorials_icecast.html">Setting up an Icecast server</a></li>
 <li class="content-page"><a href="tutorials_shoutcast.html">Setting up a Shoutcast server</a></li>
 <li class="content-page"><a href="tutorials_voip.html">Setting up VoIP</a></li>
+<li class="content-page"><a href="tutorials_streaming_aac.html">Unlocking the AAC streaming capability</a></li>
+<li class="content-page"><a href="tutorials_jack_ports_demystified.html">JACK ports demystified</a></li>
 
 </ul>

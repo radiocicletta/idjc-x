@@ -1,5 +1,7 @@
 * Changes in version 0.8.10 *
 
+Added documentation of JACK ports.
+
 Fix for effects filechooser location box text.
 
 Increased player buffer run-out warning to 0.3 seconds. Fixes gapless playback.

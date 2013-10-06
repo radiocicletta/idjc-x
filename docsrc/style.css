@@ -35,7 +35,7 @@
   margin-bottom:10px;
  }
  pre{
-  font-family:courier new, monospace;
+  font-family:'courier new', monospace;
   font-size:12px;
   margin:0px 0px 0px 0px;
   padding:6px;
@@ -54,7 +54,7 @@
  overflow-y:auto;
  }
  strong{
-  text-wrap:suppress;
+  white-space:nowrap;
  }
  ul{
   font-size:13px;
@@ -90,6 +90,13 @@
  div.centered-contents {
    margin:0 auto;
    text-align:center
+ }
+ #jackports-table{
+  border:1px solid;
+  width:100%;
+ }
+ #jackports-table td{
+  border:1px solid #d3d3d3;
  }
  #dep-table{
   border:2px solid black;
