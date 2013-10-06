@@ -2027,36 +2027,39 @@ class MainWindow(dbus.service.Object):
                         form = "%s - %s - (%s)"
                     self.songname = form % (self.artist, self.title, self.album)
 
-                self.window.set_title("%s :: IDJC%s" % (self.songname,
-                                                            pm.title_extra))
-                tm = time.localtime()
-                ts = "%02d:%02d :: " % (tm[3], tm[4])  # hours and minutes
-                tstext = self.songname.encode("utf-8")
-                self.history_buffer.place_cursor(
-                                            self.history_buffer.get_end_iter())
-                self.history_buffer.insert_at_cursor(ts + tstext + "\n")
-                adjustment = self.history_window.get_vadjustment()
-                adjustment.set_value(adjustment.upper)
-                try:
-                    file = open(pm.basedir / "history.log", "a")
-                except IOError:
-                    print "unable to open history.log for writing"
-                else:
-                    try:
-                        file.write(time.strftime("%x %X :: ") + tstext + "\n")
-                    except IOError:
-                        print "unable to append to file \"history.log\""
-                    file.close()
-
-                self._track_metadata_changed(self.artist, self.title,
+                self.set_track_metadata(self.artist, self.title,
                         self.album, self.songname, self.music_filename)
             else:
                 self.window.set_title(self.appname + pm.title_extra)
 
             print "song title: %s\n" % self.songname
 
+    @dbus.service.method(dbus_interface=PGlobs.dbus_bus_basename,
+                                                        in_signature="sssss")
+    def set_track_metadata(self, artist, title, album, songname, filename):
+        args = artist, title, album, songname, filename
 
-    def _track_metadata_changed(self, *args):
+        self.window.set_title("%s :: IDJC%s" % (songname,
+                                                    pm.title_extra))
+        tm = time.localtime()
+        ts = "%02d:%02d :: " % (tm[3], tm[4])  # hours and minutes
+        tstext = songname.encode("utf-8")
+        self.history_buffer.place_cursor(
+                                    self.history_buffer.get_end_iter())
+        self.history_buffer.insert_at_cursor(ts + tstext + "\n")
+        adjustment = self.history_window.get_vadjustment()
+        adjustment.set_value(adjustment.upper)
+        try:
+            file = open(pm.basedir / "history.log", "a")
+        except IOError:
+            print "unable to open history.log for writing"
+        else:
+            try:
+                file.write(time.strftime("%x %X :: ") + tstext + "\n")
+            except IOError:
+                print "unable to append to file \"history.log\""
+            file.close()
+
         if self._old_metadata_2 == args:
             return
 

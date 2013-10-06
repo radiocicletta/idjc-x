@@ -1295,9 +1295,9 @@ class StreamTab(Tab):
     def cb_metadata(self, widget):
         if self.format_control.finalised:
             fallback = self.metadata_fallback.get_text()
-            songname = self.scg.parent.songname.encode("utf-8") or fallback
+            songname = self.scg.songname.encode("utf-8") or fallback
             table = [("%%", "%")] + zip(("%r", "%t", "%l"), ((
-                            getattr(self.scg.parent, x) or fallback) for x in (
+                            getattr(self.scg, x) or fallback) for x in (
                             "artist", "title", "album")))
             table.append(("%s", songname))
             raw_cm = self.metadata.get_text().encode("utf-8", "replace").strip()
@@ -2303,6 +2303,10 @@ class SourceClientGui(dbus.service.Object):
             each.record_buttons.record_button.set_active(whichrecorders.pop(0))
                 
     def new_metadata(self, artist, title, album, songname):
+        self.artist = artist
+        self.title = title
+        self.album = album
+        self.songname = songname
         self.send("artist=%s\ntitle=%s\nalbum=%s\n"
                                     "command=new_song_metadata\n" % (
                                     artist.strip(), title.strip(),
@@ -2729,6 +2733,7 @@ class SourceClientGui(dbus.service.Object):
         self.connection_string = None
         self.is_shoutcast = False
         self._streamstate_cache = None
+        self.artist = self.title = self.album = self.songname = ""
 
         self.dialog_group = dialog_group()
         self.disconnected_dialog = disconnection_notification_dialog(

@@ -1,5 +1,7 @@
 * Changes in version 0.8.10 *
 
+Added D-Bus binding for setting metadata.
+
 Added documentation of JACK ports.
 
 Fix for effects filechooser location box text.
