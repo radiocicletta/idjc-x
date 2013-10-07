@@ -4,10 +4,9 @@ ui('Extra code: An IDJC monitoring class', 'code-idjcmon-nav')
 
 <p>With a little work this could be made to interface with your station's web page or with cloud services.</p>
 
-<pre>
-#! /usr/bin/env python
+<pre>#! /usr/bin/env python
 
-# idjcmon.py (C) 2012 Stephen Fairchild
+# idjcmon.py (C) 2013 Stephen Fairchild
 # Released under the GNU Lesser General Public License version 2.0 (or
 # at your option, any later version).
 
@@ -25,18 +24,31 @@ alternatively:
 ./idjcmon.py session.[sessionname]
 """
 
-import time
+import os
 import sys
-
-import dbus
-from dbus.mainloop.glib import DBusGMainLoop
-DBusGMainLoop(set_as_default=True)
+import time
 
 import gobject
-import glib
-import psutil
+import dbus
+from dbus.mainloop.glib import DBusGMainLoop
+
+from idjc import PGlobs
+
 
 __all__ = ["IDJCMonitor"]
+
+
+def pid_exists(pid):
+    """Check whether pid exists in the current process table."""
+
+    if pid &lt; 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except OSError, e:
+        return e.errno == errno.EPERM
+    else:
+        return True
 
 
 class IDJCMonitor(gobject.GObject):
@@ -87,11 +99,26 @@ class IDJCMonitor(gobject.GObject):
         
         gobject.GObject.__init__(self)
         self.__profile = profile
-        self.__bus = dbus.SessionBus()
+        self.__bus = dbus.SessionBus(mainloop=DBusGMainLoop())
+        self.__bus_address = ".".join((PGlobs.dbus_bus_basename, profile))
+        self.__base_objpath = PGlobs.dbus_objects_basename
+        self.__base_interface = PGlobs.dbus_bus_basename
         self.__artist = self.__title = self.__album = ""
         self.__songname = self.__music_filename = ""
         self.__shutdown = False
         self._start_probing()
+
+    @property
+    def main(self):
+        return dbus.Interface(self.__main, self.__base_interface)
+        
+    @property
+    def output(self):
+        return dbus.Interface(self.__output, self.__base_interface)
+
+    @property
+    def controls(self):
+        return dbus.Interface(self.__controls, self.__base_interface)
         
     def shutdown(self):
         """Block both signal emission and property reads."""
@@ -104,20 +131,25 @@ class IDJCMonitor(gobject.GObject):
         self.__watchdog_notice = False
         self.__pid = 0
         self.__frozen = False
-        self.__main = self.__output = None
+        self.__main = self.__output = self.__controls = None
         if not self.__shutdown:
-            self.__probe_id = glib.timeout_add_seconds(
+            self.__probe_id = gobject.timeout_add_seconds(
                                                 2, self._idjc_started_probe)
 
     def _idjc_started_probe(self):
         # Check for a newly started IDJC instance of the correct profile.
         
+        bus_address = ".".join((PGlobs.dbus_bus_basename, self.__profile))
+        
         try:
-            self.__main = self.__bus.get_object("net.sf.idjc." + self.__profile,
-                                                        "/net/sf/idjc/main")
-            self.__output = self.__bus.get_object("net.sf.idjc." +
-                                        self.__profile, "/net/sf/idjc/output")
-            main_iface = dbus.Interface(self.__main, "net.sf.idjc")
+            self.__main = self.__bus.get_object(self.__bus_address,
+                                                self.__base_objpath + "/main")
+            self.__output = self.__bus.get_object(self.__bus_address,
+                                                self.__base_objpath + "/output")
+            self.__controls = self.__bus.get_object(self.__bus_address,
+                                            self.__base_objpath + "/controls")
+
+            main_iface = dbus.Interface(self.__main, self.__base_interface)
             main_iface.pid(reply_handler=self._pid_reply_handler,
                             error_handler=self._pid_error_handler)
         except dbus.exceptions.DBusException:
@@ -137,11 +169,10 @@ class IDJCMonitor(gobject.GObject):
                                                     self._streamstate_handler)
 
             # Start watchdog thread.
-            self.__watchdog_id = glib.timeout_add_seconds(
-                                                    3, self._watchdog)
+            self.__watchdog_id = gobject.timeout_add_seconds(3, self._watchdog)
 
             self.__streams = {n : (False, "unknown") for n in xrange(10)}
-            output_iface = dbus.Interface(self.__output, "net.sf.idjc")
+            output_iface = dbus.Interface(self.__output, self.__base_interface)
             
             self.emit("launch", self.__profile, self.__pid)
             
@@ -156,7 +187,7 @@ class IDJCMonitor(gobject.GObject):
 
     def _watchdog(self):
         if self.__watchdog_notice:
-            if psutil.pid_exists(int(self.__pid)):
+            if pid_exists(int(self.__pid)):
                 if not self.__frozen:
                     self.__frozen = True
                     self.emit("frozen", self.__profile, self.__pid, True)
@@ -181,7 +212,7 @@ class IDJCMonitor(gobject.GObject):
         """Start scanning for a new bus object."""
 
         if self.__watchdog_id is not None:
-            glib.source_remove(self.__watchdog_id)
+            gobject.source_remove(self.__watchdog_id)
             self.emit("quit", self.__profile, self.__pid)
         self._start_probing()
         
@@ -251,6 +282,19 @@ if __name__ == "__main__":
         print "Metadata is: artist: %s, title: %s, album: %s, filename: %s" % (
                                         artist, title, album, music_filename)
 
+        """
+        # Reverse the song name text -- strictly for fun!
+        if music_filename:
+            songname = "".join(reversed(songname))
+            try:
+                monitor.main.set_track_metadata(artist, title, album, songname,
+                # The filename is sent blank to prevent an infinite loop.
+                # The last parameter is sent False to prevent logging.
+                                                                    "", False)
+            except AttributeError:
+                pass
+        """
+
     def frozen_handler(monitor, profile, pid, frozen):
         print "IDJC '%s' with process ID %d is %s" % (
                         profile, pid, ("no longer frozen", "frozen")[frozen])
@@ -269,7 +313,7 @@ if __name__ == "__main__":
         monitor.connect("metadata-changed", metadata_handler)
         monitor.connect("frozen", frozen_handler)
         
-        glib.MainLoop().run()
+        gobject.MainLoop().run()
         
     main()
 </pre>
