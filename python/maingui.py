@@ -2027,38 +2027,34 @@ class MainWindow(dbus.service.Object):
                         form = "%s - %s - (%s)"
                     self.songname = form % (self.artist, self.title, self.album)
 
-                self.set_track_metadata(self.artist, self.title,
-                        self.album, self.songname, self.music_filename)
+                self.set_track_metadata(self.artist, self.title, self.album,
+                                self.songname, self.music_filename, True)
             else:
                 self.window.set_title(self.appname + pm.title_extra)
 
             print "song title: %s\n" % self.songname
 
     @dbus.service.method(dbus_interface=PGlobs.dbus_bus_basename,
-                                                        in_signature="sssss")
-    def set_track_metadata(self, artist, title, album, songname, filename):
+                                                        in_signature="sssssb")
+    def set_track_metadata(self, artist, title, album, songname, filename, log):
         args = artist, title, album, songname, filename
 
         self.window.set_title("%s :: IDJC%s" % (songname,
                                                     pm.title_extra))
-        tm = time.localtime()
-        ts = "%02d:%02d :: " % (tm[3], tm[4])  # hours and minutes
-        tstext = songname.encode("utf-8")
-        self.history_buffer.place_cursor(
-                                    self.history_buffer.get_end_iter())
-        self.history_buffer.insert_at_cursor(ts + tstext + "\n")
-        adjustment = self.history_window.get_vadjustment()
-        adjustment.set_value(adjustment.upper)
-        try:
-            file = open(pm.basedir / "history.log", "a")
-        except IOError:
-            print "unable to open history.log for writing"
-        else:
+        if log:
+            tm = time.localtime()
+            ts = "%02d:%02d :: " % (tm[3], tm[4])  # hours and minutes
+            tstext = songname.encode("utf-8")
+            self.history_buffer.place_cursor(
+                                        self.history_buffer.get_end_iter())
+            self.history_buffer.insert_at_cursor(ts + tstext + "\n")
+            adjustment = self.history_window.get_vadjustment()
+            adjustment.set_value(adjustment.upper)
             try:
-                file.write(time.strftime("%x %X :: ") + tstext + "\n")
+                with open(pm.basedir / "history.log", "a") as f:
+                    f.write(time.strftime("%x %X :: ") + tstext + "\n")
             except IOError:
-                print "unable to append to file \"history.log\""
-            file.close()
+                print "failed to write log entry to history.log"
 
         if self._old_metadata_2 == args:
             return
