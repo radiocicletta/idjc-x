@@ -47,7 +47,8 @@ control_methods= {
     'c_tips': _('Tooltips enable'),
     # TC: Control method. Please keep it as Target:Action.
     'c_sdjmix': _('DJ-mix monitor'),
-
+    # TC: Control method. Please keep it as Target:Action.
+    'l_panpre': _('Panning load from presets'),
     # TC: Control method. Please keep it as Target:Action.
     'p_pp': _('Player play/pause'),
     # TC: Control method. Please keep it as Target:Action.
@@ -149,7 +150,8 @@ control_targets= {
     'm': _('Channel'),
     'k': _('Effect'),
     's': _('Stream'),
-    'r': _('Recorder')
+    'r': _('Recorder'),
+    'l': _('Setting')
 }
 
 control_targets_players= (
@@ -724,7 +726,6 @@ class Controls(dbus.service.Object):
     def get_enable_tooltips(self):
         return self.owner.prefs_window.enable_tooltips.get_active()
 
-
     @action_method(Binding.MODE_PULSE, Binding.MODE_DIRECT)
     def c_sdjmix(self, n, v, isd):
         active= not self.owner.listen_dj.get_active() if isd else v>=0x40
@@ -749,6 +750,15 @@ class Controls(dbus.service.Object):
     def get_listen_stream_mix(self):
         return self.owner.listen_stream.get_active()
 
+    # Panning presets
+    #
+    @action_method(Binding.MODE_PULSE)
+    def l_panpre(self, n, v, isd):
+        self.owner.pan_preset_chooser.load_preset(n)
+
+    @dbusify(in_signature='u')
+    def panning_presets_load(self, n):
+        self.l_panpre(n, 0, 0)
 
     # Player
     #
@@ -1472,6 +1482,8 @@ class BindingEditor(gtk.Dialog):
         # TC: binding editor, action pane, first row, toplevel menu.
         'x': _('Both players'),
         # TC: binding editor, action pane, first row, toplevel menu.
+        'l': _('Quick panning'),
+        # TC: binding editor, action pane, first row, toplevel menu.
         'm': _('Channel'),
         # TC: binding editor, action pane, first row, toplevel menu.
         'v': _('VoIP channel'),
@@ -1761,7 +1773,7 @@ class BindingEditor(gtk.Dialog):
             self.target_field.set_adjustment(PlayerAdjustment())
         elif group=='b':
             self.target_field.set_adjustment(EffectsBankAdjustment())
-        elif group in 'mksr':
+        elif group in 'mksrl':
             self.target_field.set_adjustment(TargetAdjustment(group))
         else:
             self.target_field.set_adjustment(SingularAdjustment())
@@ -1913,7 +1925,8 @@ class EffectsBankAdjustment(CustomAdjustment):
 class TargetAdjustment(CustomAdjustment):
     def __init__(self, group, value= 0):
         CustomAdjustment.__init__(self, value, 0, {
-                        'p': 3, 'm': 11, 'k': 23, 's': 8, 'r': 3}[group], 1)
+                        'p': 3, 'm': 11, 'k': 23, 's': 8, 'r': 3, 'l': 8}
+                                                                    [group], 1)
         self._group= group
     def read_input(self, text):
         return int(text.rsplit(' ', 1)[-1])-1

@@ -250,6 +250,14 @@ class PanPresetChooser(gtk.HBox):
         'on the right and when the guest is gone at a click the DJ can be '
         'central again.\n\n'
         'Note: preconfiguration of pan preset settings is required.'))
+
+    def load_preset(self, index):
+        try:
+            button = self.buttons[index]
+        except IndexError:
+            pass
+        else:
+            button.clicked()
         
     def _cb_clicked(self, clicked_button):
         for button in self.buttons:
