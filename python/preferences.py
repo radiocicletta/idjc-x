@@ -1565,7 +1565,8 @@ class mixprefs:
             "Brian Millham (bmillham@users.sourceforge.net)"))
 
         contribs_page(_('Translators'),
-            ("<b>it</b>  Raffaele Morelli (raffaele.morelli@gmail.com)",))
+            ("<b>fr</b> nvignot (nicotux@users.sf.net)",
+            "<b>it</b>  Raffaele Morelli (raffaele.morelli@gmail.com)"))
 
         vbox.show()
 

@@ -1,14 +1,14 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 #
-# Nicotux, 2013.
+# nicotux, 2013.
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
 "POT-Creation-Date: 2013-10-10 04:40+0100\n"
 "PO-Revision-Date: 2013-05-07 20:30+0100\n"
-"Last-Translator: Nicotux\n"
+"Last-Translator: nicotux\n"
 "Language-Team: French <kde-i18n-doc@kde.org>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -25,8 +25,8 @@ msgid ""
 "run command"
 msgstr ""
 "Afficher ce message d'aide et quitter -- plus d'aide est disponible pour "
-"chacune des sous-commandes, par exemple : « %(prog)s run --help » affiche "
-"l'aide concernant la commande run"
+"chacune des sous-commandes, par exemple : « %(prog)s run --help » "
+"affichel'aide concernant la commande run"
 
 #. TC: a command line option help string.
 #: python/prelims/__init__.py:108
@@ -179,6 +179,8 @@ msgid ""
 "kick sources on servers -- note that this will be\n"
 "                done before any server connection attempts are made"
 msgstr ""
+"Balancer les soureces sur les serveurs -- notee que ceci sera fait\n"
+"                avant que toute tentative de connection ne soit effectuée"
 
 #: python/prelims/__init__.py:203
 msgid "position the crossfader for the specified player"
@@ -557,9 +559,8 @@ msgid "_Retry Now"
 msgstr "_Réessayer immédiatement"
 
 #: python/__init__.py.in.in:100
-#, fuzzy
 msgid "Copyright 2005-2013 Stephen Fairchild and others."
-msgstr "Copyright 2005-2012 Stephen Fairchild et autres."
+msgstr "Copyright 2005-2013 Stephen Fairchild et autres."
 
 #: python/__init__.py.in.in:101
 msgid "Released under the GNU General Public License V2.0 or later."
@@ -727,7 +728,7 @@ msgid ""
 "access."
 msgstr ""
 "Idéalement mettez quelque chose même pour les serveurs permettant l'accès "
-"anonyme ou pblic."
+"anonyme ou public."
 
 #. TC: tooltip to all IRC nicknames entry fields.
 #: python/irc.py:472
@@ -955,22 +956,21 @@ msgid "Player headroom that is applied when an effect is playing."
 msgstr "Headroom appliqué au lecteur quand un effet est lu."
 
 #: python/jingles.py:474
-#, fuzzy
 msgid "Alternative"
 msgstr "Alternatif"
 
 #: python/jingles.py:475
 msgid "Default"
-msgstr ""
+msgstr "Défaut"
 
 #: python/jingles.py:520
 msgid "Effects"
 msgstr "Effets"
 
 #: python/jingles.py:563
-#, fuzzy, python-format
+#, python-format
 msgid "Effects %d"
-msgstr "Effets"
+msgstr "Effet %d"
 
 #: python/jingles.py:571 python/maingui.py:188
 msgid "Background Tracks"
@@ -1038,15 +1038,15 @@ msgstr "Sortie Mêtres"
 
 #: python/maingui.py:188
 msgid "Tabbed Area"
-msgstr ""
+msgstr "Zone tabulée"
 
 #: python/maingui.py:188
 msgid "Button Bar"
-msgstr ""
+msgstr "Barre de boutons"
 
 #: python/maingui.py:222 python/preferences.py:1481
 msgid "Channels"
-msgstr "Canali"
+msgstr "Canaux"
 
 #: python/maingui.py:222
 msgid "Players"
@@ -1066,7 +1066,7 @@ msgstr "Mix"
 
 #: python/maingui.py:223
 msgid "Misc"
-msgstr ""
+msgstr "Divers"
 
 #: python/maingui.py:268
 msgid "Reset"
@@ -1181,12 +1181,12 @@ msgstr "contrôle «%s»"
 #. TC: Insert playlist control to stop the player.
 #: python/maingui.py:744 python/playergui.py:4259
 msgid "Player Stop"
-msgstr "Stop lecteur"
+msgstr "Arret lecteur"
 
 #. TC: Insert playlist control to stop the player.
 #: python/maingui.py:745 python/playergui.py:4266
 msgid "Player Stop 2"
-msgstr "Stop 2 lecteur"
+msgstr "Arret Lecteur 2"
 
 #: python/maingui.py:746
 msgid "Announcements"
@@ -1306,7 +1306,7 @@ msgstr "Supprimer le contenu"
 
 #: python/maingui.py:3023
 msgid "Renameable Labels"
-msgstr ""
+msgstr "Labels renommables"
 
 #: python/maingui.py:3047
 msgid "Main Players"
@@ -1338,7 +1338,7 @@ msgstr "Le Volume du lecteur de droite."
 
 #: python/maingui.py:3223
 msgid "VoIP level adjustment. 0dB gain is at the mid point."
-msgstr ""
+msgstr "Ajustement du niveau VoIP. 0dB est le point milieu."
 
 #: python/maingui.py:3246
 msgid "The stream volume level to send to the voice over IP connection."
@@ -1390,7 +1390,7 @@ msgstr "Liste de lecture 1"
 #. TC: The chosen source of track metadata.
 #: python/maingui.py:3389 python/playergui.py:3911
 msgid "Playlist 2"
-msgstr "List de lecture 2"
+msgstr "Liste de lecture 2"
 
 #. TC: The chosen source of track metadata.
 #: python/maingui.py:3391
@@ -1410,14 +1410,12 @@ msgstr "Aucune"
 
 #. TC: The chosen source of track metadata. In this case no metadata.
 #: python/maingui.py:3397
-#, fuzzy
 msgid "Playlist 3"
-msgstr "Liste de lecture 1"
+msgstr "Liste de lecture 3"
 
 #: python/maingui.py:3402
-#, fuzzy
 msgid "Select the origin for the playing track metadata on the stream."
-msgstr "Sélection de la platine responsable des métadonnées du flux."
+msgstr "Sélectionner l'origine pour la piste de métadonnées"
 
 #. TC: Abbreviation of left.
 #: python/maingui.py:3412 python/maingui.py:3414
@@ -1539,7 +1537,7 @@ msgstr "DJ-Mix Monitoring"
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:51
 msgid "Panning load from presets"
-msgstr ""
+msgstr "Placement chargé depuis la présélection"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:53
@@ -1550,7 +1548,7 @@ msgstr "Lecteur Lecture/pause"
 #. TC: Playlist control.
 #: python/midicontrols.py:55 python/playergui.py:3668
 msgid "Player stop"
-msgstr "Lecteur Stop"
+msgstr "Arret lecteur"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:57
@@ -1625,12 +1623,12 @@ msgstr "Liste de lecture Editer les tags"
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:86
 msgid "Playlist insert stop"
-msgstr "Liste de lecture Insérer un stop"
+msgstr "Liste de lecture Insérer un arret"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:88
 msgid "Playlist insert stop 2"
-msgstr "Liste de lecture Insérer un stop 2"
+msgstr "Liste de lecture Insérer un arret 2"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:90
@@ -1714,9 +1712,8 @@ msgstr "VoIP Régler le volume"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:125
-#, fuzzy
 msgid "VoIP set mixback"
-msgstr "VoIP Régler la balance"
+msgstr "VoIP Régler le retour"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:127
@@ -1735,9 +1732,8 @@ msgstr "Effet Lire depuis le début"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:135
-#, fuzzy
 msgid "Effects stop many"
-msgstr "Effets Tout arrêter"
+msgstr "Effets Arrèter plusieurs"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:137
@@ -1782,9 +1778,8 @@ msgid "Recorder"
 msgstr "Enregistreur"
 
 #: python/midicontrols.py:154
-#, fuzzy
 msgid "Setting"
-msgstr "Altération"
+msgstr "Paramètres"
 
 #: python/midicontrols.py:158
 msgid "Left player"
@@ -1807,19 +1802,16 @@ msgid "Fadered player"
 msgstr "Lecteur affaibli"
 
 #: python/midicontrols.py:166
-#, fuzzy
 msgid "Effects bank 1"
-msgstr "Effets"
+msgstr "Effets Banque 1"
 
 #: python/midicontrols.py:167
-#, fuzzy
 msgid "Effects bank 2"
-msgstr "Effets"
+msgstr "Effets Banque 2"
 
 #: python/midicontrols.py:168
-#, fuzzy
 msgid "All effects"
-msgstr "Effet unique"
+msgstr "Tous les effets"
 
 #. TC: The name of the backspace key.
 #: python/midicontrols.py:402
@@ -1874,7 +1866,7 @@ msgstr "Les deux lecteurs"
 #. TC: binding editor, action pane, first row, toplevel menu.
 #: python/midicontrols.py:1485
 msgid "Quick panning"
-msgstr ""
+msgstr "Panoramique rapide"
 
 #. TC: binding editor, action pane, first row, toplevel menu.
 #: python/midicontrols.py:1489
@@ -1888,9 +1880,8 @@ msgstr "Effet unique"
 
 #. TC: binding editor, action pane, first row, toplevel menu.
 #: python/midicontrols.py:1493
-#, fuzzy
 msgid "Effects bank"
-msgstr "Effets"
+msgstr "Banque d'effets"
 
 #. TC: binding editor, action pane, first row, toplevel menu.
 #: python/midicontrols.py:1497
@@ -2516,7 +2507,7 @@ msgstr ">> Vitesse normale <<"
 #. TC: Playlist control.
 #: python/playergui.py:3673
 msgid "Player stop 2"
-msgstr "Stop Lecteur 2"
+msgstr "Arret Lecteur 2"
 
 #. TC: Playlist control.
 #. TC: Insert playlist control to jump to the top of the playlist.
@@ -2638,7 +2629,7 @@ msgstr "Pause"
 
 #: python/playergui.py:4097
 msgid "Stop."
-msgstr "Stop"
+msgstr "Arret"
 
 #: python/playergui.py:4107
 msgid "Next track."
@@ -2747,6 +2738,9 @@ msgid ""
 "It will be affected by microphone ducking and won't mute when a main player "
 "is operating."
 msgstr ""
+"Lorsqu'il est choisi, ce lecteur agis comme le lecteur principal/\n"
+"Il est affecté par l'aténuation par le micro et ne se mute pas lorsque le  "
+"lecteur principal est en fonction."
 
 #. TC: Insert playlist control.
 #: python/playergui.py:4227
@@ -2885,7 +2879,7 @@ msgid "Audio to DJ"
 msgstr "Audio vers DJ"
 
 #: python/preferences.py:126
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "Stereo panning is the selection of where an audio source sits from left to "
 "right within the stereo mix.\n"
@@ -2899,19 +2893,21 @@ msgid ""
 "Paired channels should be set to 100% left/right unless narrowing of the "
 "stereo field is the intention."
 msgstr ""
-"Le placement stéréo est la position ou se situe une source audio, de gauche "
-"à droite, dans le mix stéréo.\n"
+"La panoramique stéréo est une sélection ou une source audio se situe plus ou "
+"moins à gauche ou a droite par rapport au mix stéréo.\n"
 "\n"
-"Ce contrôle concerve la puissance audio sur toute sa plage de "
-"fonctionnement, donnant une atténuation de -3dB au point central.\n"
+"Ce contrôle garde une puissance audio constante sur toute sa plage, en "
+"donnant une atténuation de -3dB sur les deux canaux au point milieu.\n"
 "\n"
-"Si vous avez besoin de concerver 0dB au point central, désactivez cette "
-"fonctionalité."
+"Si vous voulez obtenir 0dB au point milieu ou si vous voulez maintenir la "
+"stéréo de la source, cette fonctionalité doit être désactivée.\n"
+"\n"
+"L'appairage des canaux doit être laissé à 100% gauche/droite à moins que la "
+"réduction du champ stéréo ne soit votre intention."
 
 #: python/preferences.py:157
-#, fuzzy
 msgid "Presets"
-msgstr "Pressé"
+msgstr "Présélections"
 
 #: python/preferences.py:248
 msgid ""
@@ -2922,6 +2918,13 @@ msgid ""
 "\n"
 "Note: preconfiguration of pan preset settings is required."
 msgstr ""
+"Les boutons de présélection de panoramique.\n"
+"\n"
+"Dans une image stéréo en 1 clic le DJ peut se situer à gauche et l'invité à "
+"droite et dès que l'invité part, en 1 click le DJ peut se retrouver de "
+"nouveau  au centre.\n"
+"\n"
+"Note : Une préconfiguration des présélections est nécessaire."
 
 #. TC: Microphone mode combobox text.
 #: python/preferences.py:273
@@ -3137,7 +3140,7 @@ msgstr ""
 
 #: python/preferences.py:648
 msgid "Ducker"
-msgstr "Canardiseur"
+msgstr "Atténuateur"
 
 #: python/preferences.py:649
 msgid "Release"
@@ -3153,8 +3156,8 @@ msgid ""
 "speaks. These settings allow you to adjust the timings of that audio "
 "reduction."
 msgstr ""
-"Le canardiseur réduit automatiquement le niveau du lecteur audio lorsque le "
-"DJ parle. Ces paramêtres permettent l'ajustement de la durée de "
+"L'aténuateur réduit automatiquement le niveau du lecteur audio lorsque le DJ "
+"parle. Ces paramêtres permettent l'ajustement de la durée de "
 "l'affaiblissement audio."
 
 #: python/preferences.py:659
@@ -3194,11 +3197,11 @@ msgstr "Ajuste le niveau sonore du canal audio DJ."
 #. TC: The alarm sound level.
 #: python/preferences.py:949
 msgid "Alarm Level"
-msgstr ""
+msgstr "Niveau de l'alarme"
 
 #: python/preferences.py:963
 msgid "Music Loudness Compensation"
-msgstr ""
+msgstr "Compensation Loudness"
 
 #: python/preferences.py:961
 #, python-format
@@ -3207,13 +3210,15 @@ msgid ""
 "close to the dj audio level when using the '%s' feature, otherwise a bit "
 "louder."
 msgstr ""
+"Ceci ajuste le niveau du son de l'alarme DJ. Normalement ce doit être aux "
+"alentours du niveau audio du DJ lorsque la fonction «%s» est utilisée, ou "
+"sinon un petit peu plus fort."
 
 #: python/preferences.py:969
 msgid "Player Resample Quality"
 msgstr "Qualité de rééchantillonnage du lecteur"
 
 #: python/preferences.py:975
-#, fuzzy
 msgid ""
 "This adjusts the quality of the audio resampling method used whenever the "
 "sample rate of the music file currently playing does not match the sample "
@@ -3222,14 +3227,14 @@ msgid ""
 "these modes provide adequate sound quality."
 msgstr ""
 "Ajuste la qualité de la méthode de rééchantillonnage audio utilisée lorsque "
-"la fréquence de la musique jouée ne corresponds pas à celle dnécessaire au "
-"serveur JACK. Les modes les plus hauts offrent une meilleur qualité sonore "
-"mais consomment aussi plus de puissance CPU (non recommandé pour des "
-"systèmes d'avant 2006). Tous les modes donne une qualité correcte."
+"la fréquence du fichier lu ne corresponds pas à celle nécessaire au serveur "
+"JACK. Les meilleurs modes offrent une meilleur qualité sonore mais consoment "
+"aussi plus de puissance CPU (non recommendé pour les systèmes d'avant 2006). "
+"Tous ces modes donne une qualité correcte."
 
 #: python/preferences.py:983
 msgid "Best"
-msgstr ""
+msgstr "Meilleure"
 
 #: python/preferences.py:992
 msgid "Medium"
@@ -3237,7 +3242,7 @@ msgstr "Moyenne"
 
 #: python/preferences.py:1001
 msgid "Fast"
-msgstr ""
+msgstr "Rapide"
 
 #. TC: the set of features - section heading.
 #: python/preferences.py:1016
@@ -3306,43 +3311,44 @@ msgstr "Enregistrement(s) simultané(s)"
 
 #: python/preferences.py:1167
 msgid "Fill channel meter void space"
-msgstr "Remplir l'espace libre du vu-ùêtre du canal"
+msgstr "Remplir l'espace libre du vu-mêtre du canal"
 
 #: python/preferences.py:1179
 msgid "Player Loudness Normalisation"
-msgstr ""
+msgstr "Normalisation du Loudness du lecteur"
 
 #: python/preferences.py:1190
-#, fuzzy
 msgid "Indicate which tracks have loudness metadata"
-msgstr "Indique quelles pistes possèdent des valeurs de Gain Replay"
+msgstr "Indique quelles pistes ont une métadonnée de Loudness."
 
 #: python/preferences.py:1191
-#, fuzzy
 msgid ""
 "Shows a marker in the playlists next to each track. Either a green circle or "
 "a red triangle."
 msgstr ""
-"Montre un marqueur dans le texte de la liste de lecture après châque piste"
+"Affiche un marqueur à côté de chaque piste dans les listes de lecture. Soit "
+"un cercle vert, soit un triangle rouge."
 
 #: python/preferences.py:1199
-#, fuzzy
 msgid "Adjust playback volume in dB"
-msgstr "Ajuste le volume de reproduction"
+msgstr "Ajuste le volume de rendu en dB"
 
 #: python/preferences.py:1200
 msgid "Effective only on newly started tracks."
-msgstr "Effectif uniquement pour kes pistes nouvellement jouées."
+msgstr "Effectif uniquement pour les pistes nouvellement jouées."
 
 #: python/preferences.py:1206
 msgid "R128"
-msgstr ""
+msgstr "R128"
 
 #: python/preferences.py:1210
 msgid ""
 "It may not be desirable to use the default level since it is rather quiet. "
 "This should be set 4 or 5 dB higher than the ReplayGain setting."
 msgstr ""
+"Il peut ne pas être souhaitable d'utiliser le volume par défaut puisqu'il "
+"est plutot bas. Il doit se situer 4 ou 5 dB plus haut que le réglage de Gain "
+"Replay."
 
 #: python/preferences.py:1215
 msgid "ReplayGain"
@@ -3353,25 +3359,28 @@ msgid ""
 "It may not be desirable to use the default level since it is rather quiet. "
 "This should be set 4 or 5 dB lower than the R128 setting."
 msgstr ""
+"Il peut ne pas être souhaitable d'utiliser le volume par défaut puisqu'il "
+"est plutot bas. Il doit se situer 4 ou 5 dB plus bas que le réglage du R128."
 
 #: python/preferences.py:1224
 msgid "Untagged"
-msgstr ""
+msgstr "Non taggé"
 
 #: python/preferences.py:1228
 msgid ""
 "Set this so that any unmarked tracks are playing at a roughly similar "
 "loudness level as the marked ones."
 msgstr ""
+"Cocher pour que toutes les pistes non taggés soient jouées approximativement "
+"au même volume que celle qui le sont."
 
 #: python/preferences.py:1237
-#, fuzzy
 msgid "A master level control for the media players."
-msgstr "Contrôle de volume du lecteur de gauche."
+msgstr "Un contrôle maitre pour les Lecteurs."
 
 #: python/preferences.py:1248
 msgid "Recorder Filename (excluding the file extension)"
-msgstr ""
+msgstr "Non du fichier d'enregistrement (sans extention)"
 
 #: python/preferences.py:1249
 msgid ""
@@ -3380,6 +3389,10 @@ msgid ""
 "Users may wish to alter this to make filenames that are compatible with "
 "particular filesystems."
 msgstr ""
+"Les spécifications sont $r pour le numéro d'enregistrement, le reste étant "
+"documenté dans la page de manuel de strftime.\n"
+"Les utilisateurs peuvent modifier ceci pour rendre les noms de fichiers "
+"compatibles avec certains systèmes de fichiers."
 
 #: python/preferences.py:1266
 msgid "Miscellaneous Features"
@@ -3460,8 +3473,8 @@ msgid ""
 "This feature maybe improves the sound quality a little when listening on a "
 "24 bit sound card."
 msgstr ""
-"Questa impostazione potrebbe migliorare la qualità del suondo su schede "
-"audio a 24bit"
+"Cette fonctionalité peut augmenter légèrement la qualité lors de l'écoute "
+"sur une carte son 24bit"
 
 #: python/preferences.py:1334
 msgid "Enable tooltips"
@@ -3513,7 +3526,7 @@ msgstr "Général"
 
 #: python/preferences.py:1474
 msgid "VoIP panning + mono downmix"
-msgstr ""
+msgstr "Placement VoIP + réduction mono"
 
 #. TC: Keyboard and MIDI bindings configuration.
 #: python/preferences.py:1488
@@ -4076,7 +4089,7 @@ msgstr "Connexion de groupe"
 
 #: python/sourceclientgui.py:2633
 msgid "Group Disconnect"
-msgstr "Désconnetion de groupe"
+msgstr "Déconnetion de groupe"
 
 #. TC: Window title bar text.
 #: python/sourceclientgui.py:2664
@@ -4099,7 +4112,7 @@ msgid ""
 "Yellow=Awaiting authentication. Green=Connected. Flashing=Packet loss due to "
 "a bad connection."
 msgstr ""
-"Chacun de ces onglets représentent une radio séparée. La couleur de la LED "
+"Chacun de ces onglets représente une radio séparée. La couleur de la LED "
 "indique : Eteinte=Aucune connexion Jaune=En attente d'autentification. "
 "Verte=Connecté. Clignottante=Perte de paquet du à une mauvaise connexion."
 
@@ -4127,6 +4140,9 @@ msgstr ""
 "<span weight=\"bold\" size=\"12000\">Une déconnexion pré-programmée du flux "
 "s'est produite.</span>"
 
+#~ msgid "Copyright 2005-2012 Stephen Fairchild and others."
+#~ msgstr "Copyright 2005-2012 Stephen Fairchild et autres."
+
 #~ msgid "Media Players"
 #~ msgstr "Lecteur média"
 
@@ -4142,8 +4158,14 @@ msgstr ""
 #~ msgid "Background"
 #~ msgstr "En fond"
 
+#~ msgid "Select which Deck is responsible for the metadata on the stream."
+#~ msgstr "Sélection de la platine responsable des métadonnées du flux."
+
 #~ msgid "Jingles"
 #~ msgstr "Jingles"
+
+#~ msgid "Effects stop all"
+#~ msgstr "Effets Tout arrêter"
 
 #~ msgid "Background tracks set volume"
 #~ msgstr "Pistes en fond Régler le volume"
@@ -4158,8 +4180,38 @@ msgstr ""
 #~ "Sélectionné, la sortie de ce lecteur ne se coupe pas quel que soit le "
 #~ "lecteur actif."
 
+#~ msgid ""
+#~ "Stereo panning is the selection of where an audio source sits from left "
+#~ "to right within the stereo mix.\n"
+#~ "\n"
+#~ "This control maintains constant audio power throughout its range of "
+#~ "travel, giving -3dB attenuation in both audio channels at the half way "
+#~ "point.\n"
+#~ "\n"
+#~ "If you require 0dB straight down the middle then this feature should be "
+#~ "turned off."
+#~ msgstr ""
+#~ "Le placement stéréo est la position ou se situe une source audio, de "
+#~ "gauche à droite, dans le mix stéréo.\n"
+#~ "\n"
+#~ "Ce contrôle concerve la puissance audio sur toute sa plage de "
+#~ "fonctionnement, donnant une atténuation de -3dB au point central.\n"
+#~ "\n"
+#~ "Si vous avez besoin de concerver 0dB au point central, désactivez cette "
+#~ "fonctionalité."
+
 #~ msgid "Meters"
 #~ msgstr "Indicateurs"
+
+#~ msgid "Indicate which tracks have ReplayGain values"
+#~ msgstr "Indique quelles pistes possèdent des valeurs de Gain Replay"
+
+#~ msgid "Show a marker in the playlists next to each track."
+#~ msgstr ""
+#~ "Montre un marqueur dans le texte de la liste de lecture après châque piste"
+
+#~ msgid "Adjust playback volume"
+#~ msgstr "Ajuste le volume de reproduction"
 
 #~ msgid "Unmarked tracks assumed gain value"
 #~ msgstr "Décocher les pistes sans valeur de gain"
