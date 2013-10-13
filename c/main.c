@@ -29,15 +29,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#ifdef HAVE_AVCODEC
-#ifdef HAVE_AVFORMAT
-#ifdef HAVE_AVFILTER
+#ifdef HAVE_LIBAV
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
-#include <libavfilter/avfilter.h>
-#endif /* HAVE_AVFILTER */
-#endif /* HAVE_AVFORMAT */
-#endif /* HAVE_AVCODEC */
+#endif /* HAVE_LIBAV */
 
 #include "sig.h"
 #include "mixer.h"
@@ -177,9 +172,7 @@ static int backend_main()
         exit(5);
         }
 
-#ifdef HAVE_AVCODEC
-#ifdef HAVE_AVFORMAT
-#ifdef HAVE_AVFILTER
+#ifdef HAVE_LIBAV
     if (pthread_mutex_init(&g.avc_mutex, NULL))
         {
         fprintf(stderr, "pthread_mutex_init failed\n");
@@ -187,10 +180,7 @@ static int backend_main()
         }
     avcodec_register_all();
     av_register_all();
-    avfilter_register_all();
-#endif /* HAVE_AVFILTER */
-#endif /* HAVE_AVFORMAT */
-#endif /* HAVE_AVCODEC */
+#endif /* HAVE_LIBAV */
 
     alarm(3);
 

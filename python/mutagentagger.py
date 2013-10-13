@@ -653,7 +653,7 @@ class MutagenGUI:
     @staticmethod
     def is_supported(pathname):
         supported = [ "mp2", "mp3", "ogg", "oga" ]
-        if FGlobs.avcodec and FGlobs.avformat:
+        if FGlobs.avenabled:
             supported += ["aac", "mp4", "m4a", "m4b", "m4p", "ape", "mpc", "wma"]
         if FGlobs.flacenabled:
             supported.append("flac")

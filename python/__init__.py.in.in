@@ -60,8 +60,8 @@ class FGlobs(object):
     pkgdatadir = PathStr("""${pkgdatadir}""")
     localedir = PathStr("""@localedir@""")
     bindir = PathStr("""@bindir@""")
-    avformat = @HAVE_AVFORMAT@
-    avcodec = @HAVE_AVCODEC@
+    avenabled = "01"[@HAVE_AVFORMAT@ and @HAVE_AVCODEC@ and 
+                                        @HAVE_AVUTIL@ and @HAVE_SWRESAMPLE@]
     flacenabled = @HAVE_FLAC@
     oggflacenabled = @HAVE_OGGFLAC@
     opusenabled = @HAVE_OPUS@
@@ -97,7 +97,8 @@ class PGlobs(object):
     app_longform = "Internet DJ Console"
     default_icon = FGlobs.pkgdatadir / "icon.png"
     autoload_profile_pathname = config_dir / "autoload-profile"
-    copyright = _("Copyright 2005-2013 Stephen Fairchild and others.")
+    copyright = _("Copyright 2005-%s Stephen Fairchild and others."
+                                                    ) % """@COPYRIGHT_YEAR@"""
     license = _("Released under the GNU General Public License V2.0 or later.")
     num_micpairs = 2
     num_streamers = 6

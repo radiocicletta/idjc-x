@@ -341,11 +341,9 @@ static void *xlplayer_main(struct xlplayer *self)
                           || (!strcmp(extension, "flac") && flacdecode_reg(self))
 #endif
                           || ((!strcmp(extension, "wav") || !strcmp(extension, "au") || !strcmp(extension, "aiff")) && sndfiledecode_reg(self))
-#ifdef HAVE_AVCODEC
-#ifdef HAVE_AVFORMAT
+#ifdef HAVE_LIBAV
                           || ((!strcmp(extension, "aac") || !strcmp(extension, "m4a") || !strcmp(extension, "mp4") || !strcmp(extension, "m4b") || !strcmp(extension, "m4p") || !strcmp(extension, "wma") || !strcmp(extension, "avi") || !strcmp(extension, "mpc") || !strcmp(extension, "ape")) && avcodecdecode_reg(self))
-#endif /* HAVE_AVFORMAT */
-#endif /* HAVE_AVCODEC */
+#endif /* HAVE_LIBAV */
                           || ((!strcmp(extension, "mp3") || (!strcmp(extension, "mp2"))) && mpg123ok && mp3decode_reg(self))
                     )
                     {

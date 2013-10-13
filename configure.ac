@@ -36,7 +36,12 @@ AC_ARG_ENABLE([libav],
    AC_HELP_STRING([--disable-libav],[remove capability to decode m4a/wma/avi files]),[makelibav=$enableval],[makelibav="maybe"])
 
 if test $makelibav != "no" ; then
-    PKG_CHECK_MODULES([LIBAVCODEC], [libavcodec], [AC_DEFINE(HAVE_AVCODEC, 1, [Set if libavcodec was found])
+   AH_BOTTOM(
+[#if defined(HAVE_AVCODEC) && defined(HAVE_AVFORMAT) && defined(HAVE_AVUTIL) && defined(HAVE_SWRESAMPLE)
+   #define HAVE_LIBAV 1
+#endif])
+
+   PKG_CHECK_MODULES([LIBAVCODEC], [libavcodec], [AC_DEFINE(HAVE_AVCODEC, 1, [Set if libavcodec was found])
             AC_SUBST(HAVE_AVCODEC, 1)
             AC_CHECK_LIB([avcodec],[avcodec_decode_audio4], :, AC_MSG_ERROR("configure with --disable-libav or update ffmpeg/libav"))
             ],
@@ -58,19 +63,30 @@ if test $makelibav != "no" ; then
                AC_MSG_WARN([IDJC will be built without wma/mp4/ape support])
             fi)
 
-   PKG_CHECK_MODULES([LIBAVFILTER], [libavfilter], AC_DEFINE(HAVE_AVFILTER, 1, [Set if libavfilter was found])
-            AC_SUBST(HAVE_AVFILTER, 1),
-            AC_SUBST(HAVE_AVFILTER, 0)
+   PKG_CHECK_MODULES([LIBAVUTIL], [libavutil], AC_DEFINE(HAVE_AVUTIL, 1, [Set if libavutil was found])
+            AC_SUBST(HAVE_AVUTIL, 1),
+            AC_SUBST(HAVE_AVUTIL, 0)
 
             if test $makelibav = "yes" ; then
-               AC_MSG_ERROR([libavfilter not detected but specifically requested in configure options (libav)])
+               AC_MSG_ERROR([libavutil not detected but specifically requested in configure options (libav)])
             else
                AC_MSG_WARN([IDJC will be built without wma/mp4/ape support])
-            fi)            
+            fi)
+
+   PKG_CHECK_MODULES([LIBSWRESAMPLE], [libswresample], AC_DEFINE(HAVE_SWRESAMPLE, 1, [Set if libswresample was found])
+            AC_SUBST(HAVE_SWRESAMPLE, 1),
+            AC_SUBST(HAVE_SWRESAMPLE, 0)
+
+            if test $makelibav = "yes" ; then
+               AC_MSG_ERROR([libswresample not detected but specifically requested in configure options (libav)])
+            else
+               AC_MSG_WARN([IDJC will be built without wma/mp4/ape support])
+            fi)
 else
    AC_SUBST(HAVE_AVCODEC, 0)
    AC_SUBST(HAVE_AVFORMAT, 0)
-   AC_SUBST(HAVE_AVFILTER, 0)
+   AC_SUBST(HAVE_AVUTIL, 0)
+   AC_SUBST(HAVE_SWRESAMPLE, 0)
 fi
 
 AC_ARG_ENABLE([speex],

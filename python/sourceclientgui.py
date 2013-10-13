@@ -2367,7 +2367,7 @@ class SourceClientGui(dbus.service.Object):
         except (NameError, AttributeError):
             # If this is the initial call the stream tabs will not exist yet.
             pass
-        if FGlobs.avcodec:
+        if FGlobs.avenabled:
             self.send("command=encoder_aac_availability\n")
             reply = self.receive()
             assert reply != "failed" and self.receive() == "succeeded" and \

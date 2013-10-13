@@ -16,7 +16,7 @@ Added VoIP panning facility.
 
 Added pan presets for quick pan setting changes. Includes key/midi/dbus bindings.
 
-Updated to fix audio decoding with ffmpeg version 1.2 libav... libraries.
+Updated to fix audio decoding with ffmpeg version 1.2 libav... libraries. New dependency libswresample from ffmpeg.
 
 * Changes in version 0.8.9 *
 

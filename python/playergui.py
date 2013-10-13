@@ -658,7 +658,7 @@ class Supported(object):
             self.media.insert(0, ".mp3")
             self.media.insert(1, ".mp2")
 
-        if FGlobs.avcodec and FGlobs.avformat:
+        if FGlobs.avenabled:
             self.media.append(".avi")
             self.media.append(".wma")
             self.media.append(".ape")

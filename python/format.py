@@ -1060,7 +1060,7 @@ class FormatCodecMPEG(FormatDropdown):
     def __init__(self, prev_object):
         have_mp2 = FGlobs.twolameenabled
         have_mp3 = FGlobs.have_libmp3lame
-        have_aac = FGlobs.avcodec and FGlobs.avformat
+        have_aac = FGlobs.avenabled
         extra = []
 
         if not have_mp2:
@@ -1070,7 +1070,7 @@ class FormatCodecMPEG(FormatDropdown):
             extra.append(_('Enable the MP3 option by installing libmp3lame.'))
 
         if not have_aac:
-            extra.append(_('The AAC options require IDJC be rebuilt against libavcodec and libavformat.'))
+            extra.append(_('The AAC options require IDJC be rebuilt against libav libraries.'))
         else:
             if not FormatCodecMPEG.aac_enabled:
                 extra.append(_('Specific AAC support not present in libavcodec. More info: idjc.sourceforge.net.'))
