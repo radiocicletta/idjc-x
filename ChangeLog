@@ -1,5 +1,7 @@
 * Changes in version 0.8.10 *
 
+Fix for dynamic metadata bug in the background tracks player.
+
 Added french translation.
 
 Added D-Bus binding for setting metadata.

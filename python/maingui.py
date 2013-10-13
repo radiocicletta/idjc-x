@@ -2754,8 +2754,12 @@ class MainWindow(dbus.service.Object):
 
                 if key.endswith("_new_metadata"):
                     if not key.startswith("jingles"):
-                        player_metadata.append((getattr(self, "player_" +
-                                            key.split("_", 1)[0]), value))
+                        if key.startswith("interlude"):
+                            target = self.jingles.interlude
+                        else:
+                            target = getattr(self, "player_" +
+                                                        key.split("_", 1)[0])
+                        player_metadata.append((target, value))
                     continue
 
                 try:
