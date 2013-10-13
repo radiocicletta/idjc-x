@@ -23,7 +23,7 @@
 
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
-#include <libavutil/dict.h>
+#include <libswresample/swresample.h>
 
 #include "xlplayer.h"
 #include "mp3tagread.h"
@@ -39,10 +39,11 @@ struct avcodecdecode_vars
     int resample;
     unsigned int stream;
     AVFrame *frame;
-    float *floatsamples;
+    uint8_t *floatsamples;
     float drop;
     struct mp3taginfo taginfo;
     struct chapter *current_chapter;
+    SwrContext *swr;
     };
 
 int avcodecdecode_reg(struct xlplayer *xlplayer);
