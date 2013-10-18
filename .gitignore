@@ -4,6 +4,7 @@ INSTALL
 Makefile
 Makefile.in
 man/*.1
+man/fr/*.1
 NEWS.gz
 README.gz
 aclocal.m4

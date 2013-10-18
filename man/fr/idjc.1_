@@ -1,0 +1,57 @@
+.TH "IDJC" 1 "2012-02-06" "VERSION" "Internet DJ Console"
+.SH NOM
+idjc \- Devenez dj sur internet
+.SH SYNOPSIS
+idjc [\-h] [\-v] {run,new,rm,auto,noauto,ls}
+.SH DESCRIPTION
+.B idjc
+est une puissante et simple application pour les individus intéressés dans le streaming shows radio en direct sur Internet par des serveurs Shoutcast ou Icecast ou par la création dde podcasts.
+
+Les fonctionalités incluent deux lecteurs média principaux avec crossfader, un lecteur de jingles, un traitement de signal microphone (limiter, noise gate, etc.), des anonces IRC, le démarrage/arret automatique du stream et la reconnection, le striming  simultané en mp3 et Ogg, jusqu'à 12 canaux d'entrées mono ou 6 stéréo, a DSP interface, une intégration VoIP, le support du contrôle par surfaces MIDI, et des vumètres de niveau audio.
+
+Il utilise GTK+ pour son interface et JACK Audio Connection Kit pour faciliter l'inclusion d'applications tierces supportant JACK dans leur chaine audio.
+.SS Options
+.B \-h, \-\-help
+.RS
+Affiche un message d'aide
+.RE
+.PP
+.B \-v, \-\-version
+.RS
+Affiche le numéro de version et quite.
+.RE
+.SS
+.BR Sous\-commandes " (chacunes possède sa propre page de manuel)"
+.B run
+.RS
+Exécute l'application principale
+.B idjc
+. (C'est l'option par défaut)
+.RE
+.PP
+.B new
+.RS
+Créé un nouveau profile.
+.RE
+.PP
+.B rm
+.RS
+Supprime un ou des profiles.
+.RE
+.PP
+.B auto
+.RS
+Sélectionne automatiquement quel profile sera lancé.
+.RE
+.PP
+.B noauto
+.RS
+Supprime le commutateur lancement\-automatique.
+.RE
+.PP
+.B ls
+.RS
+Liste les profiles disponibles. Affiche également les temps de fonctionnement.
+.RE
+.SH RAPPORTER DES BOGUES
+.SH VOIR AUSSI

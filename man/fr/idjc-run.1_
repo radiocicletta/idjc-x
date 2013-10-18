@@ -1,0 +1,109 @@
+.TH "IDJC-RUN" 1 "2012-02-06" "VERSION" "Internet DJ Console"
+.SH NOM
+idjc\-run \- Lance l'application principale de
+.B idjc
+.SH SYNOPSIS
+.P
+idjc run [\-h] [\-d {true,false}] [\-p profile_choisi] [\-j nom_de_serveur]
+         [\-S detaild_de_session] [\-\-no\-jack\-connections] [\-C]
+         [\-c c [c ...]] [\-V {off,private,public}] [\-P p [p ...]]
+         [\-s s [s ...]] [\-x {1,2}]
+.SH DESCRIPTION
+.SS Options generales
+.B \-h, \-\-help
+.RS
+Affiche un message d'aide
+.RE
+.PP
+.BR "\-d, \-\-dialog" "={true,false}"
+.RS
+S'il faut ou pas afficher le dialogue de choix de profile.
+.RE
+.PP
+.BR "\-p, \-\-profile" =PROFILE
+.RS
+Quel profile à exécuter. N'importe quel autre que celui par défaut doit exister.
+.RE
+.PP
+.BR "\-j, \-\-jackserver" =SERVER
+.RS
+Le nom du serveur JACK à utiliser.
+.RE
+.PP
+.BR "\-S, \-\-session" =SESSIONINFO
+.RS
+Voir la section support de session ci\-dessous pour plus de détails.
+.RE
+.PP
+.B \-\-no\-jack\-connections
+.RS
+Une option potentiellement utils si vous utilisez un quelconque gestionnaire de sessions. Au démarrage 
+.B idjc
+ne tentera pas de gérer lui même ses connexions.
+.RE
+.PP
+.B \-\-no\-default\-jack\-connections
+.RS
+Aucun port JACK autre que ceux spécifiés dans la session ne sera connecté. Bien entendu, cela implique que si la session spécifiée n'existe pas, aucune connections ne sera effectuée.
+.RE
+.PP
+.SS Options de l'interface utilisateur
+.BR "\-c, \-\-channels" =CHANNELS
+.RS
+Ouvre les canaux spécifiés (liste séparée par des espaces).
+.RE
+.PP
+.BR "\-V, \-\-voip" =MODE
+.RS
+Sélectionne le mode VoIP spécifié.
+.RE
+.PP
+.BR "\-P, \-\-players" =PLAYERS
+.RS
+Démarre les lecteurs spécifiés (liste séparée par des espaces). Les options correctes sont numériques.
+.RE
+.PP
+.BR "\-s, \-\-servers" =SERVERS
+.RS
+Démarre les serveurs spécifiés (liste séparée par des espaces). Les options correctes sont numériques.
+.RE
+.PP
+.BR "\-x, \-\-crossfader" ={1,2}
+.RS
+Positionne le crossfader.
+.RE
+.PP
+.SH ENVIRONMENT
+Si le fichier
+.I ~/.jackdrc
+n'existe pas, à moins qu'il n'ait été configuré autrement grâce à un outil tel que
+.I ladiconf
+ou
+.I QjackCtl
+.B idjc
+démarrera mais sera configuré avec une vitesse d'échantillonnage de 48000 ce qui est trop pour streamer des CD audio. Il est recommendé de créer ce fichier avec la méthode suivante en console ou en utilisant les outils sus\-nommés qui peuvent nécessiter une installation.
+.PP
+.B $
+echo "/usr/bin/jackd \-d alsa \-r 44100 \-p 2048" > ~/.jackdrc
+.PP
+Si vous préférez lancer le serveur audio JACK manuellement vous pouvez le faire de cette manière :
+.PP
+.BR $ " jackd \-d alsa \-r 44100 \-p 2048"
+.PP
+.RB Référez\-vous\ à\  jackd (1)\ pour\ plus\ de\ détails.
+.PP
+.B idjc
+possède un support des langues natif et tient compte des variables d'environnement
+.I LANG
+et
+.I LANGUAGE
+.SH SUPPORT DE SESSIONS
+.B idjc
+supporte les modes de sessions Ladish [L0] et [L1]. A la demande en ligne de commande vous pouvez spécifier \-\-session=L1, \-\-session=L1:session\-name, ou \-\-session=L1:session\-name:/path/to/savedir. Si un path de sauvegarde est fournis, IDJC opère en mode session plutôt qu'en mode profile.
+Le mode par défaut est L0:default qui effectue des sauvegardes périodiques et à la fermeture. Il est aussi possible de spécifier un nom ou un chemin alternatif pour le mode L0.
+.PP
+Lorsque vous utilisez le mode L1 dans Gladish si vous choisissez "Studio/Save Studio" ou "Project/Save Project" dans le menu principal
+.B idjc
+sauvegardera la configuration des connexions JACK dans le fichier de session.
+.SH RAPPORTER DES BOGUES
+.SH VOIR AUSSI

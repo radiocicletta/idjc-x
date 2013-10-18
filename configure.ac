@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([idjc], [0.8.10_development], 
+AC_INIT([idjc], [0.8.10], 
                 [http://idjc.sourceforge.net])
 AC_SUBST(COPYRIGHT_YEAR, [2013])
 AC_CONFIG_SRCDIR([config.h.in])
@@ -273,6 +273,7 @@ AC_CONFIG_FILES([Makefile
                   python/prelims/Makefile
                   artwork/Makefile
                   man/Makefile
+		  man/fr/Makefile
                   doc/Makefile
                   python/__init__.py.in
                   idjc.in

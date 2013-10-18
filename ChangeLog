@@ -2,7 +2,7 @@
 
 Fix for dynamic metadata bug in the background tracks player.
 
-Added french translation.
+Added french translation and man page.
 
 Added D-Bus binding for setting metadata.
 

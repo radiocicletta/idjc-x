@@ -1,0 +1,16 @@
+.TH "IDJC-LS" 1 "2012-02-06" "VERSION" "Internet DJ Console"
+.SH NOM
+idjc\-ls \- Affiche les informations relatives aux profiles
+.SH SYNOPSIS
+.P
+idjc ls [\-h]
+.SH DESCRIPTION
+.P
+En utilisant la sous\-commande ls il est possible de voir quels profiles sont en cours d'exécution. Le format d'affichage est le suivant : [auto] [profile] [uptime] [*nickname] [*description]. *=si présent.
+.SS Options
+.B \-h, \-\-help
+.RS
+Affiche un message d'aide.
+.RE
+.SH RAPPORTER DES BOGUES
+.SH VOIR AUSSI

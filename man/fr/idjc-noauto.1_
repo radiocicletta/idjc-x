@@ -1,0 +1,18 @@
+.TH "IDJC-NOAUTO" 1 "2012-02-06" "VERSION" "Internet DJ Console"
+.SH NOM
+idjc-noauto \- Pas de profile automatique
+.SH SYNOPSIS
+.P
+idjc noauto [\-h]
+.SH DESCRIPTION
+Supprime le profile automatique lors du démarrage
+.B idjc
+si aucun profile n'est choisi sur la ligne de commande, le Gestionnaire de Profiles apparaitra de façon à en choisir un manuellement.
+.SS Options
+.B \-h, \-\-help
+.RS
+Affiche un message d'aide
+.RE
+.PP
+.SH RAPPORTER DES BOGUES
+.SH VOIR AUSSI
