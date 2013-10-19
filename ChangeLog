@@ -1,3 +1,9 @@
+* Changes in version 0.8.11 *
+
+Re-added libav compatibility.
+
+Fixed memory leak in avcodecdecode.c.
+
 * Changes in version 0.8.10 *
 
 Fix for dynamic metadata bug in the background tracks player.
