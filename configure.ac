@@ -37,7 +37,7 @@ AC_ARG_ENABLE([libav],
 
 if test $makelibav != "no" ; then
    AH_BOTTOM(
-[#if defined(HAVE_AVCODEC) && defined(HAVE_AVFORMAT) && defined(HAVE_AVUTIL) && defined(HAVE_SWRESAMPLE)
+[#if defined(HAVE_AVCODEC) && defined(HAVE_AVFORMAT) && defined(HAVE_AVUTIL)
    #define HAVE_LIBAV 1
 #endif])
 
@@ -79,8 +79,6 @@ if test $makelibav != "no" ; then
 
             if test $makelibav = "yes" ; then
                AC_MSG_ERROR([libswresample not detected but specifically requested in configure options (libav)])
-            else
-               AC_MSG_WARN([IDJC will be built without wma/mp4/ape support])
             fi)
 else
    AC_SUBST(HAVE_AVCODEC, 0)

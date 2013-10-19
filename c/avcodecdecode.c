@@ -45,7 +45,9 @@ static const struct timespec time_delay = { .tv_nsec = 10 };
 static void avcodecdecode_eject(struct xlplayer *xlplayer)
     {
     struct avcodecdecode_vars *self = xlplayer->dec_data;
-    
+
+    if (self->pkt.data)
+        av_free_packet(&self->pkt);
     if (self->resample)
         {
         xlplayer->src_state = src_delete(xlplayer->src_state);
@@ -53,7 +55,10 @@ static void avcodecdecode_eject(struct xlplayer *xlplayer)
         }
     if (self->floatsamples)
         free(self->floatsamples);
-    swr_free(&self->swr);
+#ifdef HAVE_SWRESAMPLE
+    if (self->swr)
+        swr_free(&self->swr);
+#endif
     while (pthread_mutex_trylock(&g.avc_mutex))
         nanosleep(&time_delay, NULL);
     avcodec_close(self->c);
@@ -83,13 +88,18 @@ static void avcodecdecode_init(struct xlplayer *xlplayer)
                 break;
             }
         }
+        
+    self->channels = (self->c->channels == 1) ? 1 : 2;
     if ((self->resample = (self->c->sample_rate != (int)xlplayer->samplerate)))
         {
         fprintf(stderr, "configuring resampler\n");
         xlplayer->src_data.src_ratio = (double)xlplayer->samplerate / (double)self->c->sample_rate;
         xlplayer->src_data.end_of_input = 0;
-        xlplayer->src_data.output_frames = (AVCODEC_MAX_AUDIO_FRAME_SIZE / 2 * xlplayer->src_data.src_ratio + 512) / 2;
-        if (!(xlplayer->src_data.data_out = malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE * 2 * xlplayer->src_data.src_ratio + 512)))
+        
+        const size_t dsiz = AVCODEC_MAX_AUDIO_FRAME_SIZE * self->channels * xlplayer->src_data.src_ratio + 512;
+        
+        xlplayer->src_data.output_frames = dsiz / (sizeof (float) * self->channels);
+        if (!(xlplayer->src_data.data_out = malloc(dsiz)))
             {
             fprintf(stderr, "avcodecdecode_init: malloc failure\n");
             self->resample = FALSE;
@@ -98,7 +108,7 @@ static void avcodecdecode_init(struct xlplayer *xlplayer)
             xlplayer->command = CMD_COMPLETE;
             return;
             }
-        if ((xlplayer->src_state = src_new(xlplayer->rsqual, 2, &src_error)), src_error)
+        if ((xlplayer->src_state = src_new(xlplayer->rsqual, self->channels, &src_error)), src_error)
             {
             fprintf(stderr, "avcodecdecode_init: src_new reports %s\n", src_strerror(src_error));
             free(xlplayer->src_data.data_out);
@@ -110,7 +120,7 @@ static void avcodecdecode_init(struct xlplayer *xlplayer)
             }
         }
         
-fprintf(stderr, "avcodecdecode_init: completed\n");
+    fprintf(stderr, "avcodecdecode_init: completed\n");
     }
     
 static void avcodecdecode_play(struct xlplayer *xlplayer)
@@ -194,6 +204,7 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
             continue;
             }
 
+#ifdef HAVE_SWRESAMPLE
         if (!self->swr)
             {
             int64_t layout;
@@ -221,7 +232,7 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
                 }
 
             av_opt_set_int(self->swr, "in_channel_layout", layout, 0);
-            av_opt_set_int(self->swr, "out_channel_layout", AV_CH_LAYOUT_STEREO, 0);
+            av_opt_set_int(self->swr, "out_channel_layout", (self->channels == 2) ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO, 0);
             av_opt_set_sample_fmt(self->swr, "in_sample_fmt", self->c->sample_fmt, 0);
             av_opt_set_sample_fmt(self->swr, "out_sample_fmt", AV_SAMPLE_FMT_FLT, 0);
             //av_opt_set_int(self->swr, "in_sample_rate",     44100,                0);
@@ -246,7 +257,142 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
             }
 
         swr_convert(self->swr, &self->floatsamples, self->frame->nb_samples, (const uint8_t **)self->frame->data, self->frame->nb_samples);
+#else
         
+        if (!(self->floatsamples))
+            {
+            if (channels > 2 || channels < 1)
+                {
+                fprintf(stderr, "avcodecdecode_init: unhandled number of channels: %d\n", channels);
+                xlplayer->playmode = PM_EJECTING;
+                return;
+                }
+                
+            if (!(self->floatsamples = malloc(sizeof (float) * self->channels * AVCODEC_MAX_AUDIO_FRAME_SIZE)))
+                {
+                fprintf(stderr, "avcodecdecode_init: malloc failure\n");
+                xlplayer->playmode = PM_EJECTING;
+                return;
+                }
+            }
+
+        int buffer_size = av_samples_get_buffer_size(NULL, channels,
+                            self->frame->nb_samples, self->c->sample_fmt, 1);
+
+        switch (self->c->sample_fmt) {
+            case AV_SAMPLE_FMT_FLT:
+                frames = (buffer_size >> 2) / channels;
+                memcpy(self->floatsamples, self->frame->data[0], buffer_size);
+                break;
+                
+            case AV_SAMPLE_FMT_FLTP:
+                frames = (buffer_size >> 2) / channels;
+                {
+                float *l = (float *)self->frame->data[0];
+                float *r = NULL;
+                if (channels == 2)
+                    r = (float *)self->frame->data[1];
+                float *d = self->floatsamples;
+                float *endp = self->floatsamples + (channels * frames);
+                while (d < endp)
+                    {
+                    *d++ = *l++;
+                    if (channels == 2)
+                        *d++ = *r++;
+                    }
+                }
+                break;
+
+            case AV_SAMPLE_FMT_DBL:
+                frames  = (buffer_size >> 3) / channels;
+                {
+                double *s = (double *)self->frame->data[0];
+                float *d = self->floatsamples;
+                float *endp = self->floatsamples + (channels * frames);
+                while (d < endp)
+                    *d++ = (float)*s++;
+                }
+                break;
+
+            case AV_SAMPLE_FMT_DBLP:
+                frames  = (buffer_size >> 3) / channels;
+                {
+                double *l = (double *)self->frame->data[0];
+                double *r = NULL;
+                if (channels == 2)
+                    r = (double *)self->frame->data[1];
+                float *d = self->floatsamples;
+                float *endp = self->floatsamples + (channels * frames);
+                while (d < endp)
+                    {
+                    *d++ = (float)*l++;
+                    if (channels == 2)
+                        *d++ = (float)*r++;
+                    }
+                }
+                break;
+                
+            case AV_SAMPLE_FMT_S16:
+                 frames = (buffer_size >> 1) / channels;
+                xlplayer_make_audio_to_float(xlplayer, self->floatsamples,
+                                self->frame->data[0], frames, 16, channels);
+                break;
+
+            case AV_SAMPLE_FMT_S16P:
+                frames = (buffer_size >> 1) / channels;
+                {
+                int16_t *l = (int16_t *)self->frame->data[0];
+                int16_t *r = NULL;
+                if (channels == 2)
+                    r = (int16_t *)self->frame->data[1];
+                float *d = self->floatsamples;
+                float *endp = self->floatsamples + (channels * frames);
+                while (d < endp)
+                    {
+                    *d++ = *l++ / 32768.0f;
+                    if (channels == 2)
+                        *d++ = *r++ / 32768.0f;
+                    }
+                }
+                break;
+                
+            case AV_SAMPLE_FMT_S32:
+                frames = (buffer_size >> 2) / channels;
+                xlplayer_make_audio_to_float(xlplayer, self->floatsamples,
+                                self->frame->data[0], frames, 32, channels);
+                break;
+
+            case AV_SAMPLE_FMT_S32P:
+                frames = (buffer_size >> 2) / channels;
+                {
+                int32_t *l = (int32_t *)self->frame->data[0];
+                int32_t *r = NULL;
+                if (channels == 2)
+                    r = (int32_t *)self->frame->data[1];
+                float *d = self->floatsamples;
+                float *endp = self->floatsamples + (channels * frames);
+                while (d < endp)
+                    {
+                    *d++ = *l++ / 1073741824.0f;
+                    if (channels == 2)
+                        *d++ = *r++ / 1073741824.0f;
+                    }
+                }
+                break;
+
+            case AV_SAMPLE_FMT_NONE:
+                fprintf(stderr, "avcodecdecode_play: sample format is none\n");
+                xlplayer->playmode = PM_EJECTING;
+                return;
+
+            default:
+                fprintf(stderr, "avcodecdecode_play: unexpected data format %d\n", (int)self->c->sample_fmt);
+                xlplayer->playmode = PM_EJECTING;
+                return;
+            }
+   
+#endif /* HAVE_SWRESAMPLE */
+
         if (self->resample)
             {
             src_data->input_frames = self->frame->nb_samples;
@@ -257,10 +403,10 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
                 xlplayer->playmode = PM_EJECTING;
                 return;
                 }
-            xlplayer_demux_channel_data(xlplayer, src_data->data_out, frames = src_data->output_frames_gen, 2, 1.f);
+            xlplayer_demux_channel_data(xlplayer, src_data->data_out, frames = src_data->output_frames_gen, self->channels, 1.f);
             }
         else
-            xlplayer_demux_channel_data(xlplayer, (float *)self->floatsamples, frames = self->frame->nb_samples, 2, 1.f);
+            xlplayer_demux_channel_data(xlplayer, (float *)self->floatsamples, frames = self->frame->nb_samples, self->channels, 1.f);
             
         if (self->drop > 0)
             self->drop -= frames / (float)xlplayer->samplerate;
@@ -334,8 +480,10 @@ int avcodecdecode_reg(struct xlplayer *xlplayer)
     pthread_mutex_unlock(&g.avc_mutex);
 
     self->c = self->ic->streams[self->stream]->codec;
+#ifndef HAVE_SWRESAMPLE
     self->c->request_sample_fmt = AV_SAMPLE_FMT_FLT;
     self->c->request_channel_layout = AV_CH_LAYOUT_STEREO_DOWNMIX;
+#endif
 
     while (pthread_mutex_trylock(&g.avc_mutex))
         nanosleep(&time_delay, NULL);

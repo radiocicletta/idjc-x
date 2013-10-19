@@ -23,7 +23,10 @@
 
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
+
+#ifdef HAVE_SWRESAMPLE
 #include <libswresample/swresample.h>
+#endif
 
 #include "xlplayer.h"
 #include "mp3tagread.h"
@@ -39,14 +42,20 @@ struct avcodecdecode_vars
     int resample;
     unsigned int stream;
     AVFrame *frame;
-    uint8_t *floatsamples;
     float drop;
     struct mp3taginfo taginfo;
     struct chapter *current_chapter;
+    int channels;   /* number of downmixed channels 1 or 2 */
+
+#ifdef HAVE_SWRESAMPLE
     SwrContext *swr;
+    uint8_t *floatsamples;
+#else
+    float *floatsamples;
+#endif
+
     };
 
 int avcodecdecode_reg(struct xlplayer *xlplayer);
-void avformatinfo(char *pathname);
 
 #endif /* HAVE_LIBAV */
