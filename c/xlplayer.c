@@ -1,6 +1,6 @@
 /*
 #   xlplayer.c: player decoder module for idjc
-#   Copyright (C) 2006-2012 Stephen Fairchild (s-fairchild@users.sourceforge.net)
+#   Copyright (C) 2006-2013 Stephen Fairchild (s-fairchild@users.sf.net)
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -370,6 +370,12 @@ static void *xlplayer_main(struct xlplayer *self)
                     xlplayer_write_channel_data(self);
                 else
                     self->dec_play(self);
+                break;
+            case PM_FLUSH:
+                if (self->write_deferred)
+                    xlplayer_write_channel_data(self);
+                else
+                    self->playmode = PM_EJECTING;
                 break;
             case PM_EJECTING:
                 xlplayer_set_fadesteps(self, self->fade_mode);

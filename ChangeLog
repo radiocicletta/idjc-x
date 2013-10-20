@@ -1,8 +1,10 @@
 * Changes in version 0.8.11 *
 
-Re-added libav compatibility.
+Added new 'flush' player mode to ensure every last bit of audio data from a track plays.
 
-Fixed memory leak in avcodecdecode.c.
+Re-added libav compatibility for 1 or 2 channel audio only.
+
+Improved memory leak situation of avcodecdecode.c.
 
 * Changes in version 0.8.10 *
 

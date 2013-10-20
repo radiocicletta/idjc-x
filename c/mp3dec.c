@@ -1,6 +1,6 @@
 /*
 #   mp3dec.c: decodes mp3 file format for xlplayer
-#   Copyright (C) 2012 Stephen Fairchild (s-fairchild@users.sourceforge.net)
+#   Copyright (C) 2012-2013 Stephen Fairchild (s-fairchild@users.sf.net)
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -139,7 +139,7 @@ static void mp3decode_play(struct xlplayer *xlplayer)
             break;
         }
 
-    xlplayer->playmode = PM_EJECTING;
+    xlplayer->playmode = PM_FLUSH;
     }
 
 

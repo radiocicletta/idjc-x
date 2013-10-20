@@ -1,6 +1,6 @@
 /*
 #   sndfiledecode.c: decodes wav file format for xlplayer
-#   Copyright (C) 2007 Stephen Fairchild (s-fairchild@users.sourceforge.net)
+#   Copyright (C) 2007, 2013 Stephen Fairchild (s-fairchild@users.sf.net)
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -93,7 +93,7 @@ static void sndfiledecode_play(struct xlplayer *xlplayer)
     xlplayer_write_channel_data(xlplayer);
     if (sf_count == 0)
         {
-        xlplayer->playmode = PM_EJECTING;
+        xlplayer->playmode = PM_FLUSH;
         return;
         }
     }

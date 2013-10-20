@@ -1,6 +1,6 @@
 /*
 #   avcodecdecode.c: decodes wma file format for xlplayer
-#   Copyright (C) 2007, 2011 Stephen Fairchild (s-fairchild@users.sourceforge.net)
+#   Copyright (C) 2007-2013 Stephen Fairchild (s-fairchild@users.sf.net)
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ static void avcodecdecode_eject(struct xlplayer *xlplayer)
     pthread_mutex_unlock(&g.avc_mutex);
     avformat_close_input(&self->ic);
     if (self->frame)
-        av_free(self->frame);
+        av_freep(&self->frame);
     free(self);
     fprintf(stderr, "finished eject\n");
     }
@@ -129,12 +129,6 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
     int channels = self->c->channels;
     SRC_DATA *src_data = &xlplayer->src_data;
     
-    if (xlplayer->write_deferred)
-        {
-        xlplayer_write_channel_data(xlplayer);
-        return;
-        }
-    
     if (self->size <= 0)
         {
         if (av_read_frame(self->ic, &self->pkt) < 0 || (self->size = self->pkt.size) == 0)
@@ -155,7 +149,7 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
                 xlplayer_demux_channel_data(xlplayer, src_data->data_out, src_data->output_frames_gen, channels, 1.f);
                 xlplayer_write_channel_data(xlplayer);
                 }
-            xlplayer->playmode = PM_EJECTING;
+            xlplayer->playmode = PM_FLUSH;
             return;
             }
         self->pktcopy = self->pkt;

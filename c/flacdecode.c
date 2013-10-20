@@ -1,6 +1,6 @@
 /*
 #   flacdecode.c: decodes flac file format for xlplayer
-#   Copyright (C) 2007 Stephen Fairchild (s-fairchild@users.sourceforge.net)
+#   Copyright (C) 2007, 2013 Stephen Fairchild (s-fairchild@users.sf.net)
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -183,7 +183,7 @@ static void flacdecode_play(struct xlplayer *xlplayer)
 
     FLAC__stream_decoder_process_single(self->decoder);
     if (FLAC__stream_decoder_get_state(self->decoder) == FLAC__STREAM_DECODER_END_OF_STREAM)
-        xlplayer->playmode = PM_EJECTING;
+        xlplayer->playmode = PM_FLUSH;
     }
 
 static void flacdecode_eject(struct xlplayer *xlplayer)

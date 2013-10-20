@@ -1,6 +1,6 @@
 /*
 #   oggdec.c: ogg file parser for xlplayer
-#   Copyright (C) 2008-2013 Stephen Fairchild (s-fairchild@users.sourceforge.net)
+#   Copyright (C) 2008-2013 Stephen Fairchild (s-fairchild@users.sf.net)
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -1070,6 +1070,12 @@ void oggdecode_dynamic_dispatcher(struct xlplayer *xlplayer)
     struct oggdec_vars *s = xlplayer->dec_data;
     int success = 0, delay;
     
+    if (xlplayer->write_deferred)
+        {
+        xlplayer_write_channel_data(xlplayer);
+        return;
+        }
+    
     while (s->ix < s->n_streams)
         {
         /* skip over empty (read unplayable) streams */
@@ -1159,7 +1165,7 @@ static void oggdecode_init(struct xlplayer *xlplayer)
             break;
             }
         if (i + 1 >= self->n_streams)
-            xlplayer->playmode = PM_EJECTING;
+            xlplayer->playmode = PM_FLUSH;
         }
     }
 
