@@ -1,5 +1,7 @@
 * Changes in version 0.8.11 *
 
+DSP button now hidden in 'Basic Streamer' mode.
+
 Added new 'flush' player mode to ensure every last bit of audio data from a track plays.
 
 Re-added libav compatibility for 1 or 2 channel audio only.

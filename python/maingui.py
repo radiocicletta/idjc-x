@@ -3074,6 +3074,7 @@ class MainWindow(dbus.service.Object):
         self.hbox10.pack_start(self.freewheel_button, False)
 
         self.dsp_button = gtk.ToggleButton()
+        self.dsp_button.viewlevels = (5,)
         label = gtk.Label()
         label.set_markup("<span weight='bold' size='9000' "
                                     "foreground='#333'>%s</span>" % _('DSP'))
