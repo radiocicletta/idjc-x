@@ -171,7 +171,7 @@ class PanWidget(gtk.Frame):
             
     def load_preset(self, index):
         try:
-            target = self._presets[index].get_value()
+            target = int(self._presets[index].get_value() + 0.5)
         except IndexError:
             print "Attempt made to load a non existent pan preset"
         else:
@@ -182,7 +182,7 @@ class PanWidget(gtk.Frame):
 
     @threadslock
     def _timeout(self, target):
-        current_value = self.pan.get_value()
+        current_value = int(self.pan.get_value() + 0.5)
         new_value = current_value + cmp(target, current_value)
         self.pan.set_value(new_value)
 
