@@ -10,7 +10,7 @@ nodist_appmenu_DATA=${PACKAGE_NAME}.desktop
 appmenudir=${prefix}/share/applications
 
 ${PACKAGE_NAME}: idjc.in
-	@sed -e 's|$${prefix}|${prefix}|g' $? >$@
+	@sed -e 's|$${prefix}|${prefix}|g' -e 's|$${pkglibdir}|${pkglibdir}|g' $? >$@
 
 ${PACKAGE_NAME}.desktop: idjc.desktop.in
 	@sed -e 's|$${prefix}|${prefix}|g' -e 's|$${exec_prefix}|${exec_prefix}|g' $? >$@

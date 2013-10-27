@@ -1,5 +1,7 @@
 * Changes in version 0.8.11 *
 
+Python package installs to ${pkglibdir}/site-packages.
+
 Added detection of dynamic lib file extension by host.
 
 Backend installs to ${pkglibdir}

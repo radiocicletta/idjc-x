@@ -27,8 +27,6 @@ sys.path.insert(0, """@pythondir@""")
 try:
     import idjc
 except ImportError:
-    print "failed to import the idjc module"
-    print "python interpreter version is %s, installation went to %s" % (
-                                    sys.version[:3], """@PYTHON_VERSION@""")
+    print "failed to import the idjc package"
 else:
     exit(idjc.main())
