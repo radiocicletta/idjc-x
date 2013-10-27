@@ -1,5 +1,9 @@
 * Changes in version 0.8.11 *
 
+Added detection of dynamic lib file extension by host.
+
+Backend installs to ${pkglibdir}
+
 DSP button now hidden in 'Basic Streamer' mode.
 
 Added new 'flush' player mode to ensure every last bit of audio data from a track plays.

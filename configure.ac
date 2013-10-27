@@ -5,6 +5,7 @@ AC_PREREQ(2.59)
 AC_INIT([idjc], [0.8.11_development], 
                 [http://idjc.sourceforge.net])
 AC_SUBST(COPYRIGHT_YEAR, [2013])
+AC_CANONICAL_SYSTEM
 AC_CONFIG_SRCDIR([config.h.in])
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER([config.h])
@@ -263,6 +264,15 @@ if test x$DYNAMIC = "x1" ; then
    AC_CHECK_FUNCS([dlopen], :, AC_CHECK_LIB([dl], [dlopen], AC_SUBST([DYN_LIBS], [-ldl]), AC_MSG_ERROR([Runtime linking functions not found])))
    AC_SUBST([DYN_LDFLAGS], [-rdynamic])
 fi
+
+# Darwin based OS has different file extension for dynamic libs.
+AC_MSG_CHECKING([dynamic library file extension])
+case ${host} in
+    *-*-darwin*) ext=".dylib" ;;
+    *) ext=".so" ;;
+esac
+AC_SUBST([DYLIB_EXT], ${ext})
+AC_MSG_RESULT([${ext}])
 
 AC_CONFIG_FILES([Makefile
                   po/Makefile.in

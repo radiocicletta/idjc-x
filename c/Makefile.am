@@ -1,4 +1,4 @@
-lib_LTLIBRARIES = idjc.la
+pkglib_LTLIBRARIES = idjc.la
 
 idjc_la_SOURCES = agc.c agc.h audio_feed.c audio_feed.h avcodecdecode.c avcodecdecode.h bsdcompat.c bsdcompat.h			\
 			\
@@ -42,4 +42,4 @@ idjc_la_LIBADD = ${DYN_LIBS} ${GLIB_LIBS} ${LIBAVCODEC_LIBS} ${LIBAVFORMAT_LIBS}
 			\
 				${LIBSWRESAMPLE_LIBS} ${OPUS_LIBS} -lpthread
 				
-idjc_la_LDFLAGS = ${DYN_LDFLAGS} -module
+idjc_la_LDFLAGS = ${DYN_LDFLAGS} -no-undefined -avoid-version -module

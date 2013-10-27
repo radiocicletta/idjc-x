@@ -32,9 +32,10 @@ from .utils import PolicedAttributes
 from .utils import PathStr
 
 
-def lib_probe(at_runtime, names):
+def lib_probe(at_runtime, names, extension):
     if at_runtime:
         for name in names.split():
+            name += extension
             try:
                 ctypes.CDLL(name)
             except Exception:
@@ -57,6 +58,7 @@ class FGlobs(object):
 
     datarootdir = PathStr("""@datarootdir@""")
     libdir = PathStr("""@libdir@""")
+    pkglibdir = PathStr("""${pkglibdir}""")
     pkgdatadir = PathStr("""${pkgdatadir}""")
     localedir = PathStr("""@localedir@""")
     bindir = PathStr("""@bindir@""")
@@ -68,14 +70,14 @@ class FGlobs(object):
     twolameenabled = @HAVE_TWOLAME@
     
     have_libmp3lame, libmp3lame_filename = lib_probe(@DYN_LAME@,
-                "libmp3lame.so.0 liblame.so.0 libmp3lame.dylib liblame.dylib")
+                                "libmp3lame liblame", """@DYLIB_EXT@""")
     
     have_libmpg123, libmpg123_filename = lib_probe(@DYN_MPG123@,
-                "libmpg123.so.0 libmpg123.dylib")
+                                        "libmpg123", """@DYLIB_EXT@""")
         
     package_name = """@PACKAGE_NAME@"""
     package_version = """@PACKAGE_VERSION@"""
-    backend = PathStr("""@libdir@""") / """@PACKAGE_NAME@.so.0"""
+    backend = PathStr("""${pkglibdir}""") / ("idjc" + """@DYLIB_EXT@""")
 
 
 _ = gettext.translation(FGlobs.package_name, FGlobs.localedir,

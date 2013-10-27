@@ -13,6 +13,7 @@ dist_noinst_PYTHON = __init__.py.in.in
 
 __init__.py: __init__.py.in
 	@sed -e 's|$${pkgdatadir}|${pkgdatadir}|g'	\
+		 -e 's|$${pkglibdir}|${pkglibdir}|g'	\
 		 -e 's|$${exec_prefix}|${exec_prefix}|g' \
 	     -e 's|$${prefix}|${prefix}|g'			\
 	     -e 's|$${datarootdir}|${datarootdir}|g' $? >$@
