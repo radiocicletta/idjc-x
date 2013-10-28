@@ -12,7 +12,6 @@ AM_CONFIG_HEADER([config.h])
 
 # Generate python installation stuff
 AM_PATH_PYTHON([2.7])
-AC_SUBST([pythondir], [\${pkglibdir}/site-packages])
 AC_SUBST([pkgpythondir], [\${pkglibdir}/site-packages/idjc])
 
 # idjc backend library stuff

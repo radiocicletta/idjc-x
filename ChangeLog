@@ -1,5 +1,9 @@
 * Changes in version 0.8.11 *
 
+Example code idjcmon.py from the docs now uses the idjcmonitor module.
+
+IDJC monitoring class originally from docs is now importable as idjcmonitor.
+
 Python package installs to ${pkglibdir}/site-packages.
 
 Added detection of dynamic lib file extension by host.
