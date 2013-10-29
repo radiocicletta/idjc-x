@@ -12,7 +12,8 @@ AM_CONFIG_HEADER([config.h])
 
 # Generate python installation stuff
 AM_PATH_PYTHON([2.7])
-AC_SUBST([pkgpythondir], [\${pkglibdir}/site-packages/idjc])
+AC_SUBST([idjcpythondir], [\${pkglibdir}/site-packages])
+AC_SUBST([idjcpkgpythondir], [\${pkglibdir}/site-packages/idjc])
 
 # idjc backend library stuff
 LT_INIT([disable-static,dlopen])
@@ -113,7 +114,7 @@ fi
 PKG_CHECK_MODULES([PYGTK], [pygtk-2.0 >= 2.6.0])
 
 AC_MSG_CHECKING([for mutagen])
-${PYTHON}${PYTHON_VERSION} -c "import mutagen" >/dev/null 2>&1
+${PYTHON} -c "import mutagen" >/dev/null 2>&1
 if test $? -ne 0 ; then
     AC_MSG_RESULT([no])
     AC_MSG_WARN([runtime dependency (mutagen / python-mutagen) is missing])

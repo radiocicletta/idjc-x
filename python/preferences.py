@@ -1521,8 +1521,7 @@ class mixprefs:
         
         label = gtk.Label()
         label.set_markup(
-        '<span font_desc="sans 10">' +
-         _('Released under the GNU General Public License V2.0') + '</span>')
+        '<span font_desc="sans 10">' + PGlobs.license + '</span>')
         vbox.pack_start(label, False, False, 1)
         label.show()
         

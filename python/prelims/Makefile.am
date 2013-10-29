@@ -1,4 +1,4 @@
 prelimspython_PYTHON = __init__.py profiledialog.py
-prelimspythondir = ${pkgpythondir}/prelims
+prelimspythondir = ${idjcpkgpythondir}/prelims
 
 .PHONY = $prelimspython_PYTHON

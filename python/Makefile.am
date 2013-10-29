@@ -4,12 +4,12 @@ am__py_compile = $(top_srcdir)/py-compile
 
 python_PYTHON = idjcmonitor.py
 
-pkgpython_PYTHON = dialogs.py gtkstuff.py irc.py jingles.py licence_window.py \
+idjcpkgpython_PYTHON = dialogs.py gtkstuff.py irc.py jingles.py licence_window.py \
 		maingui.py midicontrols.py mutagentagger.py songdb.py playergui.py \
 		popupwindow.py preferences.py sourceclientgui.py tooltips.py utils.py \
 		format.py
 
-nodist_pkgpython_PYTHON = __init__.py
+nodist_idjcpkgpython_PYTHON = __init__.py
 
 dist_noinst_PYTHON = __init__.py.in.in
 

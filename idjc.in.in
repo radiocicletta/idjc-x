@@ -22,7 +22,7 @@ import locale
 locale.setlocale(locale.LC_ALL, "")
 
 import sys
-sys.path.insert(0, """@pythondir@""")
+sys.path.insert(0, """@idjcpythondir@""")
 
 try:
     import idjc

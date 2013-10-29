@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
-"POT-Creation-Date: 2013-10-18 14:25+0100\n"
-"PO-Revision-Date: 2013-10-13 14:34+0100\n"
+"POT-Creation-Date: 2013-10-29 20:22+0000\n"
+"PO-Revision-Date: 2013-10-29 20:29+0000\n"
 "Last-Translator: Stephen Fairchild <signupaddress@bethere.co.uk>\n"
 "Language-Team: English <team@example.com>\n"
 "Language: it\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Lokalize 1.2\n"
+"Plural-Forms:  \n"
 
 #: python/prelims/__init__.py:101
 #, python-format
@@ -555,14 +556,14 @@ msgstr "Tentativo %d. Non ci sono limiti ai tentativi."
 msgid "_Retry Now"
 msgstr "_Riprova adesso"
 
-#: python/__init__.py.in.in:100
+#: python/__init__.py.in.in:101
 #, python-format
 msgid "Copyright 2005-%s Stephen Fairchild and others."
 msgstr "Diritti 2005-%s Stephen Fairchild ed altri."
 
-#: python/__init__.py.in.in:102
-msgid "Released under the GNU General Public License V2.0 or later."
-msgstr "Rilasciato sotto la GNU General Public License V2.0 o successiva."
+#: python/__init__.py.in.in:103
+msgid "Released under the GNU General Public License V2.0+."
+msgstr "Rilasciato sotto la Licenza Pubblica Generica GNU, V2.0+"
 
 #. TC: IRC message subcategory, triggers on new track announcements.
 #: python/irc.py:74
@@ -1008,7 +1009,7 @@ msgstr "Porte JACK"
 msgid "Help"
 msgstr ""
 
-#: python/maingui.py:170 python/maingui.py:3639
+#: python/maingui.py:170 python/maingui.py:3640
 msgid "Streams"
 msgstr "Flussi"
 
@@ -1065,7 +1066,7 @@ msgstr "Lettore"
 msgid "VoIP"
 msgstr ""
 
-#: python/maingui.py:223 python/maingui.py:3079
+#: python/maingui.py:223 python/maingui.py:3080
 msgid "DSP"
 msgstr ""
 
@@ -1305,7 +1306,7 @@ msgid "All active recordings will cease."
 msgstr "Tutte le registrazioni verranno interrotte."
 
 #. TC: Popup menu item, wipes away the tracks played history text.
-#: python/maingui.py:2871 python/maingui.py:3303
+#: python/maingui.py:2871 python/maingui.py:3304
 msgid "Remove Contents"
 msgstr "Rimuove i contenuti"
 
@@ -1318,15 +1319,15 @@ msgstr ""
 msgid "Main Players"
 msgstr "Lettore destro"
 
-#: python/maingui.py:3103
+#: python/maingui.py:3104
 msgid "Mix voice over IP audio to the output stream."
 msgstr "Manda in onda l'audio del VoIP"
 
-#: python/maingui.py:3116
+#: python/maingui.py:3117
 msgid "Mix voice over IP audio to the DJ only."
 msgstr "Missa l'audio del VoIP solo al DJ"
 
-#: python/maingui.py:3143
+#: python/maingui.py:3144
 msgid ""
 "This button steps through the active playlist, pausing between tracks. The "
 "active playlist is defined by the placement of the crossfader."
@@ -1334,36 +1335,36 @@ msgstr ""
 "Questo pulsante scorre la playlist attiva facendo una pausa tra le tracce. "
 "La playlist attiva viene dedotta dal posizionamento del crossfader"
 
-#: python/maingui.py:3188 python/preferences.py:869
+#: python/maingui.py:3189 python/preferences.py:869
 msgid "The volume control shared by both music players."
 msgstr "Il controllo del volume per entrambi i lettori"
 
-#: python/maingui.py:3199
+#: python/maingui.py:3200
 msgid "The volume control for the right music player."
 msgstr "Il volume del lettore di destra."
 
-#: python/maingui.py:3227
+#: python/maingui.py:3228
 msgid "VoIP level adjustment. 0dB gain is at the mid point."
 msgstr ""
 
-#: python/maingui.py:3250
+#: python/maingui.py:3251
 msgid "The stream volume level to send to the voice over IP connection."
 msgstr "Il volume del flusso da inviare alla connessione VoIP"
 
-#: python/maingui.py:3277 python/preferences.py:1409
+#: python/maingui.py:3278 python/preferences.py:1409
 msgid "Tracks Played"
 msgstr "Tracce eseguite"
 
-#: python/maingui.py:3348 python/maingui.py:3350 python/maingui.py:3374
+#: python/maingui.py:3349 python/maingui.py:3351 python/maingui.py:3375
 msgid "Monitor Mix"
 msgstr "Monitoraggio Mix"
 
-#: python/maingui.py:3357 python/maingui.py:3374 python/playergui.py:4200
+#: python/maingui.py:3358 python/maingui.py:3375 python/playergui.py:4200
 msgid "DJ"
 msgstr "DJ"
 
 #. TC: binding editor, action pane, first row, toplevel menu.
-#: python/maingui.py:3360 python/maingui.py:3374 python/midicontrols.py:152
+#: python/maingui.py:3361 python/maingui.py:3375 python/midicontrols.py:152
 #: python/midicontrols.py:1495 python/playergui.py:4192
 #: python/sourceclientgui.py:2683
 msgid "Stream"
@@ -1371,7 +1372,7 @@ msgstr "Flusso"
 
 #. TC: Context {0}, {1}, {2} = Monitor Mix, Stream, DJ
 #. TC: Or whatever they become translated to.
-#: python/maingui.py:3370
+#: python/maingui.py:3371
 msgid ""
 "In IDJC there are are two audio paths and this '{0}' control toggles between "
 "them. When '{1}' is active you can hear what the listeners are hearing "
@@ -1384,84 +1385,83 @@ msgstr ""
 "impostato su '{2}' per utilizzare al meglio le funzionalità VoIP"
 
 #. TC: Dropdown box title text widget.
-#: python/maingui.py:3383 python/maingui.py:3385
+#: python/maingui.py:3384 python/maingui.py:3386
 msgid "Metadata Source"
 msgstr "Sorgente dei metadati"
 
 #. TC: The chosen source of track metadata.
-#: python/maingui.py:3391 python/playergui.py:3910
+#: python/maingui.py:3392 python/playergui.py:3910
 msgid "Playlist 1"
 msgstr "Playlist 1"
 
 #. TC: The chosen source of track metadata.
-#: python/maingui.py:3393 python/playergui.py:3911
+#: python/maingui.py:3394 python/playergui.py:3911
 msgid "Playlist 2"
 msgstr "Playlist 2"
 
 #. TC: The chosen source of track metadata.
-#: python/maingui.py:3395
+#: python/maingui.py:3396
 msgid "Last Played"
 msgstr "Ultima eseguita"
 
 #. TC: The chosen source of track metadata.
-#: python/maingui.py:3397 python/maingui.py:3434 python/maingui.py:3436
+#: python/maingui.py:3398 python/maingui.py:3435 python/maingui.py:3437
 msgid "Crossfader"
 msgstr "Crossfader"
 
 #. TC: The chosen source of track metadata. In this case no metadata.
 #. TC: Fade time is zero. No fade, none.
-#: python/maingui.py:3399 python/playergui.py:4175
+#: python/maingui.py:3400 python/playergui.py:4175
 msgid "None"
 msgstr "Nessuna"
 
 #. TC: The chosen source of track metadata. In this case no metadata.
-#: python/maingui.py:3401
-#, fuzzy
+#: python/maingui.py:3402
 msgid "Playlist 3"
-msgstr "Playlist 1"
+msgstr "Playlist 3"
 
-#: python/maingui.py:3406
+#: python/maingui.py:3407
 #, fuzzy
 msgid "Select the origin for the playing track metadata on the stream."
 msgstr "Seleziona quale Deck è responsabile dei metadati del flusso"
 
 #. TC: Abbreviation of left.
-#: python/maingui.py:3416 python/maingui.py:3418
+#: python/maingui.py:3417 python/maingui.py:3419
 msgid "L"
 msgstr "L"
 
-#: python/maingui.py:3428
+#: python/maingui.py:3429
 msgid "Move the crossfader fully left."
 msgstr "Sposta il crossfader a sinistra"
 
-#: python/maingui.py:3448
+#: python/maingui.py:3449
 msgid "The crossfader."
 msgstr "Il crossfader"
 
 #. TC: Abbreviation of right.
-#: python/maingui.py:3452 python/maingui.py:3454
+#: python/maingui.py:3453 python/maingui.py:3455
 msgid "R"
 msgstr "R"
 
-#: python/maingui.py:3464
+#: python/maingui.py:3465
 msgid "Move the crossfader fully right."
 msgstr "Sposta il crossfader a destra"
 
 #. TC: Describes a mid point.
-#: python/maingui.py:3473 python/maingui.py:3475
+#: python/maingui.py:3474 python/maingui.py:3476
 msgid "Middle"
 msgstr "Mezzo/Metà"
 
-#: python/maingui.py:3492 python/maingui.py:3499
+#: python/maingui.py:3493 python/maingui.py:3500
 msgid "Move the crossfader to the middle of its range of travel."
 msgstr "Sposta il crossfader a metà della corsa"
 
 #. TC: The attenuation response curve of the crossfader. User selectable.
-#: python/maingui.py:3504 python/maingui.py:3506
+#: python/maingui.py:3505 python/maingui.py:3507
 msgid "Response"
 msgstr "Risposta"
 
-#: python/maingui.py:3528
+#: python/maingui.py:3529
 msgid ""
 "This selects the response curve of the crossfader.\n"
 "\n"
@@ -1471,11 +1471,11 @@ msgstr ""
 "Le attenuzioni nel punto di mezzo sono -3dB, 0dB e -22dB rispettivamente."
 
 #. TC: Duration in seconds.
-#: python/maingui.py:3542 python/maingui.py:3544
+#: python/maingui.py:3543 python/maingui.py:3545
 msgid "Time"
 msgstr "Tempo"
 
-#: python/maingui.py:3561
+#: python/maingui.py:3562
 msgid ""
 "The time in seconds that the crossfader will take to automatically pass "
 "across when the button to the right is clicked."
@@ -1485,11 +1485,11 @@ msgstr ""
 
 #. TC: The crossfader pass-across button text.
 #. TC: The actual button appears as [<-->] with this text above it.
-#: python/maingui.py:3570 python/maingui.py:3572
+#: python/maingui.py:3571 python/maingui.py:3573
 msgid "Pass"
 msgstr "Avvia"
 
-#: python/maingui.py:3585
+#: python/maingui.py:3586
 msgid ""
 "This button causes the crossfader to move to the opposite side at a speed "
 "determined by the speed selector to the left."
@@ -1497,32 +1497,32 @@ msgstr ""
 "Questo pulsante muove il crossfader fino alla parte opposta nel lasso di "
 "tempo specificato qui a sinistra"
 
-#: python/maingui.py:3628
+#: python/maingui.py:3629
 #, fuzzy
 msgid "Peak"
 msgstr "Str Peak"
 
-#: python/maingui.py:3631
+#: python/maingui.py:3632
 msgid "A peak hold meter indicating the signal strength of the stream audio."
 msgstr ""
 "Un indicatore a tenuta di picco che indica la potenza del segnale audio "
 "trasmesso."
 
 #. TC: This text appears above the stream mix VU meter.
-#: python/maingui.py:3653
+#: python/maingui.py:3654
 msgid "VU"
 msgstr ""
 
-#: python/maingui.py:3657
+#: python/maingui.py:3658
 msgid "A VU meter for the stream audio."
 msgstr "Indicatore VU per il flusso audio"
 
 #. TC: Appears above the mic meters as a label followed by a number.
-#: python/maingui.py:3660
+#: python/maingui.py:3661
 msgid "Ch"
 msgstr "Ch"
 
-#: python/maingui.py:3687
+#: python/maingui.py:3688
 msgid ""
 "A peak hold meter indicating the microphone signal strength and a meter "
 "indicating attenuation levels in the microphone signal processing system. "
@@ -3542,23 +3542,19 @@ msgstr ""
 msgid "Bindings"
 msgstr "Scorciatoie"
 
-#: python/preferences.py:1525
-msgid "Released under the GNU General Public License V2.0"
-msgstr "Rilasciato sotto la Licenza Pubblica Generica GNU, V2.0"
-
-#: python/preferences.py:1537
+#: python/preferences.py:1536
 msgid "Licence"
 msgstr "Licenza"
 
-#: python/preferences.py:1560
+#: python/preferences.py:1559
 msgid "Contributors"
 msgstr "Collaboratori"
 
-#: python/preferences.py:1567
+#: python/preferences.py:1566
 msgid "Translators"
 msgstr "Traduttori"
 
-#: python/preferences.py:1573
+#: python/preferences.py:1572
 msgid "About"
 msgstr "Circa"
 
@@ -4156,6 +4152,9 @@ msgid ""
 msgstr ""
 "<span weight=\"bold\" size=\"12000\">E' intervenuta una disconnessione "
 "pianificata.</span>"
+
+#~ msgid "Released under the GNU General Public License V2.0 or later."
+#~ msgstr "Rilasciato sotto la GNU General Public License V2.0 o successiva."
 
 #, fuzzy
 #~ msgid "Media Players"
