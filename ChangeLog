@@ -1,3 +1,7 @@
+* Changes in version 0.8.12 *
+
+Fix for plural forms in translation files.
+
 * Changes in version 0.8.11 *
 
 Example code idjcmon.py from the docs now uses the idjcmonitor module.
