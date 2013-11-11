@@ -62,7 +62,7 @@ class FGlobs(object):
     pkgdatadir = PathStr("""${pkgdatadir}""")
     localedir = PathStr("""@localedir@""")
     bindir = PathStr("""@bindir@""")
-    avenabled = "01"[@HAVE_AVFORMAT@ and @HAVE_AVCODEC@ and @HAVE_AVUTIL@]
+    avenabled = (0, 1)[@HAVE_AVFORMAT@ and @HAVE_AVCODEC@ and @HAVE_AVUTIL@]
     flacenabled = @HAVE_FLAC@
     oggflacenabled = @HAVE_OGGFLAC@
     opusenabled = @HAVE_OPUS@
