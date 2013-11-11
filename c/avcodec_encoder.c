@@ -18,10 +18,13 @@
 */
 
 #include "../config.h"
-#ifdef HAVE_AVCODEC
 
 #include <stdio.h>
 #include "main.h"
+#include "sourceclient.h"
+
+#ifdef HAVE_AVCODEC
+
 #include "avcodec_encoder.h"
 
 #define BYTE_ALIGNMENT (8)

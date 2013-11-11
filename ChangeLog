@@ -1,5 +1,7 @@
 * Changes in version 0.8.13 *
 
+Fixed build with ./configure --disable-libav.
+
 In cue sheet mode chapter metadata is now ignored.
 
 * Changes in version 0.8.12 *
