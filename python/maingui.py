@@ -2153,7 +2153,7 @@ class MainWindow(dbus.service.Object):
     @threadslock
     def new_songname_timeout(self,
                         (song, artist, title, album, player, player_context)):
-        if player.player_cid == (player_context | 1):
+        if player.player_cid == (player_context | 1) and player.cuesheet is None:
             player.songname = song
             player.artist = artist
             player.title = title
