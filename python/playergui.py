@@ -95,7 +95,7 @@ PROGRESS_TIMEOUT = 200
 
 # Pathname is an absolute file path or 'missing' or 'pregap'.
 CueSheetTrack = namedtuple("CueSheetTrack",
-    "pathname play tracknum index performer title offset duration replaygain")
+    "pathname play tracknum index performer title offset duration replaygain album")
 
 
 class IndexingIterator(object):
@@ -116,7 +116,7 @@ class IndexingIterator(object):
 
 
 class CueSheetListStore(gtk.ListStore):
-    _columns = (str, int, int, int, str, str, int, int, str)
+    _columns = (str, int, int, int, str, str, int, int, str, str)
     assert len(_columns) == len(CueSheetTrack._fields)
 
     def __init__(self):
@@ -326,6 +326,8 @@ class CuesheetPlaylist(gtk.Frame):
         index = model.get_path(iter)[0]
         line = model[index]
         desc = " - ".join(x for x in (line.performer, line.title) if x)
+        if desc and line.album:
+            desc += " - (%s)" % line.album
         desc = desc or os.path.splitext(os.path.split(line.pathname)[1])[0]
         cell.props.text = desc
         if index == model.playing_index:
@@ -719,13 +721,14 @@ class CueSheet(object):
     """A class for parsing cue sheets."""
 
     _operands = (("PERFORMER", "SONGWRITER", "TITLE", "PREGAP", "POSTGAP"),
-                     ("FILE", "TRACK", "INDEX"))
+                     ("FILE", "TRACK", "INDEX", "REM"))
     _operands = dict((k, v + 1) for v, o in enumerate(_operands) for k in o)
 
     # Try to split a string into three parts with a large quoted section
     # and parts fore and aft.
     _quoted = re.compile(r'(.*?)[ \t]"(.*)"[ \t](.*)').match
-
+    _remquoted = re.compile(r'(.*?)[ \t](.*?)[ \t]"(.*)"').match
+    
     def _time_handler(self, time_str):
         """Returns the number of frames of audio (75ths of seconds)
 
@@ -770,7 +773,7 @@ class CueSheet(object):
                 line.decode("utf-8")
             except UnicodeDecodeError:
                 try:
-                    line = line.decode("iso8859-15").encode("utf-8")
+                    line = line.decode("iso8859-15")
                 except UnicodeDecodeError:
                     pass
 
@@ -781,12 +784,24 @@ class CueSheet(object):
                 left = left.replace("\t", " ").split()
                 right = right.replace("\t", " ").split()
             else:
-                left = line.replace("\t", " ").split()
-                right = [""]
-                quoted = ""
+                match = cls._remquoted(line)
+                if match:
+                    left, right, quoted = match.groups()
+                    right = [right]
+                else:
+                    left = line.replace("\t", " ").split()
+                    right = [""]
+                    quoted = ""
 
             tokens = filter(lambda x: x, left + [quoted] + right)
             yield i + 1, tokens[0].upper(), tokens[1:]
+
+    def _parse_REM(self):
+        if self.operand[0] == "ALBUM":
+            print "Cue sheet track album:", self.operand[1]
+            self.segment[self.tracknum]["ALBUM"].append(self.operand[1])
+        else:
+            print "Unhandled REM type:", self.operand[0]
 
     def _parse_PERFORMER(self):
         self.segment[self.tracknum][self.command].append(self.operand[0])
@@ -924,6 +939,7 @@ class IDJC_Media_Player:
             track = key
             cue_performer = ", ".join(val.get("PERFORMER", []))
             cue_title = ", ".join(val.get("TITLE", []))
+            cue_album = ", ".join(val.get("ALBUM", [])) or global_cue_title
             if key == 0:
                 global_cue_performer = cue_performer
                 global_cue_title = cue_title
@@ -969,8 +985,8 @@ class IDJC_Media_Player:
                             duration = frames = 0
 
                         element = CueSheetTrack(pathname, bool(pathname), track,
-                                                index, cue_performer, cue_title,
-                                                frames, duration, replaygain)
+                                index, cue_performer, cue_title, frames,
+                                duration, replaygain, cue_album)
                         cuesheet_liststore.append(element)
 
         summary = _('%d Audio Tracks') % track
@@ -1255,7 +1271,7 @@ class IDJC_Media_Player:
             self.songname = active[3]         # update metadata on server
             self.title = self.cuesheet_track_title or active[5].encode("utf-8")
             self.artist = self.cuesheet_track_performer or active[6].encode("utf-8")
-            self.album = active[9].encode("utf-8")
+            self.album = self.cuesheet_track_album or active[9].encode("utf-8")
             self.player_restart()
             self.parent.send_new_mixer_stats()
 
@@ -1263,7 +1279,7 @@ class IDJC_Media_Player:
         if not self.is_playing:
             self.songname = self.title = self.artist = self.album = ""
             self.element = None
-            self.cuesheet_track_title = self.cuesheet_track_performer = None
+            self.cuesheet_track_title = self.cuesheet_track_performer = self.cuesheet_track_album = None
 
     # Shut down our media players when we exit.
     def cleanup(self):
@@ -1606,9 +1622,10 @@ class IDJC_Media_Player:
                 self.music_filename = element.pathname
                 self.cuesheet_track_title = element.title
                 self.cuesheet_track_performer = element.performer
+                self.cuesheet_track_album = element.album
         else:
             self.element = None
-            self.cuesheet_track_title = self.cuesheet_track_performer = None
+            self.cuesheet_track_title = self.cuesheet_track_performer = self.cuesheet_track_album = None
 
         try:
             sgain, self.gaintype = model.get_value(iter, 7).split()
@@ -1724,6 +1741,7 @@ class IDJC_Media_Player:
                 self.start_time = max(element.offset, self.start_time * 75) // 75
                 self.cuesheet_track_title = element.title
                 self.cuesheet_track_performer = element.performer
+                self.cuesheet_track_album = element.album
                 self.music_filename = element.pathname
                 self.gain = element.replaygain
             else:
@@ -1742,7 +1760,7 @@ class IDJC_Media_Player:
                 print "not using replay gain"
         else:
             self.element = None
-            self.cuesheet_track_title = self.cuesheet_track_performer = None
+            self.cuesheet_track_title = self.cuesheet_track_performer = self.cuesheet_track_album = None
         
         self.parent.mixer_write("PLRP=%s\nSEEK=%d\nACTN=play%s\nend\n" % (
                         self.music_filename, self.start_time, self.playername))
@@ -2187,6 +2205,7 @@ class IDJC_Media_Player:
                     element = self.element = current_element
                     self.cuesheet_track_title = element.title
                     self.cuesheet_track_performer = element.performer
+                    self.cuesheet_track_album = element.album
                     self.parent.send_new_mixer_stats()
         else:
             rem = self.progress_stop_figure - self.progress_current_figure
@@ -4567,7 +4586,9 @@ class IDJC_Media_Player:
         self.artist = ""
         self.album = ""
         self.cueshet = self.element = None
-        self.cuesheet_track_title = self.cuesheet_track_performer = None
+        self.cuesheet_track_title = None
+        self.cuesheet_track_performer = None
+        self.cuesheet_track_album = None
         self.gapless = False
         self.seek_file_valid = False
         self.digiprogress_type = 0

@@ -173,6 +173,8 @@ static int recorder_create_mp3_cuesheet(struct recorder *self)
             fprintf(fp, "    TITLE \"%s\"\r\n", mi->title);
         if (mi->artist[0])
             fprintf(fp, "    PERFORMER \"%s\"\r\n", mi->artist);
+        if (mi->album[0])
+            fprintf(fp, "    REM ALBUM \"%s\"\r\n", mi->album);
         
         /* the first index must be zero - it's in the cue file standard */
         if (i > 1)
@@ -588,6 +590,7 @@ static void *recorder_main(void *args)
                         self->new_artist_title = FALSE;
                         fprintf(self->fpcue, "    TITLE \"%s\"\r\n", self->title);
                         fprintf(self->fpcue, "    PERFORMER \"%s\"\r\n", self->artist);
+                        fprintf(self->fpcue, "    REM ALBUM \"%s\"\r\n", self->album);
                         pthread_mutex_unlock(&self->artist_title_mutex);
 
                         s = self->recording_length_s % 60;

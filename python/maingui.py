@@ -2005,7 +2005,7 @@ class MainWindow(dbus.service.Object):
             if target.element:
                 self.artist = target.cuesheet_track_performer or ""
                 self.title = target.cuesheet_track_title or ""
-                self.album = target.title
+                self.album = target.cuesheet_track_album or target.title
             else:
                 self.artist = target.artist
                 self.title = target.title
