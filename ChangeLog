@@ -1,5 +1,7 @@
 * Changes in version 0.8.13 *
 
+Added support for SSL-hobbled python-irclib.
+
 Added individual track album name support for cue sheets with REM ALBUM tag.
 
 Fixed regression in supported media formats. Was showing libav only formats when built with --disable-libav.

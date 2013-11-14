@@ -23,6 +23,7 @@ import time
 import sys
 import threading
 import gettext
+from inspect import getargspec
 from functools import wraps, partial
 
 import gobject
@@ -35,6 +36,7 @@ except ImportError:
     HAVE_IRCLIB = False
 else:
     HAVE_IRCLIB = True
+    HAVE_IRCLIB_SSL = "ssl" in getargspec(irclib.IRC().server().connect).args
 
 from idjc import FGlobs
 from idjc.prelims import ProfileManager
@@ -404,6 +406,7 @@ class ServerDialog(gtk.Dialog):
         self.port = gtk.SpinButton(server_port_adj)
         # TC: Checkbutton label text regarding SSL security protocol.
         self.ssl = gtk.CheckButton(_("SSL"))
+        self.ssl.set_sensitive(HAVE_IRCLIB_SSL)
         set_tip(self.ssl, 
             _("Connect to the server using the SSL security protocol.\n\n"
             "This feature is typically offered on different ports than the "
@@ -1019,7 +1022,7 @@ class IRCPane(gtk.VBox):
                     text += "(%s)" % row.network
 
                 opt = []
-                if row.ssl:
+                if row.ssl and HAVE_IRCLIB_SSL:
                     # TC: Indicator text: We are using SSL protocol.
                     opt.append(_("SSL"))
                 if row.password:
@@ -1278,7 +1281,9 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
                 password = row.password or None
                 username = row.username or None
                 ircname = row.realname or None
-                ssl = bool(row.ssl)
+                opts = {}
+                if row.ssl and HAVE_IRCLIB_SSL:
+                    opts["ssl"] = True
                 def deferred():
                     try:
                         self._alternates = [
@@ -1287,7 +1292,7 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
                             row.nick2 + "__", row.nick3 + "__"]
 
                         self.server.connect(hostname, port, nickname, password,
-                                                    username, ircname, ssl=ssl)
+                                                    username, ircname, **opts)
                     except irclib.ServerConnectionError, e:
                         self._ui_set_nick("")
                         print >>sys.stderr, str(e) + " %s@%s:%d" % (
