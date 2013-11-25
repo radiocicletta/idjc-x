@@ -52,7 +52,7 @@ from .utils import LinkUUIDRegistry
 from .utils import PathStr
 from .gtkstuff import threadslock, WindowSizeTracker, ConfirmationDialog
 from .gtkstuff import IconChooserButton, IconPreviewFileChooserDialog, LEDDict
-from .gtkstuff import LabelSubst
+from .gtkstuff import LabelSubst, gdklock, nullcm
 from . import midicontrols
 from .tooltips import set_tip
 from . import songdb
@@ -2538,13 +2538,11 @@ class MainWindow(dbus.service.Object):
             self.freewheel_button.set_active(False)
             self.save_session("atexit")
             self.quitting()
-        try:
+
+        if gtk.main_level():
             gtk.main_quit()
-        except:
-            pass
-        gtk.gdk.threads_leave()
+
         time.sleep(0.3)
-        sys.exit(0)
 
 
     def destroy(self, widget=None, data=None):
@@ -2570,14 +2568,14 @@ class MainWindow(dbus.service.Object):
         self.prefs_window.window.hide()
         self.server_window.window.hide()
         pm.profile_dialog.hide()
-        while gtk.gdk.events_pending():
-            gtk.main_iteration()
-        
+
         if gtk.main_level():
             gtk.main_quit()
+
+        while gtk.gdk.events_pending():
+            gtk.main_iteration()
+
         time.sleep(0.3) # Allow time for all subthreads/programs time to exit 
-        gtk.gdk.threads_leave()
-        sys.exit(0)
 
     @dbus.service.signal(dbus_interface=PGlobs.dbus_bus_basename, signature="")
     def quitting(self):
@@ -2697,37 +2695,38 @@ class MainWindow(dbus.service.Object):
         return line
 
 
-    def vu_update(self, locking = True):
-        if locking:
-            gtk.gdk.threads_enter()
-        try:
-            self.vu_update_counter += 1
-            if self.vu_update_counter % 20 == 0:
-                self.heartbeat()
+    def vu_update(self, locking=True, vu_update_counter=[0]):
+        session_ns = {}
+        player_metadata = []
+        session_cmd = midis = ''
+        cons_changed = False
+        
+        with (gdklock if locking else nullcm)():
+            if not gtk.main_level():
+                return False
 
-            session_ns = {}
-            player_metadata = []
-            
+            vu_update_counter[0] += 1
+            if vu_update_counter[0] % 20 == 0:
+                self.heartbeat()
+           
             try:
                 self.mixer_write("ACTN=requestlevels\nend\n")
             except (ValueError, IOError):
-                if locking:
-                    gtk.gdk.threads_leave()
                 return True
 
-            session_cmd = midis = ''
-            cons_changed = False
+            
             while 1:
                 line = self.mixer_read().rstrip()
                 if line == "":
-                    if locking:
-                        gtk.gdk.threads_leave()
                     return True
+
                 if line == "end":
                     break
+
                 if not line.count("="):
                     print line
                     continue
+
                 key, value = line.split("=", 1)
 
                 if key == "midi":
@@ -2768,6 +2767,7 @@ class MainWindow(dbus.service.Object):
                     pass
                     #print "key value", key, "missing from vumap"
 
+
             if self.jingles.playing == True and int(self.jingles_playing) == 0:
                 self.jingles.clear_indicators()
             
@@ -2793,12 +2793,6 @@ class MainWindow(dbus.service.Object):
             if ep != -1:
                 self.jingles.update_effect_leds(ep)
 
-        except Exception:
-            if locking:  # Ensure unlocking occurs when there is an exception.
-                gtk.gdk.threads_leave()
-            raise
-        if locking:
-            gtk.gdk.threads_leave()
         return True
 
 
@@ -3012,7 +3006,7 @@ class MainWindow(dbus.service.Object):
         self.window.set_gravity(gtk.gdk.GRAVITY_STATIC)
         self.window_group.add_window(self.window)
         self.window.set_title(self.appname + pm.title_extra)
-        self.window.connect("delete_event",self.delete_event)
+        self.window.connect("delete_event", self.delete_event)
         self.hbox10 = gtk.HBox(False)
         self.hbox10.set_spacing(6)
         self.paned = gtk.HPaned()
@@ -3717,7 +3711,6 @@ class MainWindow(dbus.service.Object):
         self.METADATA_BACKGROUND = 5
         self.metadata_src = self.METADATA_CROSSFADER
 
-        self.vu_update_counter = 0
         self.alarm = False
         self.NO_PHONE = 0
         self.PUBLIC_PHONE = 1
@@ -3944,9 +3937,10 @@ def main():
         run_instance = MainWindow()
     except (MainWindow.initfailed, MainWindow.initcleanexit, KeyboardInterrupt):
         return 5
-    else:
-        try:
-            run_instance.main()
-        except KeyboardInterrupt:
-            return 5
+
+    try:
+        run_instance.main()
+    except KeyboardInterrupt:
+        return 5
+
     return 0

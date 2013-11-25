@@ -21,6 +21,7 @@ import json
 import gettext
 from abc import ABCMeta, abstractmethod
 from functools import wraps
+from contextlib import contextmanager
 
 import gobject
 import gtk
@@ -168,18 +169,58 @@ class ErrorMessageDialog(StandardDialog):
         self.get_action_area().add(b)
 
 
-def threadslock(f):
-    """Function decorator for thread locking timeout callbacks."""
+def threadslock(inner):
+    """Function decorator to safely apply gtk/gdk thread lock to callbacks.
     
-    @wraps(f)
-    def newf(*args, **kwargs):
+    Needed to lock non gtk/gdk callbacks originating in the wider glib main
+    loop whenever they may call gtk or gdk code, read properties etc.
+    
+    Useful for callbacks that mainly manipulate gtk.
+    """
+    
+    @wraps(inner)
+    def wrapper(*args, **kwargs):
         gtk.gdk.threads_enter()
         try:
-            r = f(*args, **kwargs)
+            if gtk.main_level():
+                return inner(*args, **kwargs)
+            else:
+                # Cancel timeouts and idle functions.
+                print "callback cancelled"
+                return False
         finally:
             gtk.gdk.threads_leave()
-        return r
-    return newf
+    return wrapper
+
+
+@contextmanager
+def gdklock():
+    """Like threadslock but for 'with' code blocks that manipulate gtk."""
+    
+    gtk.gdk.threads_enter()
+    yield
+    gtk.gdk.threads_leave()
+    
+    
+@contextmanager
+def gdkunlock():
+    """Like gdklock but unlock instead.
+    
+    Useful for calling threadslock functions when already locked.
+    """
+    
+    gtk.gdk.threads_leave()
+    yield
+    gtk.gdk.threads_enter()
+
+
+@contextmanager
+def nullcm():
+    """Null context.
+    
+    eg. with (gdklock if lock_f else nullcm)():"""
+    
+    yield
 
 
 class DefaultEntry(gtk.Entry):

@@ -421,7 +421,7 @@ class ProfileDialog(gtk.Dialog):
     def _cb_visible(self, *args):
         self._update_data()
         if self.props.visible:
-            gobject.timeout_add(200, self._protected_update_data)
+            gobject.timeout_add(200, threadslock(self._update_data))
         
         
     def _cb_selection(self, ts):
@@ -521,9 +521,6 @@ class ProfileDialog(gtk.Dialog):
                 self.selection.handler_unblock_by_func(self._cb_selection)
                 self.highlight_profile(h, scroll=False)
         return self.props.visible
-        
-        
-    _protected_update_data = threadslock(_update_data)
         
         
     def set_profile(self, newprofile, title_extra, iconpathname):

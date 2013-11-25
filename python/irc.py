@@ -43,7 +43,7 @@ from idjc.prelims import ProfileManager
 from .gtkstuff import DefaultEntry
 from .gtkstuff import NamedTreeRowReference
 from .gtkstuff import ConfirmationDialog
-from .gtkstuff import threadslock
+from .gtkstuff import threadslock, gdklock
 from .utils import string_multireplace
 from .tooltips import set_tip
 
@@ -1406,9 +1406,8 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
             
             print "-%s- %s" % (source, event.arguments()[0])
             if source == "NickServ!services":
-                gtk.gdk.threads_enter()
-                nspw = self.get_model()[self.get_path()].nickserv
-                gtk.gdk.threads_leave()
+                with gdklock():
+                    nspw = self.get_model()[self.get_path()].nickserv
 
                 if "NickServ IDENTIFY" in event.arguments()[0] and nspw:
                     server.privmsg("NickServ", "IDENTIFY %s" % nspw)
@@ -1467,9 +1466,8 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
             
         elif args == ["PLAYED"]:
             t = time.time()
-            gtk.gdk.threads_enter()
-            show = [x for x in self._played if t - x[1] < 5400.0]
-            gtk.gdk.threads_leave()
+            with gdklock():
+                show = [x for x in self._played if t - x[1] < 5400.0]
 
             for i, each in enumerate(show, start=1):
                 age = int((t - each[1]) // 60)
@@ -1655,7 +1653,7 @@ class MessageHandlerForType_5(MessageHandler):
     @threadslock
     def _timeout(self):
         self.issue_messages(partial(self._delay_calc,
-                                                    the_time=int(time.time())))
+                                                the_time=int(time.time())))
         return True
         
     def _delay_calc(self, row, the_time):

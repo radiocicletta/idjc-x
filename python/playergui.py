@@ -461,6 +461,7 @@ class ExternalPL(gtk.Frame):
         fbox.show()
         dbox.show()
 
+
 class AnnouncementDialog(gtk.Dialog):
     def write_changes(self, widget):
         m = "%02d" % int(self.minutes.get_value())
@@ -470,43 +471,48 @@ class AnnouncementDialog(gtk.Dialog):
         text = b.get_text(b.get_start_iter(), b.get_end_iter())
         self.model.set_value(self.iter, 4, urllib.quote(text))
         self.player.reselect_please = True
+
     def restore_mic_playnext(self, widget):
         self.player.parent.mic_opener.close_all()
         if self.model.iter_next(self.iter) is not None:
             self.player.play.clicked()
+
     def delete_announcement(self, widget, event=None):
         self.model.remove(self.iter)
         self.player.reselect_please = True
         gtk.Dialog.destroy(self)
+
     def timeout_remove(self, widget):
         gobject.source_remove(self.timeout)
-    def timer_update(self, lock = True):
-        if lock:
-            gtk.gdk.threads_enter()
-        inttime = int(self.cdt - time.time())
-        if inttime != self.oldinttime:
-            if inttime > 0:
-                stime = "%2d:%02d" % divmod(inttime, 60)
-                self.countdownlabel.set_text(stime)
-                if inttime == 5:
-                    self.attrlist.change(self.fontcolour_red)
-                if lock:
-                    gtk.gdk.threads_leave()
-                return True
-            else:
-                self.countdownlabel.set_text("--:--")
-                self.attrlist.change(self.fontcolour_black)
-                if lock:
-                    gtk.gdk.threads_leave()
+
+    def timer_update(self, lock=True):
+        with (gdklock if lock else nullcm)():
+            if not gtk.main_level():
                 return False
-        if lock:
-            gtk.gdk.threads_leave()
+            inttime = int(self.cdt - time.time())
+            if inttime != self.oldinttime:
+                if inttime > 0:
+                    stime = "%2d:%02d" % divmod(inttime, 60)
+                    self.countdownlabel.set_text(stime)
+                    if inttime == 5:
+                        self.attrlist.change(self.fontcolour_red)
+                    if lock:
+                        gtk.gdk.threads_leave()
+                    return True
+                else:
+                    self.countdownlabel.set_text("--:--")
+                    self.attrlist.change(self.fontcolour_black)
+                    if lock:
+                        gtk.gdk.threads_leave()
+                    return False
         return True
+
     def cb_keypress(self, widget, event):
         if event.keyval == 65307:
             return True
         if event.keyval == 65288 and self.mode == "active":
             self.cancel_button.clicked()
+
     def __init__(self, player, model, iter, mode):
         self.player = player
         self.model = model
@@ -640,18 +646,24 @@ class AnnouncementDialog(gtk.Dialog):
         if mode == "active":
             self.ok_button.grab_focus()
 
+
 class Supported(object):
     def _check(self, pathname, which):
         ext = os.path.splitext(pathname)[1].lower()
         return ext in which and ext or False
+
     def playlists_as_text(self):
         return "(*" + ", *".join(self.playlists) + ")"
+
     def media_as_text(self):
         return "(*" + ", *".join(self.media) + ")"
+
     def check_media(self, pathname):
         return self._check(pathname, self.media)
+
     def check_playlists(self, pathname):
         return self._check(pathname, self.playlists)
+
     def __init__(self):
         self.media = [".ogg", ".oga", ".wav", ".aiff", ".au", ".txt", ".cue"]
         self.playlists = [".m3u", ".xspf", ".pls"]
@@ -679,6 +691,7 @@ class Supported(object):
 
 supported = Supported()
 
+
 # Arrow button creation helper function
 def make_arrow_button(self, arrow_type, shadow_type, data):
     button = gtk.Button();
@@ -689,6 +702,7 @@ def make_arrow_button(self, arrow_type, shadow_type, data):
     arrow.show()
     return button
 
+
 def get_number_for(token, string):
     try:
         end = string.rindex(token)
@@ -698,6 +712,7 @@ def get_number_for(token, string):
         return int(float(string[start+1:end]))
     except ValueError:
         return 0
+
 
 class nice_listen_togglebutton(gtk.ToggleButton):
     def __init__(self, label = None, use_underline = True):
@@ -2485,14 +2500,19 @@ class IDJC_Media_Player:
         if response_id != gtk.RESPONSE_ACCEPT:
             return
         gen = self.filter_allowed_controls(self.get_elements_from(chosenfiles))
-        for each in gen:
-            if self.no_more_files:
-                self.no_more_files = False
-                break
-            self.liststore.append(each)
-            while gtk.events_pending():
-                gtk.main_iteration()
-                
+        glib.idle_add(self.file_response_idle, iter(gen)) 
+
+    @threadslock
+    def file_response_idle(self, iterator):
+        if self.no_more_files:
+            self.no_more_files = False
+        else:
+            for element in iterator:
+                self.liststore.append(element)
+                return True
+
+        return False
+
     def filter_allowed_controls(self, items):
         """Interlude playlist must not contain certain playlist controls."""
         
@@ -3017,88 +3037,70 @@ class IDJC_Media_Player:
                     model.append(newrow)
                 else:
                     path, position = drop_info
-                    dest_iter = model.get_iter(path)
+                    iter_ = model.get_iter(path)
                     if(position == gtk.TREE_VIEW_DROP_BEFORE or position == \
                                             gtk.TREE_VIEW_DROP_INTO_OR_BEFORE):
-                        model.insert_before(dest_iter, newrow)
+                        model.insert_before(iter_, newrow)
                     else:
-                        model.insert_after(dest_iter, newrow)
+                        model.insert_after(iter_, newrow)
                 if context.action == gtk.gdk.ACTION_MOVE:
                     context.finish(True, True, etime)
             else:
                 if context.action == gtk.gdk.ACTION_MOVE:
                     context.finish(True, True, etime)
-                gobject.idle_add(self.drag_data_received_data_idle, treeview,
-                                                                    x, y, text)
+                elements = self.get_elements_from([urllib.unquote(t[7:])
+                                    for t in dragged.data.strip().splitlines() 
+                                    if t.startswith("file://")])
+                try:
+                    path, pos = treeview.get_dest_row_at_pos(x, y)
+                except (ValueError, TypeError):
+                    glib.idle_add(self.file_response_idle, elements)
+                else:
+                    for element in elements:
+                        model = treeview.get_model()
+                        iter_ = model.get_iter(path)
+                        if pos in (gtk.TREE_VIEW_DROP_BEFORE,
+                                            gtk.TREE_VIEW_DROP_INTO_OR_BEFORE):
+                            iter_ = model.insert_before(iter_, element)
+                        else:
+                            iter_ = model.insert_after(iter_, element)
+                            
+                        glib.idle_add(self.drag_data_received_data_idle,
+                                                        model, iter_, elements)
+                        break
         else:
             treeselection = treeview.get_selection()
-            model, iter = treeselection.get_selected()
+            model, iter_ = treeselection.get_selected()
             drop_info = treeview.get_dest_row_at_pos(x, y)
             if drop_info == None:
-                self.liststore.move_before(iter, None)
+                self.liststore.move_before(iter_, None)
             else:
                 path, position = drop_info
                 dest_iter = model.get_iter(path)
                 if(position == gtk.TREE_VIEW_DROP_BEFORE or position == \
                                             gtk.TREE_VIEW_DROP_INTO_OR_BEFORE):
-                    self.liststore.move_before(iter, dest_iter)
+                    self.liststore.move_before(iter_, dest_iter)
                 else:
-                    self.liststore.move_after(iter, dest_iter)
+                    self.liststore.move_after(iter_, dest_iter)
             if context.action == gtk.gdk.ACTION_MOVE:
                 context.finish(False, False, etime)
         return True
 
-    def drag_data_received_data_idle(self, treeview, x, y, dragged):
-        gtk.gdk.threads_enter()
-        model = treeview.get_model()
-        gtk.gdk.threads_leave()
-
-        pathnames = [urllib.unquote(t[7:]) for t in dragged.strip().splitlines(
-                                                ) if t.startswith("file://")]
-        gen = self.get_elements_from(pathnames)
-
-        first = True
-        for media_data in gen:
-            if self.no_more_files:
-                self.no_more_files = False
+    @threadslock
+    def drag_data_received_data_idle(self, model, iter_, elements):
+        if self.no_more_files:
+            self.no_more_files = False
+        else:
+            for element in elements:
+                iter_ = model.insert_after(iter_, element)
+                glib.idle_add(self.drag_data_received_data_idle,
+                                                        model, iter_, elements)
                 break
-            if first:
-                gtk.gdk.threads_enter()
-                drop_info = treeview.get_dest_row_at_pos(x, y)
-                gtk.gdk.threads_leave()
-                if drop_info:
-                    path, position = drop_info
-                    gtk.gdk.threads_enter()
-                    iter = model.get_iter(path)
-                    gtk.gdk.threads_leave()
-                    if(position == gtk.TREE_VIEW_DROP_BEFORE or position == \
-                                            gtk.TREE_VIEW_DROP_INTO_OR_BEFORE):
-                        gtk.gdk.threads_enter()
-                        iter = model.insert_before(iter, media_data)
-                        gtk.gdk.threads_leave()
-                    else:
-                        gtk.gdk.threads_enter()
-                        iter = model.insert_after(iter, media_data)
-                        gtk.gdk.threads_leave()
-                else:
-                    gtk.gdk.threads_enter()
-                    iter = model.append(media_data)
-                    gtk.gdk.threads_leave()
-                first = False
             else:
-                gtk.gdk.threads_enter()
-                iter = model.insert_after(iter, media_data)
-                gtk.gdk.threads_leave()
-            gtk.gdk.threads_enter()
-            while gtk.events_pending():
-                gtk.gdk.threads_leave()
-                gtk.gdk.threads_enter()
-                gtk.main_iteration()
-                gtk.gdk.threads_leave()
-                gtk.gdk.threads_enter()
-            gtk.gdk.threads_leave()
-        self.reselect_please = True
+                self.reselect_please = True
+
         return False
+
 
     sourcetargets = [
         ('MY_TREE_MODEL_ROW', gtk.TARGET_SAME_WIDGET, 0),

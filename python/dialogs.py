@@ -25,7 +25,7 @@ import pango
 
 from idjc import FGlobs
 from idjc.prelims import ProfileManager
-
+from .gtkstuff import threadslock
 
 import gettext
 t = gettext.translation(FGlobs.package_name, FGlobs.localedir, fallback=True)
@@ -206,11 +206,13 @@ class ReconnectionDialog(gtk.Dialog):
             self.label2.set_text(self.lines[1].format(countdown=self.remaining))
             if self.remaining == 0:
                 self.hide()
-                while gtk.events_pending():
-                    gtk.main_iteration()
-                self.tab.server_connect.set_active(True)
-                if self.tab.server_connect.get_active() == False:
-                    self.activate()
+                glib.idle_add(reconnect_idle)
+                
+    @threadslock
+    def reconnect_idle(self):
+        self.tab.server_connect.set_active(True)
+        if self.tab.server_connect.get_active() == False:
+            self.activate()
     
     def run(self):
         if self.active:

@@ -40,7 +40,7 @@ else:
 
 from idjc import FGlobs
 from .tooltips import set_tip
-from .gtkstuff import threadslock, DefaultEntry, NotebookSR
+from .gtkstuff import threadslock, gdklock, DefaultEntry, NotebookSR
 
 
 __all__ = ['MediaPane', 'have_songdb']
@@ -617,13 +617,12 @@ class PageCommon(gtk.VBox):
 
     def _handler(self, acc, request, cursor, notify, rows):
         # Lock against the very start of the update functions.
-        gtk.gdk.threads_enter()
-        while self._update_id:
-            context, namespace = self._update_id.popleft()
-            glib.source_remove(context)
-            # Idle functions to receive the following and know to clean-up.
-            namespace[0] = True
-        gtk.gdk.threads_leave()
+        with gdklock():
+            while self._update_id:
+                context, namespace = self._update_id.popleft()
+                glib.source_remove(context)
+                # Idle functions to receive the following and know to clean-up.
+                namespace[0] = True
 
         try:
             self._old_cursor.close()
