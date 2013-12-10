@@ -105,6 +105,8 @@ control_methods= {
     'x_focus': _('Players set focus'),
     # TC: Control method. Please keep it as Target:Action.
     'x_pitch': _('Players show pitchbend'),
+    # TC: Control method. Please keep it as Target:Action.
+    'x_advance': _('Players advance'),
 
     # TC: Control method. Please keep it as Target:Action.
     'm_on': _('Channel output enable'),
@@ -1066,7 +1068,16 @@ class Controls(dbus.service.Object):
     @dbusify(in_signature='ib')
     def crossfade_set(self, value, delta):
         self.x_fade(0, value, delta) 
-    
+
+
+    @action_method(Binding.MODE_PULSE)
+    def x_advance(self, n, v, isd):
+        self.owner.advance.clicked()
+        
+    @dbusify()
+    def playlist_advance(self):
+        self.x_advance(0, 0, 0)    
+
 
     @action_method(Binding.MODE_PULSE)
     def x_pass(self, n, v, isd):

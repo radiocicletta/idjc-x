@@ -1,5 +1,7 @@
 * Changes in version 0.8.13 *
 
+Added a binding for the playlist advance button.
+
 Code cleanup. Removed possibly problematic gtk main_iteration() calls.
 
 Added support for SSL-hobbled python-irclib.
