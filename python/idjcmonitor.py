@@ -44,9 +44,8 @@ def pid_exists(pid):
 class IDJCMonitor(gobject.GObject):
     """Monitor IDJC internals relating to a specific profile or session.
     
-    Can obtain information about where streaming to or the music metadata.
-    This info can then be published whereever without having to touch
-    the IDJC source code and is therefore easy to maintain.
+    Can yield information about streams, music metadata, health.
+    example usage: http://idjc.sourceforge.net/code_idjcmon.html
     """
     
     __gsignals__ = {
@@ -75,7 +74,7 @@ class IDJCMonitor(gobject.GObject):
                             ' and from the filenmame when not',
                             "", gobject.PARAM_READABLE),
         'music_filename' : (gobject.TYPE_STRING, 'music_filename',
-                            'music_filename from track metadata',
+                            'the audio file pathname of the track',
                             "", gobject.PARAM_READABLE),
         'streaminfo' : (gobject.TYPE_PYOBJECT, 'streaminfo',
                 'information about the streams', gobject.PARAM_READABLE)
