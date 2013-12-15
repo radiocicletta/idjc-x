@@ -958,7 +958,7 @@ class IRCPane(gtk.VBox):
             return ""
 
     def _m_read(self, model, path, iter, store):
-        row = IRCRowReference(model[path])
+        row = IRCRowReference(list(model[path]))
         if row.type == 1 and row.active and row.manual:
             row.active = 0
 
@@ -1257,8 +1257,8 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
 
     def _on_privmsg_ready(self, handler, targets, message, delay):
         if self._have_welcome:
-            chan_targets = filter(lambda x: x[0] in "#&", targets)
-            user_targets = filter(lambda x: x[0] not in "#&", targets)
+            chan_targets = [x.split(":")[0] for x in targets if x[0] in "#&"]
+            user_targets = [x for x in targets if x[0] not in "#&"]
 
             def deferred():
                 self.server.privmsg_many(chan_targets, message)

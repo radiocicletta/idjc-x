@@ -2532,7 +2532,6 @@ class MainWindow(dbus.service.Object):
         else:
             print "disregarding out of date track history text"
 
-
     def destroy_hard(self, widget=None, data=None):
         if self.session_loaded:
             self.freewheel_button.set_active(False)
@@ -2542,8 +2541,11 @@ class MainWindow(dbus.service.Object):
         if gtk.main_level():
             gtk.main_quit()
 
-        time.sleep(0.3)
+        while gtk.gdk.events_pending():
+            gtk.main_iteration()
 
+        time.sleep(0.3)
+        exit(5)
 
     def destroy(self, widget=None, data=None):
         self.freewheel_button.set_active(False)
@@ -2576,6 +2578,7 @@ class MainWindow(dbus.service.Object):
             gtk.main_iteration()
 
         time.sleep(0.3) # Allow time for all subthreads/programs time to exit 
+        exit(0)
 
     @dbus.service.signal(dbus_interface=PGlobs.dbus_bus_basename, signature="")
     def quitting(self):

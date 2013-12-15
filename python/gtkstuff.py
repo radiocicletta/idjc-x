@@ -35,6 +35,20 @@ t = gettext.translation(FGlobs.package_name, FGlobs.localedir, fallback=True)
 _ = t.gettext
 
 
+# Fix PyGTK spin button binding.
+def SB():
+    GTK_SB = gtk.SpinButton
+    
+    class SpinButton(GTK_SB):
+        def __init__(self, adjustment=None, climb_rate=0.0, digits=0):
+            GTK_SB.__init__(self, adjustment, climb_rate, digits)
+        
+    return SpinButton
+        
+gtk.SpinButton = SB()
+del SB
+
+
 class NotebookSR(gtk.Notebook):
     """Add methods so the save/restore scheme does not have to be extended."""
 
@@ -704,3 +718,4 @@ class FolderChooserButton(gtk.Button):
     def do_current_folder_changed(self, new_folder):
         self._current_folder = new_folder
         self._update_visual()
+

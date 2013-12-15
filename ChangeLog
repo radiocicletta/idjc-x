@@ -1,5 +1,11 @@
 * Changes in version 0.8.13 *
 
+Fix for PyGTK SpinButton value not being set or displayed.
+
+IRC using manual server connect mode no longer periodically disconnects from the IRC server.
+
+Fix for a bug that affected the use of password protected IRC channels.
+
 Added a binding for the playlist advance button.
 
 Code cleanup. Removed possibly problematic gtk main_iteration() calls.
