@@ -1,5 +1,7 @@
 * Changes in version 0.8.13 *
 
+Fixed regression in stream auto reconnection dialog.
+
 Fix for PyGTK SpinButton value not being set or displayed.
 
 IRC using manual server connect mode no longer periodically disconnects from the IRC server.
