@@ -1,5 +1,7 @@
 * Changes in version 0.8.13 *
 
+Improved metadata expiry. Metadata is expired on mid cross on both players when metadata source = crossfader.
+
 Fixed regression in stream auto reconnection dialog.
 
 Fix for PyGTK SpinButton value not being set or displayed.

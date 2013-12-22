@@ -2321,13 +2321,16 @@ class MainWindow(dbus.service.Object):
 
 
     def cb_crossfade(self, fader):
-        # Expire old metadata.
-        if self.crossadj.get_value() < 50:
-            self.player_right.expire_metadata()
-        else:
+        cf = fader.get_value()
+        
+        if self.metadata_src == self.METADATA_CROSSFADER and (
+                            cf < 50 <= self.old_cf or self.old_cf < 50 <= cf):
             self.player_left.expire_metadata()
-        # Backend to get new mixer settings.
+            self.player_right.expire_metadata()
+
         self.send_new_mixer_stats()
+        
+        self.old_cf = cf
     
 
     def cb_crosspattern(self, widget):
@@ -3703,6 +3706,7 @@ class MainWindow(dbus.service.Object):
         self.simplemixer = False
         self.crosspass = 0
         self.old_meta_context = None
+        self.old_cf = 0
 
         # initialize metadata source setting
         self.last_player = ""
