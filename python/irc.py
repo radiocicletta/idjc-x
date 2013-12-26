@@ -17,6 +17,8 @@
 #   along with this program in the file entitled COPYING.
 #   If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 import re
 import json
 import time
@@ -31,12 +33,12 @@ import gtk
 import pango
 
 try:
-    import irclib
-except ImportError:
-    HAVE_IRCLIB = False
+    from irc import client
+    from irc import events
+except ImportError as e:
+    HAVE_IRC = False
 else:
-    HAVE_IRCLIB = True
-    HAVE_IRCLIB_SSL = "ssl" in getargspec(irclib.IRC().server().connect).args
+    HAVE_IRC = True
 
 from idjc import FGlobs
 from idjc.prelims import ProfileManager
@@ -404,14 +406,6 @@ class ServerDialog(gtk.Dialog):
         self.network.set_width_chars(25)
         self.hostname = gtk.Entry()
         self.port = gtk.SpinButton(server_port_adj)
-        # TC: Checkbutton label text regarding SSL security protocol.
-        self.ssl = gtk.CheckButton(_("SSL"))
-        self.ssl.set_sensitive(HAVE_IRCLIB_SSL)
-        set_tip(self.ssl, 
-            _("Connect to the server using the SSL security protocol.\n\n"
-            "This feature is typically offered on different ports than the "
-            "standard connection method and is widespread but not universally "
-            "available."))
         self.username = gtk.Entry()
         self.password = gtk.Entry()
         self.password.set_visibility(False)
@@ -445,7 +439,7 @@ class ServerDialog(gtk.Dialog):
                             # TC: label for hostname entry.
                             _("Hostname"),
                             # TC: TCP/IP port number label.
-                            _("Port"), "",
+                            _("Port"),
                             _("User name"),
                             _("Password"), "",
                             # TC: IRC nickname data entry label.
@@ -458,7 +452,7 @@ class ServerDialog(gtk.Dialog):
                             _("Real name"),
                             # TC: The NickServ password.
                             _("NickServ p/w")),
-                (self.network, self.hostname, self.port, self.ssl,
+                (self.network, self.hostname, self.port,
                  self.username, self.password, self.manual_start, self.nick1,
                  self.nick2, self.nick3, self.realname, self.nickserv))):
             # TC: Tooltip to IRC 'User name' field.
@@ -491,7 +485,7 @@ class ServerDialog(gtk.Dialog):
         """Data extraction method."""
 
         return (self.manual_start.get_active(),
-            self.port.get_value(), self.ssl.get_active(),
+            self.port.get_value(), False,
             self.network.get_text().strip(), self.hostname.get_text().strip(),
             self.username.get_text().strip(), self.password.get_text().strip(),
             self.nick1.get_text().strip(), self.nick2.get_text().strip(),
@@ -523,7 +517,7 @@ class EditServerDialog(ServerDialog, EditDialogMixin):
         n = iter(orig_data).next
         self.manual_start.set_active(n())
         self.port.set_value(n())
-        self.ssl.set_active(n())
+        n()
         self.network.set_text(n())
         self.hostname.set_text(n())
         self.username.set_text(n())
@@ -814,7 +808,7 @@ class IRCRowReference(NamedTreeRowReference):
     """
     
     _lookup = {
-        1: {"manual":2, "port":3, "ssl":4, "network":5, "hostname":6, "username":7,
+        1: {"manual":2, "port":3, "unused":4, "network":5, "hostname":6, "username":7,
              "password":8, "nick1":9, "nick2":10, "nick3":11, "realname":12,
              "nickserv":13, "nick":14},
 
@@ -926,14 +920,14 @@ class IRCPane(gtk.VBox):
         selection.connect("changed", self._on_selection_changed, edit, new)
         selection.select_path(0)
 
-        if HAVE_IRCLIB:
+        if HAVE_IRC:
             self.pack_start(sw)
             self.pack_start(bb, False)
             self.connections_controller = ConnectionsController(self._treestore)
         else:
             self.set_sensitive(False)
             label = gtk.Label(
-                _("This feature requires the installation of python-irclib."))
+                _("This feature requires the installation of python-irc."))
             self.add(label)
             self.connections_controller = ConnectionsController(None)
 
@@ -950,7 +944,7 @@ class IRCPane(gtk.VBox):
     def marshall(self):
         """Convert all our data into a string."""
 
-        if HAVE_IRCLIB:
+        if HAVE_IRC:
             store = [self._m_signature()]
             self._treestore.foreach(self._m_read, store)
             return json.dumps(store)
@@ -967,7 +961,7 @@ class IRCPane(gtk.VBox):
     def unmarshall(self, data):
         """Set the TreeStore with data from a string."""
         
-        if HAVE_IRCLIB:
+        if HAVE_IRC:
             try:
                 store = json.loads(data)
             except ValueError:
@@ -1022,9 +1016,6 @@ class IRCPane(gtk.VBox):
                     text += "(%s)" % row.network
 
                 opt = []
-                if row.ssl and HAVE_IRCLIB_SSL:
-                    # TC: Indicator text: We are using SSL protocol.
-                    opt.append(_("SSL"))
                 if row.password:
                     # TC: Indicator text: We used a password.
                     opt.append(_("PASSWORD"))
@@ -1193,7 +1184,7 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
         self._keepalive = True
         self._have_welcome = False
         self._stream_active = stream_active
-        self.irc = irclib.IRC()
+        self.irc = client.IRC()
         self.server = self.irc.server()
         self.start()
         self._hooks.append((model, model.connect("row-inserted",
@@ -1240,7 +1231,7 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
                         each = each.split(":")
                         try:
                             channel, key = each
-                        except:
+                        except ValueError:
                             channel = each[0]
                             key = ""
                         self.server.join(channel, key)
@@ -1282,37 +1273,43 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
                 username = row.username or None
                 ircname = row.realname or None
                 opts = {}
-                if row.ssl and HAVE_IRCLIB_SSL:
-                    opts["ssl"] = True
                 def deferred():
-                    try:
-                        self._alternates = [
+                    self._alternates = [
                             row.nick2, row.nick3, nickname + "_",
                             row.nick2 + "_", row.nick3 + "_", nickname + "__",
                             row.nick2 + "__", row.nick3 + "__"]
+                            
+                    connect = partial(self.server.connect, hostname, port,
+                                        nickname, password, username, ircname)
+                    try:
+                        connect()
+                    except client.ServerConnectionError as e:
+                        try:
+                            connect()
+                        except client.ServerConnectionError as e:
+                            try:
+                                connect()
+                            except client.ServerConnectionError as e:
+                                self._ui_set_nick("")
+                                print >>sys.stderr, str(e) + " %s@%s:%d" % (
+                                                    nickname, hostname, port)
+                                return
 
-                        self.server.connect(hostname, port, nickname, password,
-                                                    username, ircname, **opts)
-                    except irclib.ServerConnectionError, e:
-                        self._ui_set_nick("")
-                        print >>sys.stderr, str(e) + " %s@%s:%d" % (
-                                                    nickname, hostname, port) 
-                    else:
-                        self._ui_set_nick(nickname)
-                        print "New IRC connection: %s@%s:%d" % (
+                    self._ui_set_nick(nickname)
+                    print "New IRC connection: %s@%s:%d" % (
                                                     nickname, hostname, port)
             else:
                 def deferred():
                     try:
                         self.server.disconnect()
-                    except irclib.ServerConnectionError, e:
+                    except client.ServerConnectionError as e:
                         print >>sys.stderr, str(e)
                     self._ui_set_nick("")
 
             self._queue.append(deferred)
 
     def run(self):
-        for event in irclib.all_events:
+        for event in events.all:
             try:
                 target = getattr(self, "_on_" + event)
             except AttributeError:
@@ -1324,29 +1321,31 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
                 self._queue.pop(0)()
             
             self.irc.process_once(0.2)
+        
+        self.irc.process_once()
 
     def cleanup(self):
-        def deferred():
-            try:
-                self.server.disconnect()
-            except irclib.ServerConnectionError, e:
-                print >>sys.stderr, str(e)
-        self._queue.append(deferred)
-        
         for each in self._message_handlers:
             each.cleanup()
         for obj, handler_id in self._hooks:
             obj.disconnect(handler_id)
 
-        self.server.add_global_handler("disconnect",
-                                                self.thread_purge_on_disconnect)
-        if not self.server.is_connected():
-            self._keepalive = False
-        self.join(1.0)
-        if self.is_alive():
-            self.server.close()
+        if self.server.is_connected():
+            def deferred():
+                self.server.add_global_handler("disconnect", self.end_thread)
+                try:
+                    self.server.disconnect()
+                except client.ServerConnectionError as e:
+                    print >>sys.stderr, str(e)
+                self._ui_set_nick("")
 
-    def thread_purge_on_disconnect(self, server, event):
+            self._queue.append(deferred)
+        else:
+            self._keepalive = False
+        
+        self.join(1.0)
+
+    def end_thread(self, server, event):
         self._keepalive = False
 
     @threadslock
@@ -1369,7 +1368,7 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
 
     @threadslock
     def _on_welcome(self, server, event):
-        print "Got IRC welcome", event.source()
+        print "Got IRC welcome", event.source
         self._have_welcome = True
         self._channels_invalidate()
         model = self.get_model()
@@ -1380,12 +1379,12 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
             iter = model.iter_next(iter)
         row = model[path]
         model.row_changed_block()
-        row.nick = event.target()
+        row.nick = event.target
         model.row_changed_unblock()
         
         target = row.nick1
         nspw = row.nickserv
-        if event.target() != target and nspw:
+        if event.target != target and nspw:
             self._nick_recover(server, target, nspw)
 
     def _nick_recover(self, server, target, nspw):
@@ -1400,33 +1399,33 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
             server.execute_delayed(i, func, args)
 
     def _on_privnotice(self, server, event):
-        source = event.source()
+        source = event.source
         if source is not None:
             source = source.split("!")[0]
             
-            print "-%s- %s" % (source, event.arguments()[0])
-            if source == "NickServ!services":
+            print "-%s- %s" % (source, event.arguments[0])
+            if source == "NickServ!services" or source == "NickServ":
                 with gdklock():
                     nspw = self.get_model()[self.get_path()].nickserv
 
-                if "NickServ IDENTIFY" in event.arguments()[0] and nspw:
+                if "NickServ IDENTIFY" in event.arguments[0] and nspw:
                     server.privmsg("NickServ", "IDENTIFY %s" % nspw)
                     print "Issued IDENTIFY command to NickServ"
-                    self._ui_set_nick(event.target())
-                elif "Guest" in event.arguments()[0]:
-                    newnick = event.arguments()[0].split()[-1].strip(ASCII_C0)
+                    self._ui_set_nick(event.target)
+                elif "Guest" in event.arguments[0]:
+                    newnick = event.arguments[0].split()[-1].strip(ASCII_C0)
                     self._ui_set_nick(newnick)
                     if nspw:
-                        self._nick_recover(server, event.target(), nspw)
+                        self._nick_recover(server, event.target, nspw)
                 else:
-                    self._ui_set_nick(event.target())
+                    self._ui_set_nick(event.target)
         else:
             self._generic_handler(server, event)
 
     def _on_disconnect(self, server, event):
         self._have_welcome = False
         self._ui_set_nick("")
-        print event.source(), "disconnected"
+        print event.source, "disconnected"
 
     def _on_nicknameinuse(self, server, event):
         self._try_alternate_nick()
@@ -1441,11 +1440,11 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
         self._try_alternate_nick()
 
     def _on_join(self, server, event):
-        print "Channel joined", event.target()
+        print "Channel joined", event.target
 
     def _on_ctcp(self, server, event):
-        source = event.source().split("!")[0]
-        args = event.arguments()
+        source = event.source.split("!")[0]
+        args = event.arguments
         reply = partial(server.ctcp_reply, source)
         
         if args == ["CLIENTINFO"]:
@@ -1453,7 +1452,7 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
                                             "PLAYED STREAMSTATUS KILLSTREAM")
         
         elif args == ["VERSION"]:
-            reply("VERSION %s %s (python-irclib)" % (
+            reply("VERSION %s %s (python-irc)" % (
                                 FGlobs.package_name, FGlobs.package_version))
         elif args == ["TIME"]:
             reply("TIME " + time.ctime())
