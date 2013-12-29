@@ -1281,23 +1281,29 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
                             
                     connect = partial(self.server.connect, hostname, port,
                                         nickname, password, username, ircname)
-                    try:
-                        connect()
-                    except client.ServerConnectionError as e:
+                                        
+                    def try_connect(*delays):
+                        print "Attempting to connect IRC %s:%d" % (
+                                                            hostname, port)
                         try:
                             connect()
                         except client.ServerConnectionError as e:
+                            print e
                             try:
-                                connect()
-                            except client.ServerConnectionError as e:
+                                delay = delays[0]
+                            except IndexError:
+                                print "No more connection attempts"
                                 self._ui_set_nick("")
-                                print >>sys.stderr, str(e) + " %s@%s:%d" % (
+                            else:
+                                print "%d more tries" % len(delays)
+                                self.server.execute_delayed(delay, try_connect,
+                                                                    delays[1:])
+                        else:
+                            self._ui_set_nick(nickname)
+                            print "New IRC connection: %s@%s:%d" % (
                                                     nickname, hostname, port)
-                                return
-
-                    self._ui_set_nick(nickname)
-                    print "New IRC connection: %s@%s:%d" % (
-                                                    nickname, hostname, port)
+                                                    
+                    try_connect(1, 2, 3)
             else:
                 def deferred():
                     try:
