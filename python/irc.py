@@ -1407,10 +1407,12 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
     def _on_privnotice(self, server, event):
         source = event.source
         if source is not None:
-            source = source.split("!")[0]
+            source = source.split("@")[0]
             
-            print "-%s- %s" % (source, event.arguments[0])
-            if source == "NickServ!services" or source == "NickServ":
+            if source != "Global!services":
+                print "-%s- %s" % (source, event.arguments[0])
+                
+            if source == "NickServ!services":
                 with gdklock():
                     nspw = self.get_model()[self.get_path()].nickserv
 
