@@ -40,14 +40,14 @@
   margin:0px 0px 0px 0px;
   padding:6px;
   border:1px inset;
-  width:776px;
+  width:834px;
   overflow-x:auto;
  }
  pre.inset{
   width:auto;
  }
  pre.reduced{
-  width:92%;
+  width:98%;
  }
  pre.big-code{
  height:300px;
