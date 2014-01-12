@@ -35,7 +35,7 @@ import pango
 try:
     from irc import client
     from irc import events
-except ImportError as e:
+except ImportError:
     HAVE_IRC = False
 else:
     HAVE_IRC = True
@@ -1266,6 +1266,7 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
         if path == self.get_path():
             row = self.get_model()[self.get_path()]
             if model.path_is_active(path):
+                ref = gtk.TreeRowReference(model, path)
                 hostname = row.hostname
                 port = row.port
                 nickname = row.nick1 or "eyedeejaycee"
@@ -1283,6 +1284,12 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
                                         nickname, password, username, ircname)
                                         
                     def try_connect(*delays):
+                        model = ref.get_model()
+                        path = ref.get_path()
+                        if not ref.valid() or not model.path_is_active(path):
+                            print "IRC connection attempt cancelled"
+                            return
+
                         print "Attempting to connect IRC %s:%d" % (
                                                             hostname, port)
                         try:
