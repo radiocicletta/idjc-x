@@ -578,6 +578,12 @@ class PageCommon(gtk.VBox):
         text = model.get_value(iter, cell) or _('<unknown>')
         renderer.props.text = text
 
+    @staticmethod
+    def _cell_show_nested(column, renderer, model, iter, cell):
+        text = model.get_value(iter, cell) or _('<unknown>')
+        col = "red" if model.iter_depth(iter) == 0 else "black"
+        renderer.props.text = text
+        renderer.props.foreground = col
 
     def inner(column, renderer, model, iter, cell, which_bit):
         text = model.get_value(iter, cell)
@@ -692,7 +698,7 @@ class TreePage(PageCommon):
         tree_collapse.connect_object("clicked", gtk.TreeView.collapse_all,
                                                                 self.tree_view)
         self.tree_cols = self._make_tv_columns(self.tree_view, (
-                ("", 1, self._cell_show_unknown, 180, pango.ELLIPSIZE_END),
+                ("", 1, self._cell_show_nested, 180, pango.ELLIPSIZE_END),
                 # TC: Track artist.
                 (_('Artist'), (10, 9), self._data_merge, 100, pango.ELLIPSIZE_END),
                 # TC: The disk number of the album track.
@@ -777,6 +783,7 @@ class TreePage(PageCommon):
                     bitrate, length
                     FROM tracks
                     LEFT JOIN albums on tracks.album = albums.name
+                     AND tracks.artist = albums.artist
                     ORDER BY tracks.artist, album, tracknumber, title"""
         elif self._db_type == AMPACHE:
             query = """SELECT
@@ -872,7 +879,7 @@ class TreePage(PageCommon):
         self.artist_store.clear()
         self.album_store.clear()
 
-        namespace = [False, (0.0, None, None, None, None, None, None)]
+        namespace = [False, (0.0, None, None, None, {}, None, None, None, None)]
         do_max = min(max(30, rows / 100), 200)  # Data size to process.
         total = 2.0 * rows
         context = glib.idle_add(self._update_2, acc, cursor, total, do_max,
@@ -882,7 +889,7 @@ class TreePage(PageCommon):
 
     @threadslock
     def _update_2(self, acc, cursor, total, do_max, store, namespace):
-        kill, (done, iter_1, iter_2, artist, album, art_prefix, alb_prefix) = namespace
+        kill, (done, iter_l, iter_1, iter_2, letter, artist, album, art_prefix, alb_prefix) = namespace
         if kill:
             return False
 
@@ -893,7 +900,7 @@ class TreePage(PageCommon):
         rows = cursor.fetchmany(do_max)
         if not rows:
             store.sort()
-            namespace = [False, (done, ) + (None, ) * 9]
+            namespace = [False, (done, ) + (None, ) * 11]
             context = glib.idle_add(self._update_3, acc, total, do_max,
                                                         store, namespace)
             self._update_id.append((context, namespace))
@@ -904,6 +911,15 @@ class TreePage(PageCommon):
                 return False
 
             l_append(row)
+            try:
+                art_letter = row[7].decode('utf-8')[0].upper()
+            except IndexError:
+                art_letter = ""
+
+            if art_letter in letter:
+                iter_l = letter[art_letter]
+            else:
+                iter_l = letter[art_letter] = r_append(None, (-1, art_letter) + BLANK_ROW)
             if album == row[0] and artist == row[7] and \
                                 alb_prefix == row[1] and art_prefix == row[8]:
                 r_append(iter_2, (0, row[6]) + row)
@@ -912,7 +928,7 @@ class TreePage(PageCommon):
                 if artist != row[7] or art_prefix != row[8]:
                     artist = row[7]
                     art_prefix = row[8]
-                    iter_1 = r_append(None, (-1, self._join(art_prefix, artist)) + BLANK_ROW)
+                    iter_1 = r_append(iter_l, (-2, self._join(art_prefix, artist)) + BLANK_ROW)
                     album = None
                 if album != row[0] or alb_prefix != row[1]:
                     album = row[0]
@@ -922,23 +938,24 @@ class TreePage(PageCommon):
                         albumtext = "%s (%d)" % (self._join(alb_prefix, album), year)
                     else:
                         albumtext = album
-                    iter_2 = r_append(iter_1, (-2, albumtext) + BLANK_ROW)
+                    iter_2 = r_append(iter_1, (-3, albumtext) + BLANK_ROW)
                 r_append(iter_2, (0, row[6]) + row)
                 
         done += do_max
         self.progress_bar.set_fraction(done / total)
-        namespace[1] = done, iter_1, iter_2, artist, album, art_prefix, alb_prefix
+        namespace[1] = done, iter_l, iter_1, iter_2, letter, artist, album, art_prefix, alb_prefix
         return True
 
     @threadslock
     def _update_3(self, acc, total, do_max, store, namespace):
-        kill, (done, iter_1, iter_2, artist, album, art_prefix, alb_prefix, year, disk, album_id) = namespace
+        kill, (done, iter_l, iter_1, iter_2, letter, artist, album, art_prefix, alb_prefix, year, disk, album_id) = namespace
         if kill:
             return False
 
         append = self.album_store.append
         pop = store.pop
         BLANK_ROW = self.BLANK_ROW
+        if letter is None: letter = {}
         
         for each in xrange(do_max):
             if acc.keepalive == False:
@@ -950,6 +967,15 @@ class TreePage(PageCommon):
                 self.set_loading_view(False)
                 return False
 
+            try:
+                alb_letter = row[0].decode('utf-8')[0].upper()
+            except IndexError:
+                alb_letter = ""
+        
+            if alb_letter in letter:
+                iter_l = letter[alb_letter]
+            else:
+                iter_l = letter[alb_letter] = append(None, (-1, alb_letter) + BLANK_ROW)
             if album_id == row[4]:
                 append(iter_2, (0, row[6]) + row)
                 continue
@@ -963,19 +989,19 @@ class TreePage(PageCommon):
                         albumtext = "%s (%d)" % (self._join(alb_prefix, album), year)
                     else:
                         albumtext = album
-                    iter_1 = append(None, (-1, albumtext) + BLANK_ROW)
+                    iter_1 = append(iter_l, (-2, albumtext) + BLANK_ROW)
                 if disk != row[3]:
                     disk = row[3]
                     if disk == 0:
                         iter_2 = iter_1
                     else:
-                        iter_2 = append(iter_1, (-2, _('Disk %d') % disk)
+                        iter_2 = append(iter_1, (-3, _('Disk %d') % disk)
                                                                 + BLANK_ROW)
                 append(iter_2, (0, row[6]) + row)
 
         done += do_max
         self.progress_bar.set_fraction(min(done / total, 1.0))
-        namespace[1] = done, iter_1, iter_2, artist, album, art_prefix, alb_prefix, year, disk, album_id
+        namespace[1] = done, iter_l, iter_1, iter_2, letter, artist, album, art_prefix, alb_prefix, year, disk, album_id
         return True
 
 

@@ -1,3 +1,11 @@
+* Changes in version 0.8.14 *
+
+Fix for Prokyon 3 database access.
+
+Song title database browse window now populates much more quickly.
+
+Song title database browse window has new alphabetic top level e.g. all artists beginning with S under S. (patch: bmillham)
+
 * Changes in version 0.8.13 *
 
 IRC support now comes from python-irc.
