@@ -1,5 +1,7 @@
 * Changes in version 0.8.14 *
 
+The timed server connection Begin/End time format is now hh:mm[:ss].
+
 Fix for Prokyon 3 database access.
 
 Song title database browse window now populates much more quickly.

@@ -796,15 +796,22 @@ class TimeEntry(gtk.HBox):
 
     def __time_updater(self, widget):
         text = widget.get_text()
-        if len(text) == 5 and text[2] == ":":
+        if len(text) in (5, 8) and text[2] == ":":
             try:
-                hours = int(text[:2])
-                minutes = int(text[3:])
-            except:
+                hh = int(text[:2])
+                mm = int(text[3:5])
+                try:
+                    ss = int(text[6:8])
+                except ValueError:
+                    ss = 0
+                else:
+                    if text[5] not in ":'":
+                        raise ValueError("bad separator")
+            except ValueError:
                 self.seconds_past_midnight = -1
             else:
-                if hours >= 0 and hours <=23 and minutes >= 0 and minutes <= 59:
-                    self.seconds_past_midnight = hours * 3600 + minutes * 60
+                if 0 <= hh < 24 and 0 <= mm < 60 and 0 <= ss < 60:
+                    self.seconds_past_midnight = hh * 3600 + mm * 60 + ss
                 else:
                     self.seconds_past_midnight = -1
         else:
@@ -817,10 +824,10 @@ class TimeEntry(gtk.HBox):
         self.check.connect("toggled", self.__entry_activate)
         self.pack_start(self.check, False)
         self.check.show()
-        self.entry = gtk.Entry(5)
+        self.entry = gtk.Entry(8)
         self.entry.set_sensitive(False)
-        self.entry.set_width_chars(5)
-        self.entry.set_text("00:00")
+        self.entry.set_width_chars(8)
+        self.entry.set_text("00:00:00")
         self.entry.connect("key-press-event", self.__key_validator)
         self.entry.connect("changed", self.__time_updater)
         self.pack_start(self.entry, False)
@@ -1451,7 +1458,7 @@ class StreamTab(Tab):
         
         self.start_timer = TimeEntry(_('Begin'))
         set_tip(self.start_timer, _('Automatically connect to the server at '
-                    'a specific time in 24 hour format, midnight being 00:00'))
+                'a specific time in 24 hour format, midnight being 00:00'))
         hbox.pack_start(self.start_timer, False)
         self.start_timer.show()
         
