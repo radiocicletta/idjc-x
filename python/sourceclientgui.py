@@ -826,7 +826,7 @@ class TimeEntry(gtk.HBox):
         self.check.show()
         self.entry = gtk.Entry(8)
         self.entry.set_sensitive(False)
-        self.entry.set_width_chars(8)
+        self.entry.set_width_chars(7)
         self.entry.set_text("00:00:00")
         self.entry.connect("key-press-event", self.__key_validator)
         self.entry.connect("changed", self.__time_updater)
@@ -1275,6 +1275,10 @@ class StreamTab(Tab):
             self.connection_string = None
             self.connection_pane.streaming_set(False)
 
+    def issue_fade_command(self):
+        self.send("command=initiate_fade\n")
+        self.receive()
+
     def cb_test_monitor(self, widget):
         if widget.get_active():
             self.start_stop_encoder(ENCODER_START)
@@ -1452,17 +1456,17 @@ class StreamTab(Tab):
         
         hbox = gtk.HBox()
         hbox.set_spacing(6)
-        label = gtk.Label(_('Connection timer:'))
+        label = gtk.Label(_('Timer:'))
         hbox.pack_start(label, False)
         label.show()
         
-        self.start_timer = TimeEntry(_('Begin'))
+        self.start_timer = TimeEntry(_('From'))
         set_tip(self.start_timer, _('Automatically connect to the server at '
                 'a specific time in 24 hour format, midnight being 00:00'))
         hbox.pack_start(self.start_timer, False)
         self.start_timer.show()
         
-        self.kick_before_start = gtk.CheckButton(_('With kick'))
+        self.kick_before_start = gtk.CheckButton(_('Kick'))
         self.kick_before_start.set_sensitive(False)
         set_tip(self.kick_before_start, _('Disconnect whoever is using the '
                                             'server just before start time.'))
@@ -1473,12 +1477,20 @@ class StreamTab(Tab):
                         self.kick_before_start.set_sensitive(w.props.active))
 
         
-        self.stop_timer = TimeEntry(_('End'))
+        self.stop_timer = TimeEntry(_('To'))
         set_tip(self.stop_timer, _('Automatically disconnect from the server '
                                     'at a specific time in 24 hour format.'))
+        
+        self.fade = gtk.CheckButton(_('Fade out'))
+        self.fade.set_sensitive(False)
+        set_tip(self.fade, _('Fade audio before disconnecting.'))
+        hbox.pack_end(self.fade, False)
+        self.stop_timer.check.connect("toggled", lambda w:
+                                    self.fade.set_sensitive(w.props.active))
+        self.fade.show()
         hbox.pack_end(self.stop_timer, False)
         self.stop_timer.show()
-        
+
         
         ic_vbox.pack_start(hbox, False, False, 0)
         hbox.show()
@@ -1711,6 +1723,7 @@ class StreamTab(Tab):
             "timer_start_time" : (self.start_timer.entry, "text"),
             "timer_stop_active" : (self.stop_timer.check, "active"),
             "timer_stop_time" : (self.stop_timer.entry, "text"),
+            "timer_stop_fade" : (self.fade, "active"),
             "sc_admin_pass" : (self.admin_password_entry, "text"),
             "ic_expander" : (self.ic_expander, "expanded"),
             "conf_expander" : (self.details, "expanded"),
@@ -2213,7 +2226,14 @@ class SourceClientGui(dbus.service.Object):
                                                     streamtab.deferred_connect)
                     else:
                         streamtab.server_connect.set_active(True)
-            if streamtab.stop_timer.get_active():
+            if streamtab.stop_timer.get_active() and \
+                                        streamtab.server_connect.get_active():
+                if streamtab.fade.get_active():
+                    diff = time.localtime(int(time.time()) + 5 - \
+                            streamtab.stop_timer.get_seconds_past_midnight())
+                    if not (diff[3] or diff[4] or diff[5]):
+                        streamtab.issue_fade_command()
+
                 diff = time.localtime(int(time.time()) - \
                             streamtab.stop_timer.get_seconds_past_midnight())
                 if not (diff[3] or diff[4] or diff[5]):

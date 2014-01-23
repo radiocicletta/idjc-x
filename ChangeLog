@@ -1,5 +1,7 @@
 * Changes in version 0.8.14 *
 
+Fixed a bug where stream timer could trigger a disconnection and disconnection dialog when not connected.
+
 The timed server connection Begin/End time format is now hh:mm[:ss].
 
 Fix for Prokyon 3 database access.

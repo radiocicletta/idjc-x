@@ -134,6 +134,9 @@ struct encoder
     int n_channels;                      /* stream parameters information... */
     int bitrate;
     float pregain;                /* gain value to apply to audio before encoding */
+    float fadegain;                 /* encoder fadeout value */
+    float fadescale;                /* encoder fadeout rate */
+    float fadefloor;                /* reset point for fade */
     long samplerate;
     long target_samplerate;
     double sr_conv_ratio;
@@ -173,6 +176,7 @@ struct encoder_op *encoder_register_client(struct threads_info *ti, int numeric_
 void encoder_unregister_client(struct encoder_op *op);
 int encoder_start(struct threads_info *ti, struct universal_vars *uv, void *other);
 int encoder_stop(struct threads_info *ti, struct universal_vars *uv, void *other);
+int encoder_initiate_fade(struct threads_info *ti, struct universal_vars *uv, void *other);
 int encoder_update(struct threads_info *ti, struct universal_vars *uv, void *other);
 int encoder_new_song_metadata(struct threads_info *ti, struct universal_vars *uv, void *other);
 int encoder_new_custom_metadata(struct threads_info *ti, struct universal_vars *uv, void *other);

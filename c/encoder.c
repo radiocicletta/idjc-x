@@ -252,17 +252,6 @@ static long encoder_resampler_get_data(void *cb_data, float **data)
     return (long)n_samples;
     }
 
-static void encoder_apply_pregain(struct encoder_ip_data *id, float gain)
-    {
-    if (gain != 1.0f)
-        for (int i = 0; i < id->channels; ++i)
-            {
-            float *bp = id->buffer[i];
-            for (size_t s = id->qty_samples; s; --s)
-                *bp++ *= gain;
-            }
-    }
-
 struct encoder_ip_data *encoder_get_input_data(struct encoder *encoder, size_t min_samples_needed, size_t max_samples, float **caller_supplied_buffer)
     {
     struct encoder_ip_data *id;
@@ -330,7 +319,28 @@ struct encoder_ip_data *encoder_get_input_data(struct encoder *encoder, size_t m
             goto no_data;
         }
 
-    encoder_apply_pregain(id, encoder->pregain);
+
+    if (encoder->pregain != 1.0f || encoder->fadescale != 1.0f)
+        {
+        float pgain = encoder->pregain;
+        float fgain = 1.0f, fscale = encoder->fadescale; 
+
+        for (int i = 0; i < id->channels; ++i)
+            {
+            float *bp = id->buffer[i];
+            fgain = encoder->fadegain;
+            for (size_t s = id->qty_samples; s; --s)
+                *bp++ *= pgain * (fgain *= fscale); 
+            }
+
+        if (fgain < encoder->fadefloor)
+            encoder->fadegain = encoder->fadescale = 1.0f;
+        else
+            encoder->fadegain = fgain;
+        }
+
+//fprintf(stderr, "%f\n", encoder->fadegain);
+
     return id;
 
     no_data:
@@ -698,6 +708,14 @@ int encoder_update(struct threads_info *ti, struct universal_vars *uv, void *oth
     encoder_unlink(self);
     return encoder_start(ti, uv, other);
     }
+
+int encoder_initiate_fade(struct threads_info *ti, struct universal_vars *uv, void *other)
+    {
+    struct encoder *self = ti->encoder[uv->tab];
+    
+    fprintf(stderr, "Encoder initiate fade ###\n");
+    return SUCCEEDED;
+    }
  
 int encoder_new_song_metadata(struct threads_info *ti, struct universal_vars *uv, void *other)
     {
@@ -791,6 +809,7 @@ struct encoder *encoder_init(struct threads_info *ti, int numeric_id)
     self->title = strdup("");
     self->album = strdup("");
     self->custom_meta = strdup("");
+    self->fadegain = self->fadescale = self->fadefloor = 1.0f;
     while ((self->oggserial = rand()) + 20000 < 0 || self->oggserial < 100);
     pthread_mutex_init(&self->mutex, NULL);
     pthread_mutex_init(&self->metadata_mutex, NULL);

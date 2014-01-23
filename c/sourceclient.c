@@ -207,6 +207,7 @@ static struct commandmap commandmap[] = {
     { "recorder_unpause", recorder_unpause, &rv },
     { "server_connect", streamer_connect, &sv },
     { "server_disconnect", streamer_disconnect, NULL },
+    { "initiate_fade", encoder_initiate_fade, NULL },
     { NULL, NULL, NULL } }; 
 
 static void sourceclient_cleanup()
