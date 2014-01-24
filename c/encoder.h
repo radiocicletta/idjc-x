@@ -136,7 +136,6 @@ struct encoder
     float pregain;                /* gain value to apply to audio before encoding */
     float fadegain;                 /* encoder fadeout value */
     float fadescale;                /* encoder fadeout rate */
-    float fadefloor;                /* reset point for fade */
     long samplerate;
     long target_samplerate;
     double sr_conv_ratio;
@@ -148,6 +147,7 @@ struct encoder
     pthread_mutex_t flush_mutex; /* to block encoder so it's in a known state before flush */
     pthread_mutex_t mutex;/* for blocking encoder_unregister_client while the encoder is writing out data */
     pthread_mutex_t metadata_mutex;      /* used when metadata is read or written */
+    pthread_mutex_t fade_mutex;     /* for blocking fade initiate while fade being processed */
     struct encoder_op *output_chain;     /* one output buffer per client connection */
     struct encoder_header_buffer *header_buffer; /* point to needed headers or NULL */
     enum performance_warning performance_warning_indicator; /* indicates ringbuffer overflow condition */

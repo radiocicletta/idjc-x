@@ -46,6 +46,7 @@ typedef jack_default_audio_sample_t sample_t;
 
 static const size_t rb_n_samples = 53000;       /* maximum number of samples to hold in the ring buffer */
 static uint32_t encoder_packet_magic_number = 'I' << 24 | 'D' << 16 | 'J' << 8 | 'C';
+static const float fade_floor = 0.0003f;
 
 int encoder_init_lame(struct threads_info *ti, struct universal_vars *uv, void *param)
     {
@@ -319,7 +320,7 @@ struct encoder_ip_data *encoder_get_input_data(struct encoder *encoder, size_t m
             goto no_data;
         }
 
-
+    pthread_mutex_lock(&encoder->fade_mutex);
     if (encoder->pregain != 1.0f || encoder->fadescale != 1.0f)
         {
         float pgain = encoder->pregain;
@@ -333,13 +334,15 @@ struct encoder_ip_data *encoder_get_input_data(struct encoder *encoder, size_t m
                 *bp++ *= pgain * (fgain *= fscale); 
             }
 
-        if (fgain < encoder->fadefloor)
+        if (fgain < fade_floor)
             encoder->fadegain = encoder->fadescale = 1.0f;
         else
             encoder->fadegain = fgain;
         }
+    pthread_mutex_unlock(&encoder->fade_mutex);
 
-//fprintf(stderr, "%f\n", encoder->fadegain);
+if (encoder->fadegain != 1.0f)
+fprintf(stderr, "%f\n", encoder->fadegain);
 
     return id;
 
@@ -713,7 +716,11 @@ int encoder_initiate_fade(struct threads_info *ti, struct universal_vars *uv, vo
     {
     struct encoder *self = ti->encoder[uv->tab];
     
-    fprintf(stderr, "Encoder initiate fade ###\n");
+    pthread_mutex_lock(&self->fade_mutex);
+    if (self->fadescale == 1.0f)
+        self->fadescale = powf(fade_floor, 1.f / (6.f * self->target_samplerate));
+    pthread_mutex_unlock(&self->fade_mutex);
+    
     return SUCCEEDED;
     }
  
@@ -809,11 +816,12 @@ struct encoder *encoder_init(struct threads_info *ti, int numeric_id)
     self->title = strdup("");
     self->album = strdup("");
     self->custom_meta = strdup("");
-    self->fadegain = self->fadescale = self->fadefloor = 1.0f;
+    self->fadegain = self->fadescale;
     while ((self->oggserial = rand()) + 20000 < 0 || self->oggserial < 100);
     pthread_mutex_init(&self->mutex, NULL);
     pthread_mutex_init(&self->metadata_mutex, NULL);
     pthread_mutex_init(&self->flush_mutex, NULL);
+    pthread_mutex_init(&self->fade_mutex, NULL);
     if (pthread_create(&self->thread_h, NULL, encoder_main, self))
         {
         fprintf(stderr, "encoder_init: pthread_create call failed\n");
@@ -830,6 +838,7 @@ void encoder_destroy(struct encoder *self)
     pthread_mutex_destroy(&self->mutex);
     pthread_mutex_destroy(&self->metadata_mutex);
     pthread_mutex_destroy(&self->flush_mutex);
+    pthread_mutex_destroy(&self->fade_mutex);
     if (self->rs_input[0])
         free(self->rs_input[0]);
     if (self->rs_input[1])
