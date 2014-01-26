@@ -341,9 +341,6 @@ struct encoder_ip_data *encoder_get_input_data(struct encoder *encoder, size_t m
         }
     pthread_mutex_unlock(&encoder->fade_mutex);
 
-if (encoder->fadegain != 1.0f)
-fprintf(stderr, "%f\n", encoder->fadegain);
-
     return id;
 
     no_data:
@@ -640,6 +637,7 @@ int encoder_start(struct threads_info *ti, struct universal_vars *uv, void *othe
     self->resample_f = !(self->samplerate == self->target_samplerate);
     self->sr_conv_ratio = (double)self->target_samplerate / (double)self->samplerate;
     self->pregain = atof(ev->pregain);
+    self->fadegain = self->fadescale = 1.0f;
     if (ev->bitrate)
         self->bitrate = atoi(ev->bitrate);
     self->n_channels = strcmp(ev->mode, "mono") ? 2 : 1;
@@ -816,7 +814,6 @@ struct encoder *encoder_init(struct threads_info *ti, int numeric_id)
     self->title = strdup("");
     self->album = strdup("");
     self->custom_meta = strdup("");
-    self->fadegain = self->fadescale;
     while ((self->oggserial = rand()) + 20000 < 0 || self->oggserial < 100);
     pthread_mutex_init(&self->mutex, NULL);
     pthread_mutex_init(&self->metadata_mutex, NULL);
