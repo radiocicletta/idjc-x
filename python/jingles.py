@@ -25,6 +25,7 @@ import uuid
 import gtk
 import gobject
 import itertools
+import urllib
 
 from idjc import *
 from .playergui import *
@@ -53,7 +54,14 @@ class Effect(gtk.HBox):
     L.E.D., stop, and config button.
     """
 
-    dndtargets = [("IDJC_EFFECT_BUTTON", gtk.TARGET_SAME_APP, 6)]
+    dndsources = (("IDJC_EFFECT_BUTTON", gtk.TARGET_SAME_APP, 6),)
+
+    dndtargets = (  # Drag and drop source target specs.
+        ('text/plain', 0, 1),
+        ('TEXT', 0, 2),
+        ('STRING', 0, 3),
+        ('text/uri-list', 0, 4),
+        ("IDJC_EFFECT_BUTTON", gtk.TARGET_SAME_APP, 6))
 
     def __init__(self, num, others, parent):
         self.num = num
@@ -100,7 +108,7 @@ class Effect(gtk.HBox):
         self.pack_start(pvbox, False)
         self.trigger.connect("clicked", self._on_trigger)
         self.trigger.drag_dest_set(gtk.DEST_DEFAULT_ALL,
-            self.dndtargets, gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_MOVE)
+            self.dndtargets, gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_COPY)
         self.trigger.connect("drag-data-received", self._drag_data_received)
         set_tip(self.trigger, _('Play'))
         
@@ -120,7 +128,7 @@ class Effect(gtk.HBox):
         self.pack_start(self.config, False)
         self.config.connect("clicked", self._on_config)
         self.config.drag_source_set(gtk.gdk.BUTTON1_MASK,
-            self.dndtargets, gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_MOVE)
+            self.dndsources, gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_COPY)
         self.config.connect("drag-data-get", self._drag_get_data)
         set_tip(self.config, _('Configure'))
 
@@ -154,15 +162,20 @@ class Effect(gtk.HBox):
         return True
 
     def _drag_data_received(self, widget, context, x, y, dragged, info, etime):
-        other = self.others[int(dragged.data)]
-        if context.action == gtk.gdk.ACTION_MOVE:
-            if other == self:
-                context.finish(False, False, etime)
-            else:
+        if context.targets == ["IDJC_EFFECT_BUTTON"]:
+            other = self.others[int(dragged.data)]
+            if other != self:
                 self.stop.clicked()
                 other.stop.clicked()
-                context.finish(True, False, etime)
                 self._swap(other)
+        else:
+            data = dragged.data.splitlines()
+            if len(data) == 1 and data[0].startswith("file://"):
+                pathname = urllib.unquote(data[0][7:])
+                title = self.interlude.get_media_metadata(pathname).title
+                if title:
+                    self.stop.clicked()
+                    self._set(pathname, title, 0.0)
         return True
         
     def _swap(self, other):

@@ -1,5 +1,7 @@
 * Changes in version 0.8.14 *
 
+Enabled drag and drop to effects from music database and file managers.
+
 Added an optional fade feature for timer disconnected streams.
 
 Fixed a bug where stream timer could trigger a disconnection and disconnection dialog when not connected.
