@@ -449,7 +449,7 @@ class PrefsControls(gtk.Frame):
 class PageCommon(gtk.VBox):
     """Base class for TreePage and FlatPage."""
     
-    def __init__(self, notebook, label_text, controls):
+    def __init__(self, notebook, label_text, controls, dnd=True):
         gtk.VBox.__init__(self)
         self.set_spacing(2)
         self.scrolled_window = gtk.ScrolledWindow()
@@ -463,10 +463,11 @@ class PageCommon(gtk.VBox):
         label = gtk.Label(label_text)
         notebook.append_page(self, label)
         
-        self.tree_view.enable_model_drag_source(gtk.gdk.BUTTON1_MASK,
-            self._sourcetargets, gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_COPY)
-        self.tree_view.connect_after("drag-begin", self._cb_drag_begin)
-        self.tree_view.connect("drag-data-get", self._cb_drag_data_get)
+        if dnd:
+            self.tree_view.enable_model_drag_source(gtk.gdk.BUTTON1_MASK,
+             self._sourcetargets, gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_COPY)
+            self.tree_view.connect_after("drag-begin", self._cb_drag_begin)
+            self.tree_view.connect("drag-data-get", self._cb_drag_data_get)
         self._update_id = deque()
         self._acc = None
 
@@ -1239,6 +1240,91 @@ class FlatPage(PageCommon):
         return True
 
 
+class CatalogsPage(PageCommon):
+    def __init__(self, notebook):
+        self.refresh = gtk.Button(stock=gtk.STOCK_REFRESH)
+        self.refresh.connect("clicked", self._on_refresh)
+        PageCommon.__init__(self, notebook, _("Catalogs"), self.refresh,
+                                                                    dnd=False)
+        # active, localpath, id, name, remotepath, age
+        self.list_store = gtk.ListStore(int, str, int, str, str, int)
+        self.tree_cols = self._make_tv_columns(self.tree_view, (
+            (_('Name'), 3, None, 13, pango.ELLIPSIZE_END),
+            (_('Remote Path'), 4, None, 100, pango.ELLIPSIZE_END),
+            (_('Local Path (editable)'), 1, None, -1, pango.ELLIPSIZE_NONE)
+            ))
+
+        activerenderer = gtk.CellRendererToggle()
+        activerenderer.set_activatable(True)
+        activerenderer.connect("toggled", self._on_toggle)
+        self.tree_view.insert_column_with_attributes(0, "", activerenderer,
+                                                                    active=0)
+        self.tree_view.set_rules_hint(True)
+
+
+    @property
+    def data(self):
+        if self.in_update:
+            return None
+    
+        data = []
+        for row in self.list_store:
+            data.append(list(row))
+        return data
+
+    @property
+    def in_update(self):
+        return not self.refresh.get_sensitive()
+
+    def activate(self, *args, **kwargs):
+        PageCommon.activate(self, *args, **kwargs)
+        self.refresh.clicked()
+
+    def _on_toggle(self, renderer, path):
+        iter = self.list_store.get_iter(path)
+        if iter is not None:
+            old_val = self.list_store.get_value(iter, 0)
+            self.list_store.set_value(iter, 0, not old_val)
+
+    def _on_refresh(self, widget):
+        self.refresh.set_sensitive(False)
+        self.tree_view.set_model(None)
+        query = """SELECT id, name, path, last_update FROM catalog
+                                            WHERE enabled=1 ORDER BY name"""
+        self._acc.request((query,), self._handler, self._failhandler)
+        
+    def _failhandler(self, exception, notify):
+        notify(str(exception))
+        if exception[0] == 2006:
+            raise
+        
+        self.refresh.set_sensitive(True)
+
+    @threadslock
+    def _update_1(self, acc, cursor, rows, namespace):
+        if not namespace[0]:
+            old_data = {}
+            for row in self.list_store:
+                old_data[row[2]] = (row[0], row[1])
+            self.list_store.clear()
+            
+            while 1:
+                try:
+                    db_row = cursor.fetchone()
+                except sql.Error:
+                    break
+
+                if db_row is None:
+                    break
+            
+                user_row = old_data.get(db_row[0], (1, db_row[2]))
+                self.list_store.append(user_row + db_row)
+
+        self.tree_view.set_model(self.list_store)
+        self.refresh.set_sensitive(True)
+        return False
+        
+
 class MediaPane(gtk.VBox):
     """Database song details are displayed in this widget."""
 
@@ -1250,6 +1336,7 @@ class MediaPane(gtk.VBox):
         
         self._tree_page = TreePage(self.notebook)
         self._flat_page = FlatPage(self.notebook)
+        self._catalogs_page = CatalogsPage(self.notebook)
         self.prefs_controls = PrefsControls()
 
         if have_songdb:
@@ -1290,19 +1377,19 @@ class MediaPane(gtk.VBox):
     def _dbtoggle(self, conn_data, trans_data):
         if conn_data:
             # Connect and discover the database type.
-            self._acc1 = DBAccessor(**conn_data)
-            self._acc2 = DBAccessor(**conn_data)
+            for i in range(1, 4):
+                setattr(self, "_acc%d" % i, DBAccessor(**conn_data))
             self._trans_data = trans_data
             self._acc1.request(('SHOW tables',), self._stage_1, self._fail_1)
         else:
             try:
-                self._acc1.close()
-                self._acc2.close()
+                for i in xrange(1, 4):
+                    getattr(self, "_acc%d" % i).close()
             except AttributeError:
                 pass
             else:
-                self._tree_page.deactivate()
-                self._flat_page.deactivate()
+                for each in "tree flat catalogs".split():
+                    getattr(self, "_%s_page" % each).deactivate()
             self.hide()
 
     @staticmethod
@@ -1318,6 +1405,8 @@ class MediaPane(gtk.VBox):
     def _hand_over(self, database_name):
         self._tree_page.activate(self._acc1, database_name, self._trans_data)
         self._flat_page.activate(self._acc2, database_name, self._trans_data)
+        self._catalogs_page.activate(self._acc3, database_name,
+                                                            self._trans_data)
         glib.idle_add(threadslock(self.show))
             
     def _fail_1(self, exception, notify):
