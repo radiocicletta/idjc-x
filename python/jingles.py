@@ -129,7 +129,9 @@ class Effect(gtk.HBox):
         self.config.connect("clicked", self._on_config)
         self.config.drag_source_set(gtk.gdk.BUTTON1_MASK,
             self.dndsources, gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_COPY)
+        self.config.connect("drag-begin", self._drag_begin)
         self.config.connect("drag-data-get", self._drag_get_data)
+        self.config.connect("drag-end", self._drag_end)
         set_tip(self.config, _('Configure'))
 
         self.dialog = EffectConfigDialog(self, parent.window)
@@ -157,6 +159,13 @@ class Effect(gtk.HBox):
         vb.pack_start(self.tabeffectprog)
         self.tabwidget.show_all()
 
+    def _drag_begin(self, widget, context):
+        widget.drag_highlight()
+        context.set_icon_stock(gtk.STOCK_PROPERTIES, -5, -5)
+        
+    def _drag_end(self, widget, context):
+        widget.drag_unhighlight()
+
     def _drag_get_data(self, widget, context, selection, target_id, etime):
         selection.set(selection.target, 8, str(self.num))
         return True
@@ -168,6 +177,7 @@ class Effect(gtk.HBox):
                 self.stop.clicked()
                 other.stop.clicked()
                 self._swap(other)
+                return True
         else:
             data = dragged.data.splitlines()
             if len(data) == 1 and data[0].startswith("file://"):
@@ -176,7 +186,8 @@ class Effect(gtk.HBox):
                 if title:
                     self.stop.clicked()
                     self._set(pathname, title, 0.0)
-        return True
+                    return True
+        return False
         
     def _swap(self, other):
         new_pathname = other.pathname
