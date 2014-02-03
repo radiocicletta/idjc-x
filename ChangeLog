@@ -2,6 +2,8 @@
 
 Added initial Ampache music catalogs support.
 
+Fine tuned the suppression of key bindings when using the database "Search" tab.
+
 Fixed regression of save/restore database column widths.
 
 Enabled drag and drop to effects from music database and file managers.

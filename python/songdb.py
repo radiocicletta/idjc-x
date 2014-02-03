@@ -487,6 +487,9 @@ class PageCommon(gtk.VBox):
         return ",".join([str(x.get_width() or x.get_fixed_width())
                                                     for x in self.tree_cols])
 
+    def in_text_entry(self):
+        return False
+
     def set_col_widths(self, data):
         """Restore column width values."""
          
@@ -1070,6 +1073,9 @@ class FlatPage(PageCommon):
         self.tree_view.set_rubber_banding(True)
         self.tree_selection.set_mode(gtk.SELECTION_MULTIPLE)
 
+    def in_text_entry(self):
+        return any(x.has_focus() for x in (self.fuzzy_entry, self.where_entry))
+
     def deactivate(self):
         self.fuzzy_entry.set_text("")
         self.where_entry.set_text("")
@@ -1251,13 +1257,19 @@ class CatalogsPage(PageCommon):
             (_('Local Path (editable)'), 1, None, -1, pango.ELLIPSIZE_NONE)
             ))
 
-        activerenderer = gtk.CellRendererToggle()
-        activerenderer.set_activatable(True)
-        activerenderer.connect("toggled", self._on_toggle)
-        self.tree_view.insert_column_with_attributes(0, "", activerenderer,
-                                                                    active=0)
-        self.tree_view.set_rules_hint(True)
+        rend = gtk.CellRendererToggle()
+        rend.set_activatable(True)
+        rend.connect("toggled", self._on_toggle)
+        self.tree_view.insert_column_with_attributes(0, "", rend, active=0)
+                                                                    
+        rend = self.tree_view.get_column(3).get_cell_renderers()[0]
+        rend.props.editable = True
+        rend.connect("edited", self._on_edited)
+        rend.connect("editing-started", self._on_editing_started)
+        rend.connect("editing-canceled", self._on_editing_cancelled)
 
+        self.tree_view.set_rules_hint(True)
+        self._in_text_entry = False
 
     @property
     def data(self):
@@ -1272,6 +1284,9 @@ class CatalogsPage(PageCommon):
     @property
     def in_update(self):
         return not self.refresh.get_sensitive()
+
+    def in_text_entry(self):
+        return self._in_text_entry
 
     def activate(self, *args, **kwargs):
         PageCommon.activate(self, *args, **kwargs)
@@ -1289,7 +1304,23 @@ class CatalogsPage(PageCommon):
         query = """SELECT id, name, path, last_update FROM catalog
                                             WHERE enabled=1 ORDER BY name"""
         self._acc.request((query,), self._handler, self._failhandler)
+
+
+    def _on_editing_started(self, rend, editable, path):
+        self._in_text_entry = True
         
+    def _on_editing_cancelled(self, rend):
+        self._in_text_entry = False
+
+    def _on_edited(self, rend, path, new_text):
+        self._in_text_entry = False
+        new_text = new_text.strip()
+        iter = self.list_store.get_iter(path)
+        if iter is not None:
+            if not new_text:
+                new_text = self.list_store.get_value(iter, 4)
+            self.list_store.set_value(iter, 1, new_text)
+
     def _failhandler(self, exception, notify):
         notify(str(exception))
         if exception[0] == 2006:
@@ -1346,9 +1377,17 @@ class MediaPane(gtk.VBox):
 
         self.notebook.show_all()
 
+    def in_text_entry(self):
+        if self.get_visible():
+            page = self.notebook.get_nth_page(self.notebook.get_current_page())
+            return page.in_text_entry()
+            
+        return False
+            
     def repair_focusability(self):
         self._tree_page.repair_focusability()
         self._flat_page.repair_focusability()
+        self._catalogs_page.repair_focusability()
 
     def get_col_widths(self, keyval):
         """Grab column widths as textual data."""
