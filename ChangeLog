@@ -2,6 +2,8 @@
 
 Added initial Ampache music catalogs support.
 
+Fixed regression of save/restore database column widths.
+
 Enabled drag and drop to effects from music database and file managers.
 
 Added an optional fade feature for timer disconnected streams.

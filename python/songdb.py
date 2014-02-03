@@ -484,9 +484,6 @@ class PageCommon(gtk.VBox):
         return self._trans_data[1]
 
     def get_col_widths(self):
-        pass
-
-    def get_col_widths(self):
         return ",".join([str(x.get_width() or x.get_fixed_width())
                                                     for x in self.tree_cols])
 
@@ -1249,7 +1246,7 @@ class CatalogsPage(PageCommon):
         # active, localpath, id, name, remotepath, age
         self.list_store = gtk.ListStore(int, str, int, str, str, int)
         self.tree_cols = self._make_tv_columns(self.tree_view, (
-            (_('Name'), 3, None, 13, pango.ELLIPSIZE_END),
+            (_('Name'), 3, None, 65, pango.ELLIPSIZE_END),
             (_('Remote Path'), 4, None, 100, pango.ELLIPSIZE_END),
             (_('Local Path (editable)'), 1, None, -1, pango.ELLIPSIZE_NONE)
             ))
@@ -1357,8 +1354,9 @@ class MediaPane(gtk.VBox):
         """Grab column widths as textual data."""
         
         try:
-            target = getattr(self, keyval)
-        except AttributeError:
+            target = getattr(self, "_%s_page" % keyval)
+        except AttributeError as e:
+            print e
             return ""
         else:
             return target.get_col_widths()
@@ -1368,8 +1366,9 @@ class MediaPane(gtk.VBox):
         
         if data:
             try:
-                target = getattr(self, keyval)
-            except AttributeError:
+                target = getattr(self, "_%s_page" % keyval)
+            except AttributeError as e:
+                print e
                 return
             else:
                 target.set_col_widths(data)
