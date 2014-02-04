@@ -449,8 +449,13 @@ class PrefsControls(gtk.Frame):
 class ViewerCommon(object):
     """Base class for TreePage and FlatPage."""
     
-    def __init__(self, catalogs):
+    def __init__(self, notebook, catalogs):
         self.catalogs = catalogs
+        self.notebook = notebook
+
+    def _on_page_change(self, notebook, page, page_num):
+        if notebook.get_nth_page(page_num) == self:
+            self.reload()
 
     _sourcetargets = (  # Drag and drop source target specs.
         ('text/plain', 0, 1),
@@ -675,7 +680,7 @@ class TreePage(PageCommon, ViewerCommon):
     BLANK_ROW = tuple(x() for x in DATA_SIGNATURE[2:])
 
     def __init__(self, notebook, catalogs):
-        ViewerCommon.__init__(self, catalogs)
+        ViewerCommon.__init__(self, notebook, catalogs)
         self.controls = gtk.HBox()
         layout_store = gtk.ListStore(str, gtk.TreeStore, gobject.TYPE_PYOBJECT)
         self.layout_combo = gtk.ComboBox(layout_store)
@@ -739,6 +744,8 @@ class TreePage(PageCommon, ViewerCommon):
         self.loading_vbox.pack_start(self.progress_bar, False)
         self.pack_start(self.loading_vbox)
         self._pulse_id = deque()
+        self._cat_cb = catalogs.connect("changed", self._on_catalogs_changed)
+        self._old_cat_data = None
         
         self.show_all()
 
@@ -757,7 +764,6 @@ class TreePage(PageCommon, ViewerCommon):
 
     def activate(self, *args, **kwargs):
         PageCommon.activate(self, *args, **kwargs)
-        glib.idle_add(threadslock(self.tree_rebuild.clicked))
 
     def deactivate(self):
         while self._pulse_id:
@@ -765,6 +771,16 @@ class TreePage(PageCommon, ViewerCommon):
         self.progress_bar.set_fraction(0.0)
         
         PageCommon.deactivate(self)
+
+    def reload(self):
+        if self._old_cat_data != self.catalogs:
+            self.tree_rebuild.clicked()
+
+    def _on_catalogs_changed(self, widget):
+        self.catalogs.disconnect(self._cat_cb)  # Only run once.
+        self._cat_cb = None
+        self.notebook.connect("switch-page", self._on_page_change)
+        self.reload()
 
     def _cb_layout_combo(self, widget):
         iter = widget.get_active_iter()
@@ -776,6 +792,7 @@ class TreePage(PageCommon, ViewerCommon):
     def _cb_tree_rebuild(self, widget):
         """(Re)load the tree with info from the database."""
 
+        self._old_cat_data = self.catalogs.copy_data()
         self.set_loading_view(True)
         if self._db_type == PROKYON_3:
             query = """SELECT
@@ -811,7 +828,9 @@ class TreePage(PageCommon, ViewerCommon):
                     FROM song
                     LEFT JOIN artist ON song.artist = artist.id
                     LEFT JOIN album ON song.album = album.id
+                    WHERE __catalogs__
                     ORDER BY artist.name, album, disk, tracknumber, title"""
+            query = query.replace("__catalogs__", self.catalogs.sql())
         else:
             print "unsupported database type:", self._db_type
             return
@@ -951,7 +970,7 @@ class TreePage(PageCommon, ViewerCommon):
                 r_append(iter_2, (0, row[6]) + row)
                 
         done += do_max
-        self.progress_bar.set_fraction(done / total)
+        self.progress_bar.set_fraction(sorted((0.0, done / total, 1.0))[1])
         namespace[1] = done, iter_l, iter_1, iter_2, letter, artist, album, art_prefix, alb_prefix
         return True
 
@@ -1018,7 +1037,7 @@ class FlatPage(PageCommon, ViewerCommon):
     """Flat list based user interface with a search facility."""
     
     def __init__(self, notebook, catalogs):
-        ViewerCommon.__init__(self, catalogs)
+        ViewerCommon.__init__(self, notebook, catalogs)
         # Base class overwrites these values.
         self.scrolled_window = self.tree_view = self.tree_selection = None
         self.transfrom = self.db_accessor = None
@@ -1081,6 +1100,10 @@ class FlatPage(PageCommon, ViewerCommon):
         self.tree_view.set_rules_hint(True)
         self.tree_view.set_rubber_banding(True)
         self.tree_selection.set_mode(gtk.SELECTION_MULTIPLE)
+        self.notebook.connect("switch-page", self._on_page_change)
+
+    def reload(self):
+        self.update_button.clicked()
 
     def in_text_entry(self):
         return any(x.has_focus() for x in (self.fuzzy_entry, self.where_entry))
@@ -1126,7 +1149,7 @@ class FlatPage(PageCommon, ViewerCommon):
                     WHERE
                          (MATCH(album.name) against(%s)
                           OR MATCH(artist.name) against(%s)
-                          OR MATCH(title) against(%s))
+                          OR MATCH(title) against(%s)) AND __catalogs__
                     """),
 
             WHERE: (DIRTY, """
@@ -1138,7 +1161,7 @@ class FlatPage(PageCommon, ViewerCommon):
                     album.disk as disk FROM song
                     LEFT JOIN album on album.id = song.album
                     LEFT JOIN artist on artist.id = song.artist
-                    WHERE (%s) ORDER BY
+                    WHERE (%s) AND __catalogs__ ORDER BY
                     artist.name, album.name, file, album.disk, track, title
                     """)}
     }
@@ -1164,6 +1187,8 @@ class FlatPage(PageCommon, ViewerCommon):
                     namespace[0] = True
                 self.list_store.clear()
                 return
+
+        query = query.replace("__catalogs__", self.catalogs.sql())
 
         qty = query.count("(%s)")
         if access_mode == CLEAN:
@@ -1252,27 +1277,35 @@ class FlatPage(PageCommon, ViewerCommon):
         return True
 
 
-class CatalogsInterface(dict):
+class CatalogsInterface(gobject.GObject):
+    __gsignals__ = { "changed" : (gobject.SIGNAL_RUN_LAST, None, ()) }
+    
+    def __init__(self):
+        gobject.GObject.__init__(self)
+        self._dict = {}
+
+    def clear(self):
+        self._dict.clear()
+        
+    def copy_data(self):
+        return self._dict.copy()
+    
     def update(self, liststore):
         """Replacement of the standard dict update method.
         
         This one interprets a CatalogPage gtk.ListStore.
         """
         
-        tmp = {}
+        self._dict.clear()
         for row in liststore:
             if row[0]:
-                tmp[row[4]] = {
+                self._dict[row[4]] = {
                     "localpath" : row[1], "id" : row[2], "name" : row[3],
                     "last_update" : row[5], "last_clean" : row[6],
                     "last_add" : row[7]
                 }
                 
-        self.clear()
-        dict.update(self, tmp)
-
-    def catalogs_changed(self, other):
-        return self._stripped_copy(self) == self._stripped_copy(other)
+        self.emit("changed")
 
     def transform_path(self, path):
         # ToDo: Handle windows paths.
@@ -1286,10 +1319,24 @@ class CatalogsInterface(dict):
                 print "failed to find match for", path
                 # Leave unchanged.
                 return path
-        
-    def _stripped_copy(self):
+    
+    def sql(self):
+        ids = tuple(x["id"] for x in self._dict.itervalues())
+        if not ids:
+            return "TRUE"  # No catalog filtering for nothing selected
+        if len(ids) == 1:
+            return "catalog = %d" % ids[0]
+        return "catalog IN %s" % str(ids)
+    
+    def __cmp__(self, other):
+        if other is None:
+            return 1
+        return cmp(self._stripped_copy(self._dict), self._stripped_copy(other))
+
+    @staticmethod
+    def _stripped_copy(_dict):
         copy = {}
-        for key, val in self.iteritems():
+        for key, val in _dict.iteritems():
             if key != "localpath":
                 copy[key] = val
 
@@ -1341,6 +1388,7 @@ class CatalogsPage(PageCommon):
         if iter is not None:
             old_val = self.list_store.get_value(iter, 0)
             self.list_store.set_value(iter, 0, not old_val)
+            self.interface.update(self.list_store)
 
     def _on_refresh(self, widget):
         self.refresh.set_sensitive(False)
@@ -1361,16 +1409,18 @@ class CatalogsPage(PageCommon):
         new_text = new_text.strip()
         iter = self.list_store.get_iter(path)
         if iter is not None:
-            if not new_text:
-                new_text = self.list_store.get_value(iter, 4)
-            self.list_store.set_value(iter, 1, new_text)
+            old_text = model.get_value(iter, 4)
+            if new_text and new_text != old_text:
+                self.list_store.set_value(iter, 1, new_text)
+                self.interface.update(self.list_store)
 
     def _failhandler(self, exception, notify):
         notify(str(exception))
         if exception[0] == 2006:
             raise
         
-        glib.idle_add(threadslock(self.refresh.set_sensitive(True)))
+        glib.idle_add(threadslock(self.tree_view.set_model), self.list_store)
+        glib.idle_add(threadslock(self.refresh.set_sensitive), True)
 
     @threadslock
     def _update_1(self, acc, cursor, rows, namespace):
@@ -1394,6 +1444,7 @@ class CatalogsPage(PageCommon):
 
         self.tree_view.set_model(self.list_store)
         self.refresh.set_sensitive(True)
+        self.interface.update(self.list_store)
         return False
         
 
