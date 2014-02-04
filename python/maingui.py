@@ -2071,6 +2071,18 @@ class MainWindow(dbus.service.Object):
     
         print "track_metadata_changed called and signal emitted"
 
+    @dbus.service.signal(dbus_interface=PGlobs.dbus_bus_basename,
+                                                            signature="ssu")
+    def effect_started(self, title, pathname, player):
+        """DBus signal for plugins to attach to when new effects play"""
+        pass
+
+    @dbus.service.signal(dbus_interface=PGlobs.dbus_bus_basename,
+                                                            signature="u")
+    def effect_stopped(self, player):
+        """DBus signal for plugins to attach to when new effects play"""
+        pass
+
     def songname_decode(self, data):
         i = 1
         while 1:

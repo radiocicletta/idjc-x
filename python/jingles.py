@@ -228,6 +228,8 @@ class Effect(gtk.HBox):
                 self.tabeffecttime.set_text('0.0')
                 self.tabeffectprog.set_fraction(0.0)
                 self.approot.jingles.nb_effects_box.pack_start(self.tabwidget)
+                self.approot.effect_started(self.trigger_label.get_text(),
+                                                    self.pathname, self.num)
             else: # Restarted the effect
                 self.effect_start = time.time()
             self.approot.mixer_write(
@@ -260,6 +262,7 @@ class Effect(gtk.HBox):
             self.timeout_source_id = None
             self.progress.set_fraction(0.0)
             self.approot.jingles.nb_effects_box.remove(self.tabwidget)
+            self.approot.effect_stopped(self.num)
 
     def _on_dialog_response(self, dialog, response_id, pathname=None):
         if response_id in (gtk.RESPONSE_ACCEPT, gtk.RESPONSE_NO):

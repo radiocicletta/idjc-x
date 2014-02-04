@@ -39,6 +39,12 @@ def frozen_handler(monitor, profile, pid, frozen):
     print "IDJC '%s' with process ID %d is %s" % (
                     profile, pid, ("no longer frozen", "frozen")[frozen])
 
+def effect_started_handler(monitor, title, pathname, player):
+    print "Effect player %d is playing %s" % (player, title)
+
+def effect_stopped_handler(monitor, player):
+    print "Effect player %d has stopped" % player
+
 try:
     profile = sys.argv[1]
 except IndexError:
@@ -50,6 +56,8 @@ monitor.connect("quit", quit_handler)
 monitor.connect("streamstate-changed", streamstate_handler)
 monitor.connect("metadata-changed", metadata_handler)
 monitor.connect("frozen", frozen_handler)
+monitor.connect("effect-started", effect_started_handler)
+monitor.connect("effect-stopped", effect_stopped_handler)
 
 gobject.MainLoop().run()
 </pre>

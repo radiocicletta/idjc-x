@@ -58,6 +58,10 @@ class IDJCMonitor(gobject.GObject):
         
         'metadata-changed' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
                                                     (gobject.TYPE_STRING,) * 5),
+        'effect-started': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
+                           (gobject.TYPE_STRING,) * 2 + (gobject.TYPE_UINT,)),
+        'effect-stopped': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
+                           (gobject.TYPE_UINT,)),
         'frozen' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
                 (gobject.TYPE_STRING, gobject.TYPE_UINT, gobject.TYPE_BOOLEAN))
     }
@@ -164,6 +168,10 @@ class IDJCMonitor(gobject.GObject):
         try:
             self.__main.connect_to_signal("track_metadata_changed",
                                                         self._metadata_handler)
+            self.__main.connect_to_signal("effect_started",
+                                                self._effect_started_handler)
+            self.__main.connect_to_signal("effect_stopped",
+                                                self._effect_stopped_handler)
             self.__main.connect_to_signal("quitting", self._quit_handler)
             self.__main.connect_to_signal("heartbeat", self._heartbeat_handler)
             self.__output.connect_to_signal("streamstate_changed",
@@ -243,6 +251,12 @@ class IDJCMonitor(gobject.GObject):
                                                 self.__album, self.__songname,
                                                 self.__music_filename)
 
+    def _effect_started_handler(self, title, pathname, player):
+        self.emit("effect-started", title, pathname, player)
+
+    def _effect_stopped_handler(self, player):
+        self.emit("effect-stopped", player)
+
     def do_get_property(self, prop):
         if self.__shutdown:
             raise AttributeError(
@@ -250,7 +264,8 @@ class IDJCMonitor(gobject.GObject):
         
         name = prop.name
         
-        if name in ("artist", "title", "album", "songname", "music_filename"):
+        if name in ("artist", "title", "album", "songname", "music_filename",
+                    "effect_pathname"):
             return getattr(self, "_IDJCMonitor__" + name)
         if name == "streaminfo":
             return tuple(self.__streams[n] for n in xrange(10))
