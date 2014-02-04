@@ -446,8 +446,94 @@ class PrefsControls(gtk.Frame):
         self._statusbar.set_tooltip_text(message)
 
 
-class PageCommon(gtk.VBox):
+class ViewerCommon(object):
     """Base class for TreePage and FlatPage."""
+    
+    def __init__(self, catalogs):
+        self.catalogs = catalogs
+
+    _sourcetargets = (  # Drag and drop source target specs.
+        ('text/plain', 0, 1),
+        ('TEXT', 0, 2),
+        ('STRING', 0, 3))
+
+    def _cb_drag_begin(self, widget, context):
+        """Set icon for drag and drop operation."""
+
+        context.set_icon_stock(gtk.STOCK_CDROM, -5, -5)
+
+    def _cb_drag_data_get(self, tree_view, context, selection, target, etime):
+        model, paths = self.tree_selection.get_selected_rows()
+        data = ("file://%s" % row for row in self._drag_data(model, paths))
+        selection.set(selection.target, 8, "\n".join(data))
+
+    def _cond_cell_secs_to_h_m_s(self, column, renderer, model, iter, cell):
+        if model.get_value(iter, 0) >= 0:
+            return self._cell_secs_to_h_m_s(column, renderer, model, iter, cell)
+        else:
+            renderer.set_property("text", "")
+    
+    def _cell_k(self, column, renderer, model, iter, cell):
+        bitrate = model.get_value(iter, cell)
+        if bitrate == 0:
+            renderer.set_property("text", "")
+        elif self._db_type == "P3":
+            renderer.set_property("text", "%dk" % bitrate)
+        elif bitrate > 9999 and self._db_type == AMPACHE:
+            renderer.set_property("text", "%dk" % (bitrate // 1000))
+        renderer.set_property("xalign", 1.0)
+
+    @staticmethod
+    def _cell_show_unknown(column, renderer, model, iter, cell):
+        text = model.get_value(iter, cell) or _('<unknown>')
+        renderer.props.text = text
+
+    @staticmethod
+    def _cell_show_nested(column, renderer, model, iter, cell):
+        text = model.get_value(iter, cell) or _('<unknown>')
+        col = "red" if model.iter_depth(iter) == 0 else "black"
+        renderer.props.text = text
+        renderer.props.foreground = col
+
+    def inner(column, renderer, model, iter, cell, which_bit):
+        text = model.get_value(iter, cell)
+
+        if text:
+            renderer.props.text = which_bit(text)
+        else:
+            renderer.props.text = ""    
+    _cell_path = staticmethod(partial(inner, which_bit=os.path.dirname))
+    _cell_filename = staticmethod(partial(inner, which_bit=os.path.basename))
+    del inner
+    
+    @staticmethod
+    def _cell_secs_to_h_m_s(column, renderer, model, iter, cell):
+        v_in = model.get_value(iter, cell)
+        m, s = divmod(v_in, 60)
+        h, m = divmod(m, 60)
+        d, h = divmod(h, 24)
+        if d:
+            v_out = "%dd:%02d:%02d" % (d, h, m)
+        else:
+            if h:
+                v_out = "%d:%02d:%02d" % (h, m, s)
+            else:
+                v_out = "%d:%02d" % (m, s)
+        renderer.set_property("xalign", 1.0)
+        renderer.set_property("text", v_out)
+        
+    @staticmethod
+    def _cell_ralign(column, renderer, model, iter, cell):
+        val = model.get_value(iter, cell)
+        if val:
+            renderer.set_property("xalign", 1.0)
+            renderer.set_property("text", val)
+        else:
+            renderer.set_property("text", "")
+
+
+class PageCommon(gtk.VBox):
+    """Base class for all pages."""
     
     def __init__(self, notebook, label_text, controls, dnd=True):
         gtk.VBox.__init__(self)
@@ -520,21 +606,6 @@ class PageCommon(gtk.VBox):
     def repair_focusability(self):
         self.tree_view.set_flags(gtk.CAN_FOCUS)
 
-    _sourcetargets = (  # Drag and drop source target specs.
-        ('text/plain', 0, 1),
-        ('TEXT', 0, 2),
-        ('STRING', 0, 3))
-
-    def _cb_drag_begin(self, widget, context):
-        """Set icon for drag and drop operation."""
-
-        context.set_icon_stock(gtk.STOCK_CDROM, -5, -5)
-
-    def _cb_drag_data_get(self, tree_view, context, selection, target, etime):
-        model, paths = self.tree_selection.get_selected_rows()
-        data = ("file://%s" % row for row in self._drag_data(model, paths))
-        selection.set(selection.target, 8, "\n".join(data))
-
     @staticmethod
     def _make_tv_columns(tree_view, parameters):
         """Build a TreeViewColumn list from a table of data."""
@@ -557,70 +628,6 @@ class PageCommon(gtk.VBox):
                 column.add_attribute(renderer, 'text', data_index)
 
         return list_
-
-    def _cond_cell_secs_to_h_m_s(self, column, renderer, model, iter, cell):
-        if model.get_value(iter, 0) >= 0:
-            return self._cell_secs_to_h_m_s(column, renderer, model, iter, cell)
-        else:
-            renderer.set_property("text", "")
-    
-    def _cell_k(self, column, renderer, model, iter, cell):
-        bitrate = model.get_value(iter, cell)
-        if bitrate == 0:
-            renderer.set_property("text", "")
-        elif self._db_type == "P3":
-            renderer.set_property("text", "%dk" % bitrate)
-        elif bitrate > 9999 and self._db_type == AMPACHE:
-            renderer.set_property("text", "%dk" % (bitrate // 1000))
-        renderer.set_property("xalign", 1.0)
-
-    @staticmethod
-    def _cell_show_unknown(column, renderer, model, iter, cell):
-        text = model.get_value(iter, cell) or _('<unknown>')
-        renderer.props.text = text
-
-    @staticmethod
-    def _cell_show_nested(column, renderer, model, iter, cell):
-        text = model.get_value(iter, cell) or _('<unknown>')
-        col = "red" if model.iter_depth(iter) == 0 else "black"
-        renderer.props.text = text
-        renderer.props.foreground = col
-
-    def inner(column, renderer, model, iter, cell, which_bit):
-        text = model.get_value(iter, cell)
-
-        if text:
-            renderer.props.text = which_bit(text)
-        else:
-            renderer.props.text = ""    
-    _cell_path = staticmethod(partial(inner, which_bit=os.path.dirname))
-    _cell_filename = staticmethod(partial(inner, which_bit=os.path.basename))
-    del inner
-    
-    @staticmethod
-    def _cell_secs_to_h_m_s(column, renderer, model, iter, cell):
-        v_in = model.get_value(iter, cell)
-        m, s = divmod(v_in, 60)
-        h, m = divmod(m, 60)
-        d, h = divmod(h, 24)
-        if d:
-            v_out = "%dd:%02d:%02d" % (d, h, m)
-        else:
-            if h:
-                v_out = "%d:%02d:%02d" % (h, m, s)
-            else:
-                v_out = "%d:%02d" % (m, s)
-        renderer.set_property("xalign", 1.0)
-        renderer.set_property("text", v_out)
-        
-    @staticmethod
-    def _cell_ralign(column, renderer, model, iter, cell):
-        val = model.get_value(iter, cell)
-        if val:
-            renderer.set_property("xalign", 1.0)
-            renderer.set_property("text", val)
-        else:
-            renderer.set_property("text", "")
 
     def _handler(self, acc, request, cursor, notify, rows):
         # Lock against the very start of the update functions.
@@ -658,7 +665,7 @@ class ExpandAllButton(gtk.Button):
             set_tip(self, tooltip)
 
 
-class TreePage(PageCommon):
+class TreePage(PageCommon, ViewerCommon):
     """Browsable UI with tree structure."""
 
     # *depth*, *treecol*, album, album_prefix, year, disk, album_id,
@@ -667,7 +674,8 @@ class TreePage(PageCommon):
     DATA_SIGNATURE = int, str, str, str, int, int, int, int, str, str, str, str, int, int
     BLANK_ROW = tuple(x() for x in DATA_SIGNATURE[2:])
 
-    def __init__(self, notebook):
+    def __init__(self, notebook, catalogs):
+        ViewerCommon.__init__(self, catalogs)
         self.controls = gtk.HBox()
         layout_store = gtk.ListStore(str, gtk.TreeStore, gobject.TYPE_PYOBJECT)
         self.layout_combo = gtk.ComboBox(layout_store)
@@ -1006,10 +1014,11 @@ class TreePage(PageCommon):
         return True
 
 
-class FlatPage(PageCommon):
+class FlatPage(PageCommon, ViewerCommon):
     """Flat list based user interface with a search facility."""
     
-    def __init__(self, notebook):
+    def __init__(self, notebook, catalogs):
+        ViewerCommon.__init__(self, catalogs)
         # Base class overwrites these values.
         self.scrolled_window = self.tree_view = self.tree_selection = None
         self.transfrom = self.db_accessor = None
@@ -1243,14 +1252,59 @@ class FlatPage(PageCommon):
         return True
 
 
+class CatalogsInterface(dict):
+    def update(self, liststore):
+        """Replacement of the standard dict update method.
+        
+        This one interprets a CatalogPage gtk.ListStore.
+        """
+        
+        tmp = {}
+        for row in liststore:
+            if row[0]:
+                tmp[row[4]] = {
+                    "localpath" : row[1], "id" : row[2], "name" : row[3],
+                    "last_update" : row[5], "last_clean" : row[6],
+                    "last_add" : row[7]
+                }
+                
+        self.clear()
+        dict.update(self, tmp)
+
+    def catalogs_changed(self, other):
+        return self._stripped_copy(self) == self._stripped_copy(other)
+
+    def transform_path(self, path):
+        # ToDo: Handle windows paths.
+        
+        match = path
+        while 1:
+            if match in self:
+                return self[match]["localpath"] + path[len(match):]
+            match = os.path.split(match)[0]
+            if not match:
+                print "failed to find match for", path
+                # Leave unchanged.
+                return path
+        
+    def _stripped_copy(self):
+        copy = {}
+        for key, val in self.iteritems():
+            if key != "localpath":
+                copy[key] = val
+
+        return copy
+    
+
 class CatalogsPage(PageCommon):
-    def __init__(self, notebook):
+    def __init__(self, notebook, interface):
+        self.interface = interface
         self.refresh = gtk.Button(stock=gtk.STOCK_REFRESH)
         self.refresh.connect("clicked", self._on_refresh)
         PageCommon.__init__(self, notebook, _("Catalogs"), self.refresh,
                                                                     dnd=False)
-        # active, localpath, id, name, remotepath, age
-        self.list_store = gtk.ListStore(int, str, int, str, str, int)
+        # active, localpath, id, name, remotepath, last_update, last_clean, last_add
+        self.list_store = gtk.ListStore(int, str, int, str, str, int, int, int)
         self.tree_cols = self._make_tv_columns(self.tree_view, (
             (_('Name'), 3, None, 65, pango.ELLIPSIZE_END),
             (_('Remote Path'), 4, None, 100, pango.ELLIPSIZE_END),
@@ -1271,26 +1325,16 @@ class CatalogsPage(PageCommon):
         self.tree_view.set_rules_hint(True)
         self._in_text_entry = False
 
-    @property
-    def data(self):
-        if self.in_update:
-            return None
-    
-        data = []
-        for row in self.list_store:
-            data.append(list(row))
-        return data
-
-    @property
-    def in_update(self):
-        return not self.refresh.get_sensitive()
-
     def in_text_entry(self):
         return self._in_text_entry
 
     def activate(self, *args, **kwargs):
         PageCommon.activate(self, *args, **kwargs)
         self.refresh.clicked()
+
+    def deactivate(self, *args, **kwargs):
+        PageCommon.deactivate(self, *args, **kwargs)
+        self.interface.clear()
 
     def _on_toggle(self, renderer, path):
         iter = self.list_store.get_iter(path)
@@ -1301,8 +1345,8 @@ class CatalogsPage(PageCommon):
     def _on_refresh(self, widget):
         self.refresh.set_sensitive(False)
         self.tree_view.set_model(None)
-        query = """SELECT id, name, path, last_update FROM catalog
-                                            WHERE enabled=1 ORDER BY name"""
+        query = """SELECT id, name, path, last_update, IFNULL(last_clean,0),
+                        last_add FROM catalog WHERE enabled=1 ORDER BY name"""
         self._acc.request((query,), self._handler, self._failhandler)
 
 
@@ -1326,7 +1370,7 @@ class CatalogsPage(PageCommon):
         if exception[0] == 2006:
             raise
         
-        self.refresh.set_sensitive(True)
+        glib.idle_add(threadslock(self.refresh.set_sensitive(True)))
 
     @threadslock
     def _update_1(self, acc, cursor, rows, namespace):
@@ -1362,9 +1406,10 @@ class MediaPane(gtk.VBox):
         self.notebook = gtk.Notebook()
         self.pack_start(self.notebook)
         
-        self._tree_page = TreePage(self.notebook)
-        self._flat_page = FlatPage(self.notebook)
-        self._catalogs_page = CatalogsPage(self.notebook)
+        catalogs = CatalogsInterface()
+        self._tree_page = TreePage(self.notebook, catalogs)
+        self._flat_page = FlatPage(self.notebook, catalogs)
+        self._catalogs_page = CatalogsPage(self.notebook, catalogs)
         self.prefs_controls = PrefsControls()
 
         if have_songdb:
