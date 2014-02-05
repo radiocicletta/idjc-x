@@ -1328,7 +1328,7 @@ class CatalogsPage(PageCommon):
         self.tree_cols = self._make_tv_columns(self.tree_view, (
             (_('Name'), 3, None, 65, pango.ELLIPSIZE_END),
             (_('Remote Path'), 4, None, 100, pango.ELLIPSIZE_END),
-            (_('Local Path (computed)'), 1, None, -1, pango.ELLIPSIZE_NONE)
+            (_('Local Path'), 1, None, -1, pango.ELLIPSIZE_NONE)
             ))
 
         rend = gtk.CellRendererToggle()
@@ -1402,7 +1402,7 @@ class CatalogsPage(PageCommon):
         if not namespace[0]:
             old_data = {}
             for row in self.list_store:
-                old_data[row[2]] = (row[0],)
+                old_data[row[2]] = row[0]
             self.list_store.clear()
             mount_finder = MountFinder(acc.hostname)
             
@@ -1439,12 +1439,10 @@ class MountFinder(object):
     def __init__(self, hostname):
         host = socket.gethostbyname(hostname)
         
-        host = "themaster.millham.net"
-        
         if host == socket.gethostbyname("localhost"):
             self._mode = "local"
         else:
-            for pathname in ("/etc/fstab", "/proc/mounts", "/etc/mtab", "/etc/fstab"):
+            for pathname in ("/proc/mounts", "/etc/mtab", "/etc/fstab"):
                 try:
                     with open(pathname, "r") as f:
                         mounttable = f.readlines()
@@ -1474,14 +1472,12 @@ class MountFinder(object):
                             continue
                     except (AttributeError, IndexError):
                         continue
-                    
-                    if rhost == host:
+
+                    if socket.gethostbyname(rhost) == host:
                         lpath = os.path.normpath(parts[1])
                         if os.path.isdir(lpath):
                             rpath = os.path.normpath(rpath)
                             self._transform[rpath] = lpath
-                            
-            print self._transform
                 
     def get(self, in_path):
         if self._mode == "local":
@@ -1490,7 +1486,17 @@ class MountFinder(object):
         if self._mode == "broken":
             return None    
             
-        return self._transform.get(in_path, None)
+        try_path = in_path
+        while 1:
+            if try_path in self._transform:
+                break
+                
+            if try_path == "/":
+                return None
+                
+            try_path = os.path.split(try_path)[0]
+            
+        return self._transform[try_path] + in_path[len(try_path):]
 
 
 class MediaPane(gtk.VBox):
