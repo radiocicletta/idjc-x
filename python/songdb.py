@@ -235,6 +235,7 @@ class Settings(gtk.Table):
 
         self._controls = []
         self.textdict = {}
+        self.valuesdict = {}
 
         # Attachment for labels.
         l_attach = partial(self.attach, xoptions=gtk.SHRINK | gtk.FILL)
@@ -246,58 +247,32 @@ class Settings(gtk.Table):
         self.attach(self.hostnameport, 1, 4, 0, 1)
         
         # Second row.
-        hbox = gtk.HBox()
-        hbox.set_spacing(3)
-        fpmlabel, self.addchars = self._factory(_('File Path Modify'), None,
-                                                                    "addchars")
-        adj = gtk.Adjustment(0.0, 0.0, 999.0, 1.0, 1.0)
-        self.delchars = gtk.SpinButton(adj, 0.0, 0)
-        self._controls.append(self.delchars)
-        self.valuesdict = {"songdb_delchars_" + name: self.delchars}
-        set_tip(self.delchars, _('The number of characters to strip from '
-                                'the left hand side of media file paths.'))
-        set_tip(self.addchars, 
-                    _('The characters to prefix to the media file paths.'))
-        l_attach(fpmlabel, 0, 1, 1, 2)
-        minus = gtk.Label('-')
-        hbox.pack_start(minus, False)
-        hbox.pack_start(self.delchars, False)
-        plus = gtk.Label('+')
-        hbox.pack_start(plus, False)
-        hbox.pack_start(self.addchars)
-        self.attach(hbox, 1, 4, 1, 2)
-        
-        # Third row.
         userlabel, self.user = self._factory(_('User Name'), "admin", "user")
-        l_attach(userlabel, 0, 1, 3, 4)
-        self.attach(self.user, 1, 2, 3, 4)
+        l_attach(userlabel, 0, 1, 2, 3)
+        self.attach(self.user, 1, 2, 2, 3)
         dblabel, self.database = self._factory(_('Database'), "ampache",
                                                                     "database")
-        l_attach(dblabel, 2, 3, 3, 4)
-        self.attach(self.database, 3, 4, 3, 4)
+        l_attach(dblabel, 2, 3, 2, 3)
+        self.attach(self.database, 3, 4, 2, 3)
         
-        # Fourth row.
+        # Third row.
         passlabel, self.password = self._factory(_('Password'), "", "password")
         self.password.set_visibility(False)
-        l_attach(passlabel, 0, 1, 4, 5)
-        self.attach(self.password, 1, 2, 4, 5)
+        l_attach(passlabel, 0, 1, 3, 4)
+        self.attach(self.password, 1, 2, 3, 4)
 
-    def get_conn_data(self):
+    def get_data(self):
         """Collate parameters for DBAccessor contructors."""
         
-        conn_data = {}
+        data = {}
         for key in "hostnameport user password database".split():
-            conn_data[key] = getattr(self, key).get_text().strip()
+            data[key] = getattr(self, key).get_text().strip()
         
-        return conn_data
-
-    def get_transformation_data(self):
-        """Make a file path transformation function."""
-
-        from_ = self.delchars.get_value_as_int() + 1
-        prepend_str = self.addchars.get_text().strip()
-
-        return from_, prepend_str
+        trans_data = {}  # ToDo: parse mount points for paths { from : to }
+        
+        data["trans_data"] = trans_data
+                
+        return data
 
     def set_sensitive(self, sens):
         """Just specific contents of the table are made insensitive."""
@@ -407,13 +382,12 @@ class PrefsControls(gtk.Frame):
         if widget.get_active():
             settings = self._notebook.get_nth_page(
                                             self._notebook.get_current_page())
-            conn_data = settings.get_conn_data()
-            conn_data["notify"] = self._notify
-            trans_data = settings.get_transformation_data()
+            data = settings.get_data()
+            data["notify"] = self._notify
         else:
-            conn_data = trans_data = None
+            data = None
 
-        callback(conn_data, trans_data)
+        callback(data)
 
     def _cb_dbtoggle(self, widget):
         """Parameter widgets to be made insensitive when db is active."""
@@ -469,7 +443,8 @@ class ViewerCommon(object):
 
     def _cb_drag_data_get(self, tree_view, context, selection, target, etime):
         model, paths = self.tree_selection.get_selected_rows()
-        data = ("file://%s" % row for row in self._drag_data(model, paths))
+        data = ("file://%s" % self.catalogs.transform_path(row) for row in
+                                                self._drag_data(model, paths))
         selection.set(selection.target, 8, "\n".join(data))
 
     def _cond_cell_secs_to_h_m_s(self, column, renderer, model, iter, cell):
@@ -565,14 +540,6 @@ class PageCommon(gtk.VBox):
     @property
     def db_type(self):
         return self._db_type
-
-    @property
-    def trans_from(self):
-        return self._trans_data[0]
-       
-    @property
-    def trans_prepend(self):
-        return self._trans_data[1]
 
     def get_col_widths(self):
         return ",".join([str(x.get_width() or x.get_fixed_width())
@@ -744,8 +711,7 @@ class TreePage(PageCommon, ViewerCommon):
         self.loading_vbox.pack_start(self.progress_bar, False)
         self.pack_start(self.loading_vbox)
         self._pulse_id = deque()
-        self._cat_cb = catalogs.connect("changed", self._on_catalogs_changed)
-        self._old_cat_data = None
+        self._reload_upon_catalogs_changed(enable_notebook_reload=True)
         
         self.show_all()
 
@@ -771,15 +737,22 @@ class TreePage(PageCommon, ViewerCommon):
         self.progress_bar.set_fraction(0.0)
         
         PageCommon.deactivate(self)
+        self._reload_upon_catalogs_changed()
 
     def reload(self):
-        if self._old_cat_data != self.catalogs:
+        if self.catalogs.update_required(self._old_cat_data):
             self.tree_rebuild.clicked()
 
-    def _on_catalogs_changed(self, widget):
-        self.catalogs.disconnect(self._cat_cb)  # Only run once.
-        self._cat_cb = None
-        self.notebook.connect("switch-page", self._on_page_change)
+    def _reload_upon_catalogs_changed(self, enable_notebook_reload=False):
+        handler_id = []
+        handler_id.append(self.catalogs.connect("changed",
+            self._on_catalogs_changed, enable_notebook_reload, handler_id))
+        self._old_cat_data = None
+
+    def _on_catalogs_changed(self, widget, enable_notebook_reload, handler_id):
+        self.catalogs.disconnect(handler_id[0])  # Only run once.
+        if enable_notebook_reload:
+            self.notebook.connect("switch-page", self._on_page_change)
         self.reload()
 
     def _cb_layout_combo(self, widget):
@@ -805,7 +778,7 @@ class TreePage(PageCommon, ViewerCommon):
                     title,
                     tracks.artist as artist,
                     "" as art_prefix,
-                    CONCAT(%s,MID(CONCAT_WS('/',path,filename),%s)) as file,
+                    CONCAT_WS('/',path,filename) as file,
                     bitrate, length
                     FROM tracks
                     LEFT JOIN albums on tracks.album = albums.name
@@ -822,7 +795,7 @@ class TreePage(PageCommon, ViewerCommon):
                     title,
                     artist.name as artist,
                     artist.prefix as art_prefix,
-                    CONCAT(%s,MID(file,%s)) as file,
+                    file,
                     bitrate,
                     time as length
                     FROM song
@@ -836,8 +809,7 @@ class TreePage(PageCommon, ViewerCommon):
             return
             
         self._pulse_id.append(glib.timeout_add(1000, self._progress_pulse))
-        self._acc.request((query, (self.trans_prepend, self.trans_from)),
-                                            self._handler, self._failhandler)
+        self._acc.request((query,), self._handler, self._failhandler)
 
     def _drag_data(self, model, path):
         iter = model.get_iter(path[0])
@@ -1122,7 +1094,7 @@ class FlatPage(PageCommon, ViewerCommon):
         PROKYON_3:
             {FUZZY: (CLEAN, """
                     SELECT artist,album,tracknumber,title,length,bitrate,
-                    CONCAT(%s,MID(CONCAT_WS('/',path,filename),%s)) as file,
+                    CONCAT_WS('/',path,filename) as file,
                     0 as disk
                     FROM tracks
                     WHERE MATCH (artist,album,title,filename) AGAINST (%s)
@@ -1130,7 +1102,7 @@ class FlatPage(PageCommon, ViewerCommon):
         
             WHERE: (DIRTY, """
                     SELECT artist,album,tracknumber,title,length,bitrate,
-                    CONCAT("%s",MID(CONCAT_WS('/',path,filename),%s)) as file,
+                    CONCAT_WS('/',path,filename) as file,
                     0 as disk
                     FROM tracks WHERE (%s)
                     ORDER BY artist,album,path,tracknumber,title
@@ -1142,7 +1114,7 @@ class FlatPage(PageCommon, ViewerCommon):
                     concat_ws(" ",artist.prefix,artist.name),
                     concat_ws(" ",album.prefix,album.name),
                     track as tracknumber, title, time as length,bitrate,
-                    CONCAT(%s,MID(file,%s)) as file,
+                    file,
                     album.disk as disk FROM song
                     LEFT JOIN artist ON artist.id = song.artist
                     LEFT JOIN album ON album.id = song.album
@@ -1157,7 +1129,7 @@ class FlatPage(PageCommon, ViewerCommon):
                     concat_ws(" ", artist.prefix, artist.name) as artist,
                     concat_ws(" ", album.prefix, album.name) as albumname,
                     track as tracknumber, title,time as length, bitrate,
-                    CONCAT("%s",MID(file,%s)) as file,
+                    file,
                     album.disk as disk FROM song
                     LEFT JOIN album on album.id = song.album
                     LEFT JOIN artist on artist.id = song.artist
@@ -1192,8 +1164,7 @@ class FlatPage(PageCommon, ViewerCommon):
 
         qty = query.count("(%s)")
         if access_mode == CLEAN:
-            query = (query, (self.trans_prepend, self.trans_from, ) + 
-                                                    (user_text, ) * qty)
+            query = (query, (user_text,) * qty)
         elif access_mode == DIRTY:  # Accepting of SQL code in user data.
             query = (query % ((self.trans_prepend, self.trans_from, )
                                                     + (user_text, ) * qty), )
@@ -1300,7 +1271,7 @@ class CatalogsInterface(gobject.GObject):
         for row in liststore:
             if row[0]:
                 self._dict[row[4]] = {
-                    "localpath" : row[1], "id" : row[2], "name" : row[3],
+                    "local_path" : row[1], "id" : row[2], "name" : row[3],
                     "last_update" : row[5], "last_clean" : row[6],
                     "last_add" : row[7]
                 }
@@ -1312,8 +1283,8 @@ class CatalogsInterface(gobject.GObject):
         
         match = path
         while 1:
-            if match in self:
-                return self[match]["localpath"] + path[len(match):]
+            if match in self._dict:
+                return self._dict[match]["local_path"] + path[len(match):]
             match = os.path.split(match)[0]
             if not match:
                 print "failed to find match for", path
@@ -1328,17 +1299,20 @@ class CatalogsInterface(gobject.GObject):
             return "catalog = %d" % ids[0]
         return "catalog IN %s" % str(ids)
     
-    def __cmp__(self, other):
+    def update_required(self, other):
         if other is None:
-            return 1
-        return cmp(self._stripped_copy(self._dict), self._stripped_copy(other))
+            return True
+
+        return self._stripped_copy(self._dict) != self._stripped_copy(other)
 
     @staticmethod
     def _stripped_copy(_dict):
         copy = {}
-        for key, val in _dict.iteritems():
-            if key != "localpath":
-                copy[key] = val
+        for key1, val1 in _dict.iteritems():
+            copy[key1] = {}
+            for key2, val2 in val1.iteritems():
+                if key2 != "local_path":
+                    copy[key1][key2] = val2
 
         return copy
     
@@ -1405,13 +1379,14 @@ class CatalogsPage(PageCommon):
         self._in_text_entry = False
 
     def _on_edited(self, rend, path, new_text):
+        model = self.list_store
         self._in_text_entry = False
         new_text = new_text.strip()
-        iter = self.list_store.get_iter(path)
+        iter = model.get_iter(path)
         if iter is not None:
-            old_text = model.get_value(iter, 4)
+            old_text = model.get_value(iter, 1)
             if new_text and new_text != old_text:
-                self.list_store.set_value(iter, 1, new_text)
+                model.set_value(iter, 1, new_text)
                 self.interface.update(self.list_store)
 
     def _failhandler(self, exception, notify):
@@ -1508,12 +1483,12 @@ class MediaPane(gtk.VBox):
             else:
                 target.set_col_widths(data)
 
-    def _dbtoggle(self, conn_data, trans_data):
-        if conn_data:
+    def _dbtoggle(self, data):
+        if data:
+            self._trans_data = data.pop("trans_data")
             # Connect and discover the database type.
             for i in range(1, 4):
-                setattr(self, "_acc%d" % i, DBAccessor(**conn_data))
-            self._trans_data = trans_data
+                setattr(self, "_acc%d" % i, DBAccessor(**data))
             self._acc1.request(('SHOW tables',), self._stage_1, self._fail_1)
         else:
             try:
