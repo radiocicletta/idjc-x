@@ -19,10 +19,13 @@
 
 
 import os
+import re
 import time
 import types
+import shlex
 import gettext
 import threading
+import socket
 from functools import partial, wraps
 from collections import deque
 from urllib import quote
@@ -267,11 +270,7 @@ class Settings(gtk.Table):
         data = {}
         for key in "hostnameport user password database".split():
             data[key] = getattr(self, key).get_text().strip()
-        
-        trans_data = {}  # ToDo: parse mount points for paths { from : to }
-        
-        data["trans_data"] = trans_data
-                
+
         return data
 
     def set_sensitive(self, sens):
@@ -558,10 +557,9 @@ class PageCommon(gtk.VBox):
             else:
                 c.next()
 
-    def activate(self, accessor, db_type, trans_data):
+    def activate(self, accessor, db_type):
         self._db_type = db_type
         self._acc = accessor
-        self._trans_data = trans_data
         
     def deactivate(self):
         while self._update_id:
@@ -1294,7 +1292,7 @@ class CatalogsInterface(gobject.GObject):
     def sql(self):
         ids = tuple(x["id"] for x in self._dict.itervalues())
         if not ids:
-            return "TRUE"  # No catalog filtering for nothing selected
+            return "FALSE"
         if len(ids) == 1:
             return "catalog = %d" % ids[0]
         return "catalog IN %s" % str(ids)
@@ -1324,21 +1322,23 @@ class CatalogsPage(PageCommon):
         self.refresh.connect("clicked", self._on_refresh)
         PageCommon.__init__(self, notebook, _("Catalogs"), self.refresh,
                                                                     dnd=False)
-        # active, localpath, id, name, remotepath, last_update, last_clean, last_add
-        self.list_store = gtk.ListStore(int, str, int, str, str, int, int, int)
+        # active, local_path, id, name, path, last_update, last_clean, last_add, activatable
+        self.list_store = gtk.ListStore(
+                                int, str, int, str, str, int, int, int, int)
         self.tree_cols = self._make_tv_columns(self.tree_view, (
             (_('Name'), 3, None, 65, pango.ELLIPSIZE_END),
             (_('Remote Path'), 4, None, 100, pango.ELLIPSIZE_END),
-            (_('Local Path (editable)'), 1, None, -1, pango.ELLIPSIZE_NONE)
+            (_('Local Path (computed)'), 1, None, -1, pango.ELLIPSIZE_NONE)
             ))
 
         rend = gtk.CellRendererToggle()
         rend.set_activatable(True)
         rend.connect("toggled", self._on_toggle)
-        self.tree_view.insert_column_with_attributes(0, "", rend, active=0)
-                                                                    
+        self.tree_view.insert_column_with_attributes(0, "", rend, active=0,
+                                                                activatable=8)
+
         rend = self.tree_view.get_column(3).get_cell_renderers()[0]
-        rend.props.editable = True
+        rend.props.editable = False
         rend.connect("edited", self._on_edited)
         rend.connect("editing-started", self._on_editing_started)
         rend.connect("editing-canceled", self._on_editing_cancelled)
@@ -1402,8 +1402,9 @@ class CatalogsPage(PageCommon):
         if not namespace[0]:
             old_data = {}
             for row in self.list_store:
-                old_data[row[2]] = (row[0], row[1])
+                old_data[row[2]] = (row[0],)
             self.list_store.clear()
+            mount_finder = MountFinder(acc.hostname)
             
             while 1:
                 try:
@@ -1414,14 +1415,83 @@ class CatalogsPage(PageCommon):
                 if db_row is None:
                     break
             
-                user_row = old_data.get(db_row[0], (1, db_row[2]))
-                self.list_store.append(user_row + db_row)
+                active = old_data.get(db_row[0], 1)
+                mount_point = mount_finder.get(db_row[2])
+                if mount_point is None:
+                    mount_point = "-"
+                    active = activatable = 0
+                else:
+                    activatable = 1
+
+                self.list_store.append(
+                            (active, mount_point) + db_row + (activatable,))
 
         self.tree_view.set_model(self.list_store)
         self.refresh.set_sensitive(True)
         self.interface.update(self.list_store)
         return False
         
+
+class MountFinder(object):
+    nfs = re.compile(r"([^:]+):(/.*)")
+    cifs = re.compile(r"//([^/]+)(/.*)")
+    
+    def __init__(self, hostname):
+        host = socket.gethostbyname(hostname)
+        
+        host = "themaster.millham.net"
+        
+        if host == socket.gethostbyname("localhost"):
+            self._mode = "local"
+        else:
+            for pathname in ("/etc/fstab", "/proc/mounts", "/etc/mtab", "/etc/fstab"):
+                try:
+                    with open(pathname, "r") as f:
+                        mounttable = f.readlines()
+                        self._mode = "remote"
+                        break
+                except IOError:
+                    pass
+            else:
+                print "Failed to discover mount table."
+                self._mode = "broken"
+                return
+            
+            self._transform = {}
+            for row in mounttable:
+                try:
+                    parts = shlex.split(row)
+                except ValueError:
+                    continue
+                    
+                if len(parts) == 6:
+                    try:
+                        if parts[2] == "nfs":
+                            rhost, rpath = self.nfs.match(parts[0]).group(1, 2)
+                        elif parts[2] in ("cifs", "smbfs"):
+                            rhost, rpath = self.cifs.match(parts[0]).group(1, 2)
+                        else:
+                            continue
+                    except (AttributeError, IndexError):
+                        continue
+                    
+                    if rhost == host:
+                        lpath = os.path.normpath(parts[1])
+                        if os.path.isdir(lpath):
+                            rpath = os.path.normpath(rpath)
+                            self._transform[rpath] = lpath
+                            
+            print self._transform
+                
+    def get(self, in_path):
+        if self._mode == "local":
+            return in_path
+
+        if self._mode == "broken":
+            return None    
+            
+        return self._transform.get(in_path, None)
+
 
 class MediaPane(gtk.VBox):
     """Database song details are displayed in this widget."""
@@ -1485,7 +1555,6 @@ class MediaPane(gtk.VBox):
 
     def _dbtoggle(self, data):
         if data:
-            self._trans_data = data.pop("trans_data")
             # Connect and discover the database type.
             for i in range(1, 4):
                 setattr(self, "_acc%d" % i, DBAccessor(**data))
@@ -1512,10 +1581,9 @@ class MediaPane(gtk.VBox):
         glib.idle_add(threadslock(self.prefs_controls.disconnect))
 
     def _hand_over(self, database_name):
-        self._tree_page.activate(self._acc1, database_name, self._trans_data)
-        self._flat_page.activate(self._acc2, database_name, self._trans_data)
-        self._catalogs_page.activate(self._acc3, database_name,
-                                                            self._trans_data)
+        self._tree_page.activate(self._acc1, database_name)
+        self._flat_page.activate(self._acc2, database_name)
+        self._catalogs_page.activate(self._acc3, database_name)
         glib.idle_add(threadslock(self.show))
             
     def _fail_1(self, exception, notify):
