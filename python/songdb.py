@@ -419,12 +419,142 @@ class PrefsControls(gtk.Frame):
         self._statusbar.set_tooltip_text(message)
 
 
-class ViewerCommon(object):
+class PageCommon(gtk.VBox):
+    """Base class for all pages."""
+    
+    def __init__(self, notebook, label_text, controls, dnd=False):
+        gtk.VBox.__init__(self)
+        self.set_spacing(2)
+        self.scrolled_window = gtk.ScrolledWindow()
+        self.scrolled_window.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
+        self.pack_start(self.scrolled_window)
+        self.tree_view = gtk.TreeView()
+        self.tree_view.set_enable_search(False)
+        self.tree_selection = self.tree_view.get_selection()
+        self.scrolled_window.add(self.tree_view)
+        self.pack_start(controls, False)
+        label = gtk.Label(label_text)
+        notebook.append_page(self, label)
+        
+        if dnd:
+            self.tree_view.enable_model_drag_source(gtk.gdk.BUTTON1_MASK,
+             self._sourcetargets, gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_COPY)
+            self.tree_view.connect_after("drag-begin", self._cb_drag_begin)
+            self.tree_view.connect("drag-data-get", self._cb_drag_data_get)
+        self._update_id = deque()
+        self._acc = None
+
+    @property
+    def db_type(self):
+        return self._db_type
+
+    def get_col_widths(self):
+        return ",".join([str(x.get_width() or x.get_fixed_width())
+                                                    for x in self.tree_cols])
+
+    def in_text_entry(self):
+        return False
+
+    def set_col_widths(self, data):
+        """Restore column width values."""
+         
+        c = self.tree_cols.__iter__()
+        for w in data.split(","):
+            if w != "0":
+                c.next().set_fixed_width(int(w))
+            else:
+                c.next()
+
+    def activate(self, accessor, db_type):
+        self._db_type = db_type
+        self._acc = accessor
+        
+    def deactivate(self):
+        while self._update_id:
+            context, namespace = self._update_id.popleft()
+            namespace[0] = True
+            glib.source_remove(context)
+        
+        self._acc = None
+        model = self.tree_view.get_model()
+        self.tree_view.set_model(None)
+        if model is not None:
+            model.clear()
+            
+    def repair_focusability(self):
+        self.tree_view.set_flags(gtk.CAN_FOCUS)
+
+    @staticmethod
+    def _make_tv_columns(tree_view, parameters):
+        """Build a TreeViewColumn list from a table of data."""
+
+        list_ = []
+        for label, data_index, data_function, mw, el in parameters:
+            renderer = gtk.CellRendererText()
+            renderer.props.ellipsize = el
+            column = gtk.TreeViewColumn(label, renderer)
+            if mw != -1:
+                column.set_resizable(True)
+                column.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
+                column.set_min_width(mw)
+                column.set_fixed_width(mw + 50)
+            tree_view.append_column(column)
+            list_.append(column)
+            if data_function is not None:
+                column.set_cell_data_func(renderer, data_function, data_index)
+            else:
+                column.add_attribute(renderer, 'text', data_index)
+
+        return list_
+
+    def _handler(self, acc, request, cursor, notify, rows):
+        # Lock against the very start of the update functions.
+        with gdklock():
+            while self._update_id:
+                context, namespace = self._update_id.popleft()
+                glib.source_remove(context)
+                # Idle functions to receive the following and know to clean-up.
+                namespace[0] = True
+
+        try:
+            self._old_cursor.close()
+        except sql.Error as e:
+            print str(e)
+        except AttributeError:
+            pass
+
+        self._old_cursor = cursor
+        acc.replace_cursor(cursor)
+        # Scrap intermediate jobs whose output would merely slow down the
+        # user interface responsiveness.
+        namespace = [False, ()]
+        context = glib.idle_add(self._update_1, acc, cursor, rows, namespace)
+        self._update_id.append((context, namespace))
+
+class ViewerCommon(PageCommon):
     """Base class for TreePage and FlatPage."""
     
-    def __init__(self, notebook, catalogs):
+    def __init__(self, notebook, label_text, controls, catalogs):
         self.catalogs = catalogs
         self.notebook = notebook
+        self._reload_upon_catalogs_changed(enable_notebook_reload=True)
+        PageCommon.__init__(self, notebook, label_text, controls, dnd=True)
+
+    def deactivate(self):
+        self._reload_upon_catalogs_changed()
+        super(ViewerCommon, self).deactivate()
+
+    def _reload_upon_catalogs_changed(self, enable_notebook_reload=False):
+        handler_id = []
+        handler_id.append(self.catalogs.connect("changed",
+            self._on_catalogs_changed, enable_notebook_reload, handler_id))
+        self._old_cat_data = None
+
+    def _on_catalogs_changed(self, widget, enable_notebook_reload, handler_id):
+        self.catalogs.disconnect(handler_id[0])  # Only run once.
+        if enable_notebook_reload:
+            self.notebook.connect("switch-page", self._on_page_change)
+        self.reload()
 
     def _on_page_change(self, notebook, page, page_num):
         if notebook.get_nth_page(page_num) == self:
@@ -510,120 +640,6 @@ class ViewerCommon(object):
         else:
             renderer.set_property("text", "")
 
-
-class PageCommon(gtk.VBox):
-    """Base class for all pages."""
-    
-    def __init__(self, notebook, label_text, controls, dnd=True):
-        gtk.VBox.__init__(self)
-        self.set_spacing(2)
-        self.scrolled_window = gtk.ScrolledWindow()
-        self.scrolled_window.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
-        self.pack_start(self.scrolled_window)
-        self.tree_view = gtk.TreeView()
-        self.tree_view.set_enable_search(False)
-        self.tree_selection = self.tree_view.get_selection()
-        self.scrolled_window.add(self.tree_view)
-        self.pack_start(controls, False)
-        label = gtk.Label(label_text)
-        notebook.append_page(self, label)
-        
-        if dnd:
-            self.tree_view.enable_model_drag_source(gtk.gdk.BUTTON1_MASK,
-             self._sourcetargets, gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_COPY)
-            self.tree_view.connect_after("drag-begin", self._cb_drag_begin)
-            self.tree_view.connect("drag-data-get", self._cb_drag_data_get)
-        self._update_id = deque()
-        self._acc = None
-
-    @property
-    def db_type(self):
-        return self._db_type
-
-    def get_col_widths(self):
-        return ",".join([str(x.get_width() or x.get_fixed_width())
-                                                    for x in self.tree_cols])
-
-    def in_text_entry(self):
-        return False
-
-    def set_col_widths(self, data):
-        """Restore column width values."""
-         
-        c = self.tree_cols.__iter__()
-        for w in data.split(","):
-            if w != "0":
-                c.next().set_fixed_width(int(w))
-            else:
-                c.next()
-
-    def activate(self, accessor, db_type):
-        self._db_type = db_type
-        self._acc = accessor
-        
-    def deactivate(self):
-        while self._update_id:
-            context, namespace = self._update_id.popleft()
-            namespace[0] = True
-            glib.source_remove(context)
-        
-        self._acc = None
-        model = self.tree_view.get_model()
-        self.tree_view.set_model(None)
-        if model is not None:
-            model.clear()
-
-    def repair_focusability(self):
-        self.tree_view.set_flags(gtk.CAN_FOCUS)
-
-    @staticmethod
-    def _make_tv_columns(tree_view, parameters):
-        """Build a TreeViewColumn list from a table of data."""
-
-        list_ = []
-        for label, data_index, data_function, mw, el in parameters:
-            renderer = gtk.CellRendererText()
-            renderer.props.ellipsize = el
-            column = gtk.TreeViewColumn(label, renderer)
-            if mw != -1:
-                column.set_resizable(True)
-                column.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
-                column.set_min_width(mw)
-                column.set_fixed_width(mw + 50)
-            tree_view.append_column(column)
-            list_.append(column)
-            if data_function is not None:
-                column.set_cell_data_func(renderer, data_function, data_index)
-            else:
-                column.add_attribute(renderer, 'text', data_index)
-
-        return list_
-
-    def _handler(self, acc, request, cursor, notify, rows):
-        # Lock against the very start of the update functions.
-        with gdklock():
-            while self._update_id:
-                context, namespace = self._update_id.popleft()
-                glib.source_remove(context)
-                # Idle functions to receive the following and know to clean-up.
-                namespace[0] = True
-
-        try:
-            self._old_cursor.close()
-        except sql.Error as e:
-            print str(e)
-        except AttributeError:
-            pass
-
-        self._old_cursor = cursor
-        acc.replace_cursor(cursor)
-        # Scrap intermediate jobs whose output would merely slow down the
-        # user interface responsiveness.
-        namespace = [False, ()]
-        context = glib.idle_add(self._update_1, acc, cursor, rows, namespace)
-        self._update_id.append((context, namespace))
-
-
 class ExpandAllButton(gtk.Button):
     def __init__(self, expanded, tooltip=None):
         expander = gtk.Expander()
@@ -635,7 +651,7 @@ class ExpandAllButton(gtk.Button):
             set_tip(self, tooltip)
 
 
-class TreePage(PageCommon, ViewerCommon):
+class TreePage(ViewerCommon):
     """Browsable UI with tree structure."""
 
     # *depth*, *treecol*, album, album_prefix, year, disk, album_id,
@@ -645,7 +661,6 @@ class TreePage(PageCommon, ViewerCommon):
     BLANK_ROW = tuple(x() for x in DATA_SIGNATURE[2:])
 
     def __init__(self, notebook, catalogs):
-        ViewerCommon.__init__(self, notebook, catalogs)
         self.controls = gtk.HBox()
         layout_store = gtk.ListStore(str, gtk.TreeStore, gobject.TYPE_PYOBJECT)
         self.layout_combo = gtk.ComboBox(layout_store)
@@ -669,7 +684,8 @@ class TreePage(PageCommon, ViewerCommon):
             sg.add_widget(each)
         self.controls.pack_end(self.right_controls, False)
 
-        PageCommon.__init__(self, notebook, _('Browse'), self.controls)
+        ViewerCommon.__init__(self, notebook, _('Browse'), self.controls,
+                                                                    catalogs)
         
         self.tree_view.set_enable_tree_lines(True)
         tree_expand.connect_object("clicked", gtk.TreeView.expand_all,
@@ -709,7 +725,6 @@ class TreePage(PageCommon, ViewerCommon):
         self.loading_vbox.pack_start(self.progress_bar, False)
         self.pack_start(self.loading_vbox)
         self._pulse_id = deque()
-        self._reload_upon_catalogs_changed(enable_notebook_reload=True)
         
         self.show_all()
 
@@ -733,25 +748,11 @@ class TreePage(PageCommon, ViewerCommon):
         while self._pulse_id:
             glib.source_remove(self._pulse_id.popleft())
         self.progress_bar.set_fraction(0.0)
-        
-        PageCommon.deactivate(self)
-        self._reload_upon_catalogs_changed()
+        super(TreePage, self).deactivate()
 
     def reload(self):
         if self.catalogs.update_required(self._old_cat_data):
             self.tree_rebuild.clicked()
-
-    def _reload_upon_catalogs_changed(self, enable_notebook_reload=False):
-        handler_id = []
-        handler_id.append(self.catalogs.connect("changed",
-            self._on_catalogs_changed, enable_notebook_reload, handler_id))
-        self._old_cat_data = None
-
-    def _on_catalogs_changed(self, widget, enable_notebook_reload, handler_id):
-        self.catalogs.disconnect(handler_id[0])  # Only run once.
-        if enable_notebook_reload:
-            self.notebook.connect("switch-page", self._on_page_change)
-        self.reload()
 
     def _cb_layout_combo(self, widget):
         iter = widget.get_active_iter()
@@ -799,6 +800,7 @@ class TreePage(PageCommon, ViewerCommon):
                     FROM song
                     LEFT JOIN artist ON song.artist = artist.id
                     LEFT JOIN album ON song.album = album.id
+                    LEFT JOIN catalog ON song.catalog = catalog.id
                     WHERE __catalogs__
                     ORDER BY artist.name, album, disk, tracknumber, title"""
             query = query.replace("__catalogs__", self.catalogs.sql())
@@ -1003,11 +1005,10 @@ class TreePage(PageCommon, ViewerCommon):
         return True
 
 
-class FlatPage(PageCommon, ViewerCommon):
+class FlatPage(ViewerCommon):
     """Flat list based user interface with a search facility."""
     
     def __init__(self, notebook, catalogs):
-        ViewerCommon.__init__(self, notebook, catalogs)
         # Base class overwrites these values.
         self.scrolled_window = self.tree_view = self.tree_selection = None
         self.transfrom = self.db_accessor = None
@@ -1047,7 +1048,8 @@ class FlatPage(PageCommon, ViewerCommon):
         image.show
         where_hbox.pack_start(self.update_button, False)
         
-        PageCommon.__init__(self, notebook, _("Search"), self.controls)
+        ViewerCommon.__init__(self, notebook, _("Search"), self.controls,
+                                                                    catalogs)
  
         # Row data specification:
         # index, ARTIST, ALBUM, TRACKNUM, TITLE, DURATION, BITRATE,
@@ -1070,10 +1072,10 @@ class FlatPage(PageCommon, ViewerCommon):
         self.tree_view.set_rules_hint(True)
         self.tree_view.set_rubber_banding(True)
         self.tree_selection.set_mode(gtk.SELECTION_MULTIPLE)
-        self.notebook.connect("switch-page", self._on_page_change)
 
     def reload(self):
-        self.update_button.clicked()
+        if self.catalogs.update_required(self._old_cat_data):
+            self.update_button.clicked()
 
     def in_text_entry(self):
         return any(x.has_focus() for x in (self.fuzzy_entry, self.where_entry))
@@ -1081,7 +1083,7 @@ class FlatPage(PageCommon, ViewerCommon):
     def deactivate(self):
         self.fuzzy_entry.set_text("")
         self.where_entry.set_text("")
-        PageCommon.deactivate(self)
+        super(FlatPage, self).deactivate()
 
     def repair_focusability(self):
         PageCommon.repair_focusability(self)
@@ -1116,6 +1118,7 @@ class FlatPage(PageCommon, ViewerCommon):
                     album.disk as disk FROM song
                     LEFT JOIN artist ON artist.id = song.artist
                     LEFT JOIN album ON album.id = song.album
+                    LEFT JOIN catalog ON song.catalog = catalog.id
                     WHERE
                          (MATCH(album.name) against(%s)
                           OR MATCH(artist.name) against(%s)
@@ -1131,12 +1134,14 @@ class FlatPage(PageCommon, ViewerCommon):
                     album.disk as disk FROM song
                     LEFT JOIN album on album.id = song.album
                     LEFT JOIN artist on artist.id = song.artist
+                    LEFT JOIN catalog ON song.catalog = catalog.id
                     WHERE (%s) AND __catalogs__ ORDER BY
                     artist.name, album.name, file, album.disk, track, title
                     """)}
     }
 
     def _cb_update(self, widget):
+        self._old_cat_data = self.catalogs.copy_data()
         try:
             table = self._queries_table[self._db_type]
         except KeyError:
@@ -1164,8 +1169,7 @@ class FlatPage(PageCommon, ViewerCommon):
         if access_mode == CLEAN:
             query = (query, (user_text,) * qty)
         elif access_mode == DIRTY:  # Accepting of SQL code in user data.
-            query = (query % ((self.trans_prepend, self.trans_from, )
-                                                    + (user_text, ) * qty), )
+            query = (query % ((user_text,) * qty),)
         else:
             print "unknown database access mode", access_mode
             return
@@ -1294,8 +1298,11 @@ class CatalogsInterface(gobject.GObject):
         if not ids:
             return "FALSE"
         if len(ids) == 1:
-            return "catalog = %d" % ids[0]
-        return "catalog IN %s" % str(ids)
+            which = "catalog = %d" % ids[0]
+        else:
+            which = "catalog IN %s" % str(ids)
+
+        return which + ' AND catalog.catalog_type = "local"'
     
     def update_required(self, other):
         if other is None:
@@ -1320,8 +1327,7 @@ class CatalogsPage(PageCommon):
         self.interface = interface
         self.refresh = gtk.Button(stock=gtk.STOCK_REFRESH)
         self.refresh.connect("clicked", self._on_refresh)
-        PageCommon.__init__(self, notebook, _("Catalogs"), self.refresh,
-                                                                    dnd=False)
+        PageCommon.__init__(self, notebook, _("Catalogs"), self.refresh)
         # active, local_path, id, name, path, last_update, last_clean, last_add, activatable
         self.list_store = gtk.ListStore(
                                 int, str, int, str, str, int, int, int, int)
