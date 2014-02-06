@@ -1341,7 +1341,7 @@ class CatalogsPage(PageCommon):
         rend.set_activatable(True)
         rend.connect("toggled", self._on_toggle)
         self.tree_view.insert_column_with_attributes(0, "", rend, active=0,
-                                                                activatable=8)
+                                                            activatable=8)
 
         rend = self.tree_view.get_column(3).get_cell_renderers()[0]
         rend.props.editable = False
@@ -1371,12 +1371,20 @@ class CatalogsPage(PageCommon):
             self.interface.update(self.list_store)
 
     def _on_refresh(self, widget):
-        self.refresh.set_sensitive(False)
-        self.tree_view.set_model(None)
-        query = """SELECT id, name, path, last_update, IFNULL(last_clean,0),
-                        last_add FROM catalog WHERE enabled=1 ORDER BY name"""
-        self._acc.request((query,), self._handler, self._failhandler)
-
+        if self._db_type == AMPACHE:
+            self.refresh.set_sensitive(False)
+            self.tree_view.set_model(None)
+            query = """SELECT id, name, path, last_update, IFNULL(last_clean,0),
+                            last_add FROM catalog WHERE enabled=1 ORDER BY name"""
+            self._acc.request((query,), self._handler, self._failhandler)
+        
+        elif self._db_type == PROKYON_3:
+            self.list_store.clear()
+            mount_finder = MountFinder(self._acc.hostname)
+            for i, (remote, local) in enumerate(mount_finder):
+                self.list_store.append((1, local, i, "", remote, 0, 0, 0, 0))
+            self.tree_view.set_model(self.list_store)
+            self.interface.update(self.list_store)
 
     def _on_editing_started(self, rend, editable, path):
         self._in_text_entry = True
@@ -1503,6 +1511,12 @@ class MountFinder(object):
             try_path = os.path.split(try_path)[0]
             
         return self._transform[try_path] + in_path[len(try_path):]
+
+    def __iter__(self):
+        if self._mode in ("local", "broken") or not self._transform:
+            return iter((("/", "/"),))
+
+        return self._transform.iteritems()
 
 
 class MediaPane(gtk.VBox):
