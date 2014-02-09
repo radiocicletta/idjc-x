@@ -604,16 +604,27 @@ class ViewerCommon(PageCommon):
         renderer.props.text = text
         renderer.props.foreground = col
 
-    def inner(column, renderer, model, iter, cell, which_bit):
+    @staticmethod
+    def _cell_pathname(column, renderer, model, iter, cell, part, tx):
         text = model.get_value(iter, cell)
-
+        trans = tx(text)
+        col = "black" if os.path.exists(trans) else "red"
+        
         if text:
-            renderer.props.text = which_bit(text)
+            renderer.props.foreground = col
+            renderer.props.text = part(tx(text))
         else:
-            renderer.props.text = ""    
-    _cell_path = staticmethod(partial(inner, which_bit=os.path.dirname))
-    _cell_filename = staticmethod(partial(inner, which_bit=os.path.basename))
-    del inner
+            renderer.props.text = ""
+        
+    def _cell_path(self, *args, **kwargs):
+        kwargs["part"] = os.path.dirname
+        kwargs["tx"] = self.catalogs.transform_path
+        self._cell_pathname(*args, **kwargs) 
+        
+    def _cell_filename(self, *args, **kwargs):
+        kwargs["part"] = os.path.basename
+        kwargs["tx"] = lambda p:p
+        self._cell_pathname(*args, **kwargs)
     
     @staticmethod
     def _cell_secs_to_h_m_s(column, renderer, model, iter, cell):
@@ -1281,15 +1292,13 @@ class CatalogsInterface(gobject.GObject):
         self.emit("changed")
 
     def transform_path(self, path):
-        # ToDo: Handle windows paths.
-        
         match = path
         while 1:
             if match in self._dict:
                 return self._dict[match]["local_path"] + path[len(match):]
+            oldmatch = match
             match = os.path.split(match)[0]
-            if not match:
-                print "failed to find match for", path
+            if match == oldmatch:
                 # Leave unchanged.
                 return path
     
@@ -1297,6 +1306,7 @@ class CatalogsInterface(gobject.GObject):
         ids = tuple(x["id"] for x in self._dict.itervalues())
         if not ids:
             return "FALSE"
+
         if len(ids) == 1:
             which = "catalog = %d" % ids[0]
         else:
@@ -1351,6 +1361,10 @@ class CatalogsPage(PageCommon):
 
         self.tree_view.set_rules_hint(True)
         self._in_text_entry = False
+        set_tip(self.tree_view, _(
+            "Select which catalogs you want to use here.\n\n"
+            "If using a remote database then any remote paths\n"
+            "will need to be made accessible locally using NFS."))
 
     def in_text_entry(self):
         return self._in_text_entry
@@ -1448,7 +1462,6 @@ class CatalogsPage(PageCommon):
 
 class MountFinder(object):
     nfs = re.compile(r"([^:]+):(/.*)")
-    cifs = re.compile(r"//([^/]+)(/.*)")
     
     def __init__(self, hostname):
         host = socket.gethostbyname(hostname)
@@ -1478,10 +1491,9 @@ class MountFinder(object):
                     
                 if len(parts) == 6:
                     try:
-                        if parts[2] == "nfs":
+                        fs, ver = parts[2][:3], parts[2][3:]
+                        if fs == "nfs" and (ver == "" or ver in "34"):
                             rhost, rpath = self.nfs.match(parts[0]).group(1, 2)
-                        elif parts[2] in ("cifs", "smbfs"):
-                            rhost, rpath = self.cifs.match(parts[0]).group(1, 2)
                         else:
                             continue
                     except (AttributeError, IndexError):
@@ -1504,11 +1516,11 @@ class MountFinder(object):
         while 1:
             if try_path in self._transform:
                 break
-                
-            if try_path == "/":
-                return None
-                
+
+            old_try_path = try_path
             try_path = os.path.split(try_path)[0]
+            if try_path == old_try_path:
+                return None
             
         return self._transform[try_path] + in_path[len(try_path):]
 

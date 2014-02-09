@@ -1,6 +1,6 @@
 * Changes in version 0.8.14 *
 
-Added basic Ampache music catalogs support.
+Added Ampache music catalogs support.
 
 Fine tuned the suppression of key bindings when using the database "Search" tab.
 
