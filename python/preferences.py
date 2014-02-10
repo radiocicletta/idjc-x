@@ -734,8 +734,9 @@ class mixprefs:
                 for name, widget in self.valuesdict.iteritems():
                     f.write(name + "=" + str(widget.get_value()) + "\n")
                 for name, widget in self.textdict.iteritems():
-                    if widget.get_text() is not None:
-                        f.write(name + "=" + widget.get_text() + "\n")
+                    text = widget.get_text()
+                    if text is not None:
+                        f.write(name + "=" + text + "\n")
                     else:
                         f.write(name + "=\n")
         except IOError:
@@ -1670,7 +1671,7 @@ class mixprefs:
             }
 
         for each in itertools.chain(mic_controls, (opener_settings,
-                                            self.songdbprefs, self.voip_pan)):
+                                                            self.voip_pan)):
             self.valuesdict.update(each.valuesdict)
 
         self.textdict = {  # These widgets all have the get_text method.

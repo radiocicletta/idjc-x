@@ -2404,10 +2404,12 @@ class MainWindow(dbus.service.Object):
                         str(self.paned.get_position()) + "\n")
                 fh.write("vpane=" +
                         str(self.leftpane.get_position()) + "\n")
-                fh.write("tree_page=" +
-                    self.topleftpane.get_col_widths("tree_page") + "\n")
-                fh.write("flat_page=" +
-                    self.topleftpane.get_col_widths("flat_page") + "\n")
+                fh.write("cw_tree=" +
+                    self.topleftpane.get_col_widths("tree") + "\n")
+                fh.write("cw_flat=" +
+                    self.topleftpane.get_col_widths("flat") + "\n")
+                fh.write("cw_catalogs=" +
+                    self.topleftpane.get_col_widths("catalogs") + "\n")
                 fh.write("dbpage=" +
                     str(self.topleftpane.notebook.get_current_page()) + "\n")
                 fh.write("playerpage=" +
@@ -2515,8 +2517,8 @@ class MainWindow(dbus.service.Object):
                 self.paned.set_position(int(v))
             elif k=="vpane":
                 self.leftpane.set_position(int(v))
-            elif k in ("tree_page", "flat_page"):
-                self.topleftpane.set_col_widths(k, v)
+            elif k in ("cw_tree", "cw_flat", "cw_catalogs"):
+                self.topleftpane.set_col_widths(k[3:], v)
             elif k=="dbpage":
                 self.topleftpane.notebook.set_current_page(int(v))
             elif k=="playerpage":
@@ -2888,8 +2890,7 @@ class MainWindow(dbus.service.Object):
 
 
     def cb_key_capture(self, widget, event):
-        tlp = self.topleftpane
-        if tlp.get_visible() and tlp.notebook.get_current_page() == 1:
+        if self.topleftpane.in_text_entry():
             return
             
         self.controls.input_key(event)

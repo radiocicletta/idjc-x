@@ -19,12 +19,17 @@
 
 
 import os
+import re
 import time
 import types
+import shlex
 import gettext
 import threading
+import socket
+import json
 from functools import partial, wraps
-from collections import deque
+from collections import deque, defaultdict
+from contextlib import contextmanager
 from urllib import quote
 
 import glib
@@ -224,7 +229,71 @@ class DBAccessor(threading.Thread):
         self._cursor = self._handle.cursor()
 
 
+class UseSettings(dict):
+    """Holder of data generated while using the database.
+    
+    It's for storage of data like the preferred browse view, catalog selection.
+    """
+    
+    def __init__(self, key_controls):
+        self._key_controls = key_controls
+        self._hide_top = True
+        dict.__init__(self)
+
+    @contextmanager
+    def _toplayer(self):
+        self._hide_top = False
+        yield
+        self._hide_top = True
+
+    def _get_top_level_key(self):
+        """The currently active key.
+        
+        When the database is activated the 'Settings' user interface is locked
+        so this key is guaranteed to not change during that time.
+        """
+        
+        return " ".join(s.get_text().replace(" ", "") for s in
+                                                            self._key_controls)
+        
+    def __getitem__(self, key):
+        if self._hide_top:
+            tlk = self._get_top_level_key()
+            return dict.__getitem__(self, tlk)[key]
+        else:
+            return super(UseSettings, self).__getitem__(key)
+
+    def __setitem__(self, key, value):
+        if self._hide_top:
+            tlk = self._get_top_level_key()
+            try:
+                dict_ = dict.__getitem__(self, tlk)
+            except:
+                dict_ = {}
+                dict.__setitem__(self, tlk, dict_)
+            
+            dict_[key] = value
+        else:
+            super(UseSettings, self).__setitem__(key, value)
+
+    def get_text(self):
+        with self._toplayer():
+            save_data = json.dumps(self)
+            return save_data
+        
+    def set_text(self, data):
+        with self._toplayer():
+            try:
+                data = json.loads(data)
+            except ValueError:
+                pass
+            else:
+                self.update(data)
+
+
 class Settings(gtk.Table):
+    """Connection details widgets."""
+    
     def __init__(self, name):
         self._name = name
         gtk.Table.__init__(self, 5, 4)
@@ -246,58 +315,33 @@ class Settings(gtk.Table):
         self.attach(self.hostnameport, 1, 4, 0, 1)
         
         # Second row.
-        hbox = gtk.HBox()
-        hbox.set_spacing(3)
-        fpmlabel, self.addchars = self._factory(_('File Path Modify'), None,
-                                                                    "addchars")
-        adj = gtk.Adjustment(0.0, 0.0, 999.0, 1.0, 1.0)
-        self.delchars = gtk.SpinButton(adj, 0.0, 0)
-        self._controls.append(self.delchars)
-        self.valuesdict = {"songdb_delchars_" + name: self.delchars}
-        set_tip(self.delchars, _('The number of characters to strip from '
-                                'the left hand side of media file paths.'))
-        set_tip(self.addchars, 
-                    _('The characters to prefix to the media file paths.'))
-        l_attach(fpmlabel, 0, 1, 1, 2)
-        minus = gtk.Label('-')
-        hbox.pack_start(minus, False)
-        hbox.pack_start(self.delchars, False)
-        plus = gtk.Label('+')
-        hbox.pack_start(plus, False)
-        hbox.pack_start(self.addchars)
-        self.attach(hbox, 1, 4, 1, 2)
-        
-        # Third row.
-        userlabel, self.user = self._factory(_('User Name'), "admin", "user")
-        l_attach(userlabel, 0, 1, 3, 4)
-        self.attach(self.user, 1, 2, 3, 4)
+        userlabel, self.user = self._factory(_('User Name'), "ampache", "user")
+        l_attach(userlabel, 0, 1, 2, 3)
+        self.attach(self.user, 1, 2, 2, 3)
         dblabel, self.database = self._factory(_('Database'), "ampache",
                                                                     "database")
-        l_attach(dblabel, 2, 3, 3, 4)
-        self.attach(self.database, 3, 4, 3, 4)
-        
-        # Fourth row.
-        passlabel, self.password = self._factory(_('Password'), "", "password")
-        self.password.set_visibility(False)
-        l_attach(passlabel, 0, 1, 4, 5)
-        self.attach(self.password, 1, 2, 4, 5)
+        l_attach(dblabel, 2, 3, 2, 3)
+        self.attach(self.database, 3, 4, 2, 3)
 
-    def get_conn_data(self):
+        self.usesettings = UseSettings(self._controls[:])
+        self.textdict["songdb_usesettings_" + name] = self.usesettings
+        
+        # Third row.
+        passlabel, self.password = self._factory(_('Password'), "ampache",
+                                                                    "password")
+        self.password.set_visibility(False)
+        l_attach(passlabel, 0, 1, 3, 4)
+        self.attach(self.password, 1, 2, 3, 4)
+        
+
+    def get_data(self):
         """Collate parameters for DBAccessor contructors."""
         
-        conn_data = {}
+        accdata = {}
         for key in "hostnameport user password database".split():
-            conn_data[key] = getattr(self, key).get_text().strip()
-        
-        return conn_data
+            accdata[key] = getattr(self, key).get_text().strip()
 
-    def get_transformation_data(self):
-        """Make a file path transformation function."""
-
-        from_ = self.delchars.get_value_as_int() + 1
-        prepend_str = self.addchars.get_text().strip()
-
-        return from_, prepend_str
+        return accdata, self.usesettings
 
     def set_sensitive(self, sens):
         """Just specific contents of the table are made insensitive."""
@@ -388,10 +432,8 @@ class PrefsControls(gtk.Frame):
         self.activedict = {"songdb_active": self.dbtoggle,
                             "songdb_page": self._notebook}
         self.textdict = {}
-        self.valuesdict = {}
         for each in self._settings:
             self.textdict.update(each.textdict)
-            self.valuesdict.update(each.valuesdict)
 
     def disconnect(self):
         self.dbtoggle.set_active(False)    
@@ -407,13 +449,12 @@ class PrefsControls(gtk.Frame):
         if widget.get_active():
             settings = self._notebook.get_nth_page(
                                             self._notebook.get_current_page())
-            conn_data = settings.get_conn_data()
-            conn_data["notify"] = self._notify
-            trans_data = settings.get_transformation_data()
+            accdata, usesettings = settings.get_data()
+            accdata["notify"] = self._notify
         else:
-            conn_data = trans_data = None
+            accdata = usesettings = None
 
-        callback(conn_data, trans_data)
+        callback(accdata, usesettings)
 
     def _cb_dbtoggle(self, widget):
         """Parameter widgets to be made insensitive when db is active."""
@@ -447,9 +488,9 @@ class PrefsControls(gtk.Frame):
 
 
 class PageCommon(gtk.VBox):
-    """Base class for TreePage and FlatPage."""
+    """Base class for all pages."""
     
-    def __init__(self, notebook, label_text, controls):
+    def __init__(self, notebook, label_text, controls, dnd=False):
         gtk.VBox.__init__(self)
         self.set_spacing(2)
         self.scrolled_window = gtk.ScrolledWindow()
@@ -463,10 +504,11 @@ class PageCommon(gtk.VBox):
         label = gtk.Label(label_text)
         notebook.append_page(self, label)
         
-        self.tree_view.enable_model_drag_source(gtk.gdk.BUTTON1_MASK,
-            self._sourcetargets, gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_COPY)
-        self.tree_view.connect_after("drag-begin", self._cb_drag_begin)
-        self.tree_view.connect("drag-data-get", self._cb_drag_data_get)
+        if dnd:
+            self.tree_view.enable_model_drag_source(gtk.gdk.BUTTON1_MASK,
+             self._sourcetargets, gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_COPY)
+            self.tree_view.connect_after("drag-begin", self._cb_drag_begin)
+            self.tree_view.connect("drag-data-get", self._cb_drag_data_get)
         self._update_id = deque()
         self._acc = None
 
@@ -474,20 +516,12 @@ class PageCommon(gtk.VBox):
     def db_type(self):
         return self._db_type
 
-    @property
-    def trans_from(self):
-        return self._trans_data[0]
-       
-    @property
-    def trans_prepend(self):
-        return self._trans_data[1]
-
-    def get_col_widths(self):
-        pass
-
     def get_col_widths(self):
         return ",".join([str(x.get_width() or x.get_fixed_width())
                                                     for x in self.tree_cols])
+
+    def in_text_entry(self):
+        return False
 
     def set_col_widths(self, data):
         """Restore column width values."""
@@ -499,11 +533,11 @@ class PageCommon(gtk.VBox):
             else:
                 c.next()
 
-    def activate(self, accessor, db_type, trans_data):
-        self._db_type = db_type
+    def activate(self, accessor, db_type, usesettings):
         self._acc = accessor
-        self._trans_data = trans_data
-        
+        self._db_type = db_type
+        self._usesettings = usesettings
+
     def deactivate(self):
         while self._update_id:
             context, namespace = self._update_id.popleft()
@@ -515,24 +549,9 @@ class PageCommon(gtk.VBox):
         self.tree_view.set_model(None)
         if model is not None:
             model.clear()
-
+            
     def repair_focusability(self):
         self.tree_view.set_flags(gtk.CAN_FOCUS)
-
-    _sourcetargets = (  # Drag and drop source target specs.
-        ('text/plain', 0, 1),
-        ('TEXT', 0, 2),
-        ('STRING', 0, 3))
-
-    def _cb_drag_begin(self, widget, context):
-        """Set icon for drag and drop operation."""
-
-        context.set_icon_stock(gtk.STOCK_CDROM, -5, -5)
-
-    def _cb_drag_data_get(self, tree_view, context, selection, target, etime):
-        model, paths = self.tree_selection.get_selected_rows()
-        data = ("file://%s" % row for row in self._drag_data(model, paths))
-        selection.set(selection.target, 8, "\n".join(data))
 
     @staticmethod
     def _make_tv_columns(tree_view, parameters):
@@ -556,6 +575,75 @@ class PageCommon(gtk.VBox):
                 column.add_attribute(renderer, 'text', data_index)
 
         return list_
+
+    def _handler(self, acc, request, cursor, notify, rows):
+        # Lock against the very start of the update functions.
+        with gdklock():
+            while self._update_id:
+                context, namespace = self._update_id.popleft()
+                glib.source_remove(context)
+                # Idle functions to receive the following and know to clean-up.
+                namespace[0] = True
+
+        try:
+            self._old_cursor.close()
+        except sql.Error as e:
+            print str(e)
+        except AttributeError:
+            pass
+
+        self._old_cursor = cursor
+        acc.replace_cursor(cursor)
+        # Scrap intermediate jobs whose output would merely slow down the
+        # user interface responsiveness.
+        namespace = [False, ()]
+        context = glib.idle_add(self._update_1, acc, cursor, rows, namespace)
+        self._update_id.append((context, namespace))
+
+class ViewerCommon(PageCommon):
+    """Base class for TreePage and FlatPage."""
+    
+    def __init__(self, notebook, label_text, controls, catalogs):
+        self.catalogs = catalogs
+        self.notebook = notebook
+        self._reload_upon_catalogs_changed(enable_notebook_reload=True)
+        PageCommon.__init__(self, notebook, label_text, controls, dnd=True)
+
+    def deactivate(self):
+        self._reload_upon_catalogs_changed()
+        super(ViewerCommon, self).deactivate()
+
+    def _reload_upon_catalogs_changed(self, enable_notebook_reload=False):
+        handler_id = []
+        handler_id.append(self.catalogs.connect("changed",
+            self._on_catalogs_changed, enable_notebook_reload, handler_id))
+        self._old_cat_data = None
+
+    def _on_catalogs_changed(self, widget, enable_notebook_reload, handler_id):
+        self.catalogs.disconnect(handler_id[0])  # Only run once.
+        if enable_notebook_reload:
+            self.notebook.connect("switch-page", self._on_page_change)
+        self.reload()
+
+    def _on_page_change(self, notebook, page, page_num):
+        if notebook.get_nth_page(page_num) == self:
+            self.reload()
+
+    _sourcetargets = (  # Drag and drop source target specs.
+        ('text/plain', 0, 1),
+        ('TEXT', 0, 2),
+        ('STRING', 0, 3))
+
+    def _cb_drag_begin(self, widget, context):
+        """Set icon for drag and drop operation."""
+
+        context.set_icon_stock(gtk.STOCK_CDROM, -5, -5)
+
+    def _cb_drag_data_get(self, tree_view, context, selection, target, etime):
+        model, paths = self.tree_selection.get_selected_rows()
+        data = ("file://%s" % self.catalogs.transform_path(row) for row in
+                                                self._drag_data(model, paths))
+        selection.set(selection.target, 8, "\n".join(data))
 
     def _cond_cell_secs_to_h_m_s(self, column, renderer, model, iter, cell):
         if model.get_value(iter, 0) >= 0:
@@ -585,16 +673,27 @@ class PageCommon(gtk.VBox):
         renderer.props.text = text
         renderer.props.foreground = col
 
-    def inner(column, renderer, model, iter, cell, which_bit):
+    @staticmethod
+    def _cell_pathname(column, renderer, model, iter, cell, part, tx):
         text = model.get_value(iter, cell)
-
+        trans = tx(text)
+        col = "black" if os.path.exists(trans) else "red"
+        
         if text:
-            renderer.props.text = which_bit(text)
+            renderer.props.foreground = col
+            renderer.props.text = part(tx(text))
         else:
-            renderer.props.text = ""    
-    _cell_path = staticmethod(partial(inner, which_bit=os.path.dirname))
-    _cell_filename = staticmethod(partial(inner, which_bit=os.path.basename))
-    del inner
+            renderer.props.text = ""
+        
+    def _cell_path(self, *args, **kwargs):
+        kwargs["part"] = os.path.dirname
+        kwargs["tx"] = self.catalogs.transform_path
+        self._cell_pathname(*args, **kwargs) 
+        
+    def _cell_filename(self, *args, **kwargs):
+        kwargs["part"] = os.path.basename
+        kwargs["tx"] = lambda p:p
+        self._cell_pathname(*args, **kwargs)
     
     @staticmethod
     def _cell_secs_to_h_m_s(column, renderer, model, iter, cell):
@@ -621,31 +720,6 @@ class PageCommon(gtk.VBox):
         else:
             renderer.set_property("text", "")
 
-    def _handler(self, acc, request, cursor, notify, rows):
-        # Lock against the very start of the update functions.
-        with gdklock():
-            while self._update_id:
-                context, namespace = self._update_id.popleft()
-                glib.source_remove(context)
-                # Idle functions to receive the following and know to clean-up.
-                namespace[0] = True
-
-        try:
-            self._old_cursor.close()
-        except sql.Error as e:
-            print str(e)
-        except AttributeError:
-            pass
-
-        self._old_cursor = cursor
-        acc.replace_cursor(cursor)
-        # Scrap intermediate jobs whose output would merely slow down the
-        # user interface responsiveness.
-        namespace = [False, ()]
-        context = glib.idle_add(self._update_1, acc, cursor, rows, namespace)
-        self._update_id.append((context, namespace))
-
-
 class ExpandAllButton(gtk.Button):
     def __init__(self, expanded, tooltip=None):
         expander = gtk.Expander()
@@ -657,7 +731,7 @@ class ExpandAllButton(gtk.Button):
             set_tip(self, tooltip)
 
 
-class TreePage(PageCommon):
+class TreePage(ViewerCommon):
     """Browsable UI with tree structure."""
 
     # *depth*, *treecol*, album, album_prefix, year, disk, album_id,
@@ -666,7 +740,7 @@ class TreePage(PageCommon):
     DATA_SIGNATURE = int, str, str, str, int, int, int, int, str, str, str, str, int, int
     BLANK_ROW = tuple(x() for x in DATA_SIGNATURE[2:])
 
-    def __init__(self, notebook):
+    def __init__(self, notebook, catalogs):
         self.controls = gtk.HBox()
         layout_store = gtk.ListStore(str, gtk.TreeStore, gobject.TYPE_PYOBJECT)
         self.layout_combo = gtk.ComboBox(layout_store)
@@ -690,7 +764,8 @@ class TreePage(PageCommon):
             sg.add_widget(each)
         self.controls.pack_end(self.right_controls, False)
 
-        PageCommon.__init__(self, notebook, _('Browse'), self.controls)
+        ViewerCommon.__init__(self, notebook, _('Browse'), self.controls,
+                                                                    catalogs)
         
         self.tree_view.set_enable_tree_lines(True)
         tree_expand.connect_object("clicked", gtk.TreeView.expand_all,
@@ -748,14 +823,22 @@ class TreePage(PageCommon):
 
     def activate(self, *args, **kwargs):
         PageCommon.activate(self, *args, **kwargs)
-        glib.idle_add(threadslock(self.tree_rebuild.clicked))
+        try:
+            layout_mode = self._usesettings["layout mode"]
+        except KeyError:
+            pass
+        else:
+            self.layout_combo.set_active(layout_mode)
 
     def deactivate(self):
         while self._pulse_id:
             glib.source_remove(self._pulse_id.popleft())
         self.progress_bar.set_fraction(0.0)
-        
-        PageCommon.deactivate(self)
+        super(TreePage, self).deactivate()
+
+    def reload(self):
+        if self.catalogs.update_required(self._old_cat_data):
+            self.tree_rebuild.clicked()
 
     def _cb_layout_combo(self, widget):
         iter = widget.get_active_iter()
@@ -763,10 +846,12 @@ class TreePage(PageCommon):
         self.tree_view.set_model(store)
         for i, col in enumerate(self.tree_cols):
             col.set_visible(i not in hide)
+        self._usesettings["layout mode"] = widget.get_active()
 
     def _cb_tree_rebuild(self, widget):
         """(Re)load the tree with info from the database."""
 
+        self._old_cat_data = self.catalogs.copy_data()
         self.set_loading_view(True)
         if self._db_type == PROKYON_3:
             query = """SELECT
@@ -779,7 +864,7 @@ class TreePage(PageCommon):
                     title,
                     tracks.artist as artist,
                     "" as art_prefix,
-                    CONCAT(%s,MID(CONCAT_WS('/',path,filename),%s)) as file,
+                    CONCAT_WS('/',path,filename) as file,
                     bitrate, length
                     FROM tracks
                     LEFT JOIN albums on tracks.album = albums.name
@@ -796,20 +881,22 @@ class TreePage(PageCommon):
                     title,
                     artist.name as artist,
                     artist.prefix as art_prefix,
-                    CONCAT(%s,MID(file,%s)) as file,
+                    file,
                     bitrate,
                     time as length
                     FROM song
                     LEFT JOIN artist ON song.artist = artist.id
                     LEFT JOIN album ON song.album = album.id
+                    LEFT JOIN catalog ON song.catalog = catalog.id
+                    WHERE __catalogs__
                     ORDER BY artist.name, album, disk, tracknumber, title"""
+            query = query.replace("__catalogs__", self.catalogs.sql())
         else:
             print "unsupported database type:", self._db_type
             return
             
         self._pulse_id.append(glib.timeout_add(1000, self._progress_pulse))
-        self._acc.request((query, (self.trans_prepend, self.trans_from)),
-                                            self._handler, self._failhandler)
+        self._acc.request((query,), self._handler, self._failhandler)
 
     def _drag_data(self, model, path):
         iter = model.get_iter(path[0])
@@ -942,7 +1029,7 @@ class TreePage(PageCommon):
                 r_append(iter_2, (0, row[6]) + row)
                 
         done += do_max
-        self.progress_bar.set_fraction(done / total)
+        self.progress_bar.set_fraction(sorted((0.0, done / total, 1.0))[1])
         namespace[1] = done, iter_l, iter_1, iter_2, letter, artist, album, art_prefix, alb_prefix
         return True
 
@@ -1005,10 +1092,10 @@ class TreePage(PageCommon):
         return True
 
 
-class FlatPage(PageCommon):
+class FlatPage(ViewerCommon):
     """Flat list based user interface with a search facility."""
     
-    def __init__(self, notebook):
+    def __init__(self, notebook, catalogs):
         # Base class overwrites these values.
         self.scrolled_window = self.tree_view = self.tree_selection = None
         self.transfrom = self.db_accessor = None
@@ -1048,7 +1135,8 @@ class FlatPage(PageCommon):
         image.show
         where_hbox.pack_start(self.update_button, False)
         
-        PageCommon.__init__(self, notebook, _("Search"), self.controls)
+        ViewerCommon.__init__(self, notebook, _("Search"), self.controls,
+                                                                    catalogs)
  
         # Row data specification:
         # index, ARTIST, ALBUM, TRACKNUM, TITLE, DURATION, BITRATE,
@@ -1072,10 +1160,17 @@ class FlatPage(PageCommon):
         self.tree_view.set_rubber_banding(True)
         self.tree_selection.set_mode(gtk.SELECTION_MULTIPLE)
 
+    def reload(self):
+        if self.catalogs.update_required(self._old_cat_data):
+            self.update_button.clicked()
+
+    def in_text_entry(self):
+        return any(x.has_focus() for x in (self.fuzzy_entry, self.where_entry))
+
     def deactivate(self):
         self.fuzzy_entry.set_text("")
         self.where_entry.set_text("")
-        PageCommon.deactivate(self)
+        super(FlatPage, self).deactivate()
 
     def repair_focusability(self):
         PageCommon.repair_focusability(self)
@@ -1086,7 +1181,7 @@ class FlatPage(PageCommon):
         PROKYON_3:
             {FUZZY: (CLEAN, """
                     SELECT artist,album,tracknumber,title,length,bitrate,
-                    CONCAT(%s,MID(CONCAT_WS('/',path,filename),%s)) as file,
+                    CONCAT_WS('/',path,filename) as file,
                     0 as disk
                     FROM tracks
                     WHERE MATCH (artist,album,title,filename) AGAINST (%s)
@@ -1094,7 +1189,7 @@ class FlatPage(PageCommon):
         
             WHERE: (DIRTY, """
                     SELECT artist,album,tracknumber,title,length,bitrate,
-                    CONCAT("%s",MID(CONCAT_WS('/',path,filename),%s)) as file,
+                    CONCAT_WS('/',path,filename) as file,
                     0 as disk
                     FROM tracks WHERE (%s)
                     ORDER BY artist,album,path,tracknumber,title
@@ -1106,14 +1201,15 @@ class FlatPage(PageCommon):
                     concat_ws(" ",artist.prefix,artist.name),
                     concat_ws(" ",album.prefix,album.name),
                     track as tracknumber, title, time as length,bitrate,
-                    CONCAT(%s,MID(file,%s)) as file,
+                    file,
                     album.disk as disk FROM song
                     LEFT JOIN artist ON artist.id = song.artist
                     LEFT JOIN album ON album.id = song.album
+                    LEFT JOIN catalog ON song.catalog = catalog.id
                     WHERE
                          (MATCH(album.name) against(%s)
                           OR MATCH(artist.name) against(%s)
-                          OR MATCH(title) against(%s))
+                          OR MATCH(title) against(%s)) AND __catalogs__
                     """),
 
             WHERE: (DIRTY, """
@@ -1121,16 +1217,18 @@ class FlatPage(PageCommon):
                     concat_ws(" ", artist.prefix, artist.name) as artist,
                     concat_ws(" ", album.prefix, album.name) as albumname,
                     track as tracknumber, title,time as length, bitrate,
-                    CONCAT("%s",MID(file,%s)) as file,
+                    file,
                     album.disk as disk FROM song
                     LEFT JOIN album on album.id = song.album
                     LEFT JOIN artist on artist.id = song.artist
-                    WHERE (%s) ORDER BY
+                    LEFT JOIN catalog ON song.catalog = catalog.id
+                    WHERE (%s) AND __catalogs__ ORDER BY
                     artist.name, album.name, file, album.disk, track, title
                     """)}
     }
 
     def _cb_update(self, widget):
+        self._old_cat_data = self.catalogs.copy_data()
         try:
             table = self._queries_table[self._db_type]
         except KeyError:
@@ -1152,13 +1250,13 @@ class FlatPage(PageCommon):
                 self.list_store.clear()
                 return
 
+        query = query.replace("__catalogs__", self.catalogs.sql())
+
         qty = query.count("(%s)")
         if access_mode == CLEAN:
-            query = (query, (self.trans_prepend, self.trans_from, ) + 
-                                                    (user_text, ) * qty)
+            query = (query, (user_text,) * qty)
         elif access_mode == DIRTY:  # Accepting of SQL code in user data.
-            query = (query % ((self.trans_prepend, self.trans_from, )
-                                                    + (user_text, ) * qty), )
+            query = (query % ((user_text,) * qty),)
         else:
             print "unknown database access mode", access_mode
             return
@@ -1239,6 +1337,283 @@ class FlatPage(PageCommon):
         return True
 
 
+class CatalogsInterface(gobject.GObject):
+    __gsignals__ = { "changed" : (gobject.SIGNAL_RUN_LAST, None, ()) }
+    
+    def __init__(self):
+        gobject.GObject.__init__(self)
+        self._dict = {}
+
+    def clear(self):
+        self._dict.clear()
+        
+    def copy_data(self):
+        return self._dict.copy()
+    
+    def update(self, liststore):
+        """Replacement of the standard dict update method.
+        
+        This one interprets a CatalogPage gtk.ListStore.
+        """
+        
+        self._dict.clear()
+        for row in liststore:
+            if row[0]:
+                self._dict[row[4]] = {
+                    "local_path" : row[1], "id" : row[2], "name" : row[3],
+                    "last_update" : row[5], "last_clean" : row[6],
+                    "last_add" : row[7]
+                }
+                
+        self.emit("changed")
+
+    def transform_path(self, path):
+        match = path
+        while 1:
+            if match in self._dict:
+                return self._dict[match]["local_path"] + path[len(match):]
+            oldmatch = match
+            match = os.path.split(match)[0]
+            if match == oldmatch:
+                # Leave unchanged.
+                return path
+    
+    def sql(self):
+        ids = tuple(x["id"] for x in self._dict.itervalues())
+        if not ids:
+            return "FALSE"
+
+        if len(ids) == 1:
+            which = "catalog = %d" % ids[0]
+        else:
+            which = "catalog IN %s" % str(ids)
+
+        return which + ' AND catalog.catalog_type = "local"'
+    
+    def update_required(self, other):
+        if other is None:
+            return True
+
+        return self._stripped_copy(self._dict) != self._stripped_copy(other)
+
+    @staticmethod
+    def _stripped_copy(_dict):
+        copy = {}
+        for key1, val1 in _dict.iteritems():
+            copy[key1] = {}
+            for key2, val2 in val1.iteritems():
+                if key2 != "local_path":
+                    copy[key1][key2] = val2
+
+        return copy
+    
+
+class CatalogsPage(PageCommon):
+    def __init__(self, notebook, interface):
+        self.interface = interface
+        self.refresh = gtk.Button(stock=gtk.STOCK_REFRESH)
+        self.refresh.connect("clicked", self._on_refresh)
+        PageCommon.__init__(self, notebook, _("Catalogs"), self.refresh)
+        # active, local_path, id, name, path, last_update, last_clean, last_add, activatable
+        self.list_store = gtk.ListStore(
+                                int, str, int, str, str, int, int, int, int)
+        self.tree_cols = self._make_tv_columns(self.tree_view, (
+            (_('Name'), 3, None, 65, pango.ELLIPSIZE_END),
+            (_('Remote Path'), 4, None, 100, pango.ELLIPSIZE_END),
+            (_('Local Path'), 1, None, -1, pango.ELLIPSIZE_NONE)
+            ))
+
+        rend = gtk.CellRendererToggle()
+        rend.set_activatable(True)
+        rend.connect("toggled", self._on_toggle)
+        self.tree_view.insert_column_with_attributes(0, "", rend, active=0,
+                                                            activatable=8)
+
+        rend = self.tree_view.get_column(3).get_cell_renderers()[0]
+        rend.props.editable = False
+        rend.connect("edited", self._on_edited)
+        rend.connect("editing-started", self._on_editing_started)
+        rend.connect("editing-canceled", self._on_editing_cancelled)
+
+        self.tree_view.set_rules_hint(True)
+        self._in_text_entry = False
+        set_tip(self.tree_view, _(
+            "Select which catalogs you want to use here.\n\n"
+            "If using a remote database then any remote paths\n"
+            "will need to be made accessible locally using NFS."))
+
+    def in_text_entry(self):
+        return self._in_text_entry
+
+    def activate(self, *args, **kwargs):
+        PageCommon.activate(self, *args, **kwargs)
+        self.refresh.clicked()
+
+    def deactivate(self, *args, **kwargs):
+        PageCommon.deactivate(self, *args, **kwargs)
+        self.interface.clear()
+
+    def _get_active_catalogs(self):
+        return tuple(x[2] for x in self.list_store if x[0])
+        
+    def _on_toggle(self, renderer, path):
+        iter = self.list_store.get_iter(path)
+        if iter is not None:
+            old_val = self.list_store.get_value(iter, 0)
+            self.list_store.set_value(iter, 0, not old_val)
+            self.interface.update(self.list_store)
+            self._usesettings["active_catalogs"] = self._get_active_catalogs()
+
+    def _on_refresh(self, widget):
+        if self._db_type == AMPACHE:
+            self.refresh.set_sensitive(False)
+            self.tree_view.set_model(None)
+            query = """SELECT id, name, path, last_update, IFNULL(last_clean,0),
+                            last_add FROM catalog WHERE enabled=1 ORDER BY name"""
+            self._acc.request((query,), self._handler, self._failhandler)
+        
+        elif self._db_type == PROKYON_3:
+            self.list_store.clear()
+            mount_finder = MountFinder(self._acc.hostname)
+            for i, (remote, local) in enumerate(mount_finder):
+                self.list_store.append((1, local, i, "", remote, 0, 0, 0, 0))
+            self.tree_view.set_model(self.list_store)
+            self.interface.update(self.list_store)
+
+    def _on_editing_started(self, rend, editable, path):
+        self._in_text_entry = True
+        
+    def _on_editing_cancelled(self, rend):
+        self._in_text_entry = False
+
+    def _on_edited(self, rend, path, new_text):
+        model = self.list_store
+        self._in_text_entry = False
+        new_text = new_text.strip()
+        iter = model.get_iter(path)
+        if iter is not None:
+            old_text = model.get_value(iter, 1)
+            if new_text and new_text != old_text:
+                model.set_value(iter, 1, new_text)
+                self.interface.update(self.list_store)
+
+    def _failhandler(self, exception, notify):
+        notify(str(exception))
+        if exception[0] == 2006:
+            raise
+        
+        glib.idle_add(threadslock(self.tree_view.set_model), self.list_store)
+        glib.idle_add(threadslock(self.refresh.set_sensitive), True)
+
+    @threadslock
+    def _update_1(self, acc, cursor, rows, namespace):
+        if not namespace[0]:
+            try:
+                active_catalogs = self._usesettings["active_catalogs"]
+            except KeyError:
+                active_catalogs = ()
+
+            self.list_store.clear()
+            mount_finder = MountFinder(acc.hostname)
+            
+            while 1:
+                try:
+                    db_row = cursor.fetchone()
+                except sql.Error:
+                    break
+
+                if db_row is None:
+                    break
+                
+                active = 1 if db_row[0] in active_catalogs else 0
+                mount_point = mount_finder.get(db_row[2])
+                if mount_point is None:
+                    mount_point = "-"
+                    active = activatable = 0
+                else:
+                    activatable = 1
+
+                self.list_store.append(
+                            (active, mount_point) + db_row + (activatable,))
+
+        self._usesettings["active_catalogs"] = self._get_active_catalogs()
+        self.tree_view.set_model(self.list_store)
+        self.refresh.set_sensitive(True)
+        self.interface.update(self.list_store)
+        return False
+        
+
+class MountFinder(object):
+    nfs = re.compile(r"([^:]+):(/.*)")
+    
+    def __init__(self, hostname):
+        host = socket.gethostbyname(hostname)
+        
+        if host == socket.gethostbyname("localhost"):
+            self._mode = "local"
+        else:
+            for pathname in ("/proc/mounts", "/etc/mtab", "/etc/fstab"):
+                try:
+                    with open(pathname, "r") as f:
+                        mounttable = f.readlines()
+                        self._mode = "remote"
+                        break
+                except IOError:
+                    pass
+            else:
+                print "Failed to discover mount table."
+                self._mode = "broken"
+                return
+            
+            self._transform = {}
+            for row in mounttable:
+                try:
+                    parts = shlex.split(row)
+                except ValueError:
+                    continue
+                    
+                if len(parts) == 6:
+                    try:
+                        fs, ver = parts[2][:3], parts[2][3:]
+                        if fs == "nfs" and (ver == "" or ver in "34"):
+                            rhost, rpath = self.nfs.match(parts[0]).group(1, 2)
+                        else:
+                            continue
+                    except (AttributeError, IndexError):
+                        continue
+
+                    if socket.gethostbyname(rhost) == host:
+                        lpath = os.path.normpath(parts[1])
+                        if os.path.isdir(lpath):
+                            rpath = os.path.normpath(rpath)
+                            self._transform[rpath] = lpath
+                
+    def get(self, in_path):
+        if self._mode == "local":
+            return in_path
+
+        if self._mode == "broken":
+            return None    
+            
+        try_path = in_path
+        while 1:
+            if try_path in self._transform:
+                break
+
+            old_try_path = try_path
+            try_path = os.path.split(try_path)[0]
+            if try_path == old_try_path:
+                return None
+            
+        return self._transform[try_path] + in_path[len(try_path):]
+
+    def __iter__(self):
+        if self._mode in ("local", "broken") or not self._transform:
+            return iter((("/", "/"),))
+
+        return self._transform.iteritems()
+
+
 class MediaPane(gtk.VBox):
     """Database song details are displayed in this widget."""
 
@@ -1248,8 +1623,10 @@ class MediaPane(gtk.VBox):
         self.notebook = gtk.Notebook()
         self.pack_start(self.notebook)
         
-        self._tree_page = TreePage(self.notebook)
-        self._flat_page = FlatPage(self.notebook)
+        catalogs = CatalogsInterface()
+        self._tree_page = TreePage(self.notebook, catalogs)
+        self._flat_page = FlatPage(self.notebook, catalogs)
+        self._catalogs_page = CatalogsPage(self.notebook, catalogs)
         self.prefs_controls = PrefsControls()
 
         if have_songdb:
@@ -1262,16 +1639,25 @@ class MediaPane(gtk.VBox):
 
         self.notebook.show_all()
 
+    def in_text_entry(self):
+        if self.get_visible():
+            page = self.notebook.get_nth_page(self.notebook.get_current_page())
+            return page.in_text_entry()
+            
+        return False
+            
     def repair_focusability(self):
         self._tree_page.repair_focusability()
         self._flat_page.repair_focusability()
+        self._catalogs_page.repair_focusability()
 
     def get_col_widths(self, keyval):
         """Grab column widths as textual data."""
         
         try:
-            target = getattr(self, keyval)
-        except AttributeError:
+            target = getattr(self, "_%s_page" % keyval)
+        except AttributeError as e:
+            print e
             return ""
         else:
             return target.get_col_widths()
@@ -1281,28 +1667,29 @@ class MediaPane(gtk.VBox):
         
         if data:
             try:
-                target = getattr(self, keyval)
-            except AttributeError:
+                target = getattr(self, "_%s_page" % keyval)
+            except AttributeError as e:
+                print e
                 return
             else:
                 target.set_col_widths(data)
 
-    def _dbtoggle(self, conn_data, trans_data):
-        if conn_data:
+    def _dbtoggle(self, accdata, usesettings):
+        if accdata:
             # Connect and discover the database type.
-            self._acc1 = DBAccessor(**conn_data)
-            self._acc2 = DBAccessor(**conn_data)
-            self._trans_data = trans_data
+            self.usesettings = usesettings
+            for i in range(1, 4):
+                setattr(self, "_acc%d" % i, DBAccessor(**accdata))
             self._acc1.request(('SHOW tables',), self._stage_1, self._fail_1)
         else:
             try:
-                self._acc1.close()
-                self._acc2.close()
+                for i in xrange(1, 4):
+                    getattr(self, "_acc%d" % i).close()
             except AttributeError:
                 pass
             else:
-                self._tree_page.deactivate()
-                self._flat_page.deactivate()
+                for each in "tree flat catalogs".split():
+                    getattr(self, "_%s_page" % each).deactivate()
             self.hide()
 
     @staticmethod
@@ -1315,9 +1702,10 @@ class MediaPane(gtk.VBox):
     def _safe_disconnect(self):
         glib.idle_add(threadslock(self.prefs_controls.disconnect))
 
-    def _hand_over(self, database_name):
-        self._tree_page.activate(self._acc1, database_name, self._trans_data)
-        self._flat_page.activate(self._acc2, database_name, self._trans_data)
+    def _hand_over(self, db_name):
+        self._tree_page.activate(self._acc1, db_name, self.usesettings)
+        self._flat_page.activate(self._acc2, db_name, self.usesettings)
+        self._catalogs_page.activate(self._acc3, db_name, self.usesettings)
         glib.idle_add(threadslock(self.show))
             
     def _fail_1(self, exception, notify):
