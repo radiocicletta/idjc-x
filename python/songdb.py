@@ -26,8 +26,10 @@ import shlex
 import gettext
 import threading
 import socket
+import json
 from functools import partial, wraps
-from collections import deque
+from collections import deque, defaultdict
+from contextlib import contextmanager
 from urllib import quote
 
 import glib
@@ -227,7 +229,71 @@ class DBAccessor(threading.Thread):
         self._cursor = self._handle.cursor()
 
 
+class UseSettings(dict):
+    """Holder of data generated while using the database.
+    
+    It's for storage of data like the preferred browse view, catalog selection.
+    """
+    
+    def __init__(self, key_controls):
+        self._key_controls = key_controls
+        self._hide_top = True
+        dict.__init__(self)
+
+    @contextmanager
+    def _toplayer(self):
+        self._hide_top = False
+        yield
+        self._hide_top = True
+
+    def _get_top_level_key(self):
+        """The currently active key.
+        
+        When the database is activated the 'Settings' user interface is locked
+        so this key is guaranteed to not change during that time.
+        """
+        
+        return " ".join(s.get_text().replace(" ", "") for s in
+                                                            self._key_controls)
+        
+    def __getitem__(self, key):
+        if self._hide_top:
+            tlk = self._get_top_level_key()
+            return dict.__getitem__(self, tlk)[key]
+        else:
+            return super(UseSettings, self).__getitem__(key)
+
+    def __setitem__(self, key, value):
+        if self._hide_top:
+            tlk = self._get_top_level_key()
+            try:
+                dict_ = dict.__getitem__(self, tlk)
+            except:
+                dict_ = {}
+                dict.__setitem__(self, tlk, dict_)
+            
+            dict_[key] = value
+        else:
+            super(UseSettings, self).__setitem__(key, value)
+
+    def get_text(self):
+        with self._toplayer():
+            save_data = json.dumps(self)
+            return save_data
+        
+    def set_text(self, data):
+        with self._toplayer():
+            try:
+                data = json.loads(data)
+            except ValueError:
+                pass
+            else:
+                self.update(data)
+
+
 class Settings(gtk.Table):
+    """Connection details widgets."""
+    
     def __init__(self, name):
         self._name = name
         gtk.Table.__init__(self, 5, 4)
@@ -238,7 +304,6 @@ class Settings(gtk.Table):
 
         self._controls = []
         self.textdict = {}
-        self.valuesdict = {}
 
         # Attachment for labels.
         l_attach = partial(self.attach, xoptions=gtk.SHRINK | gtk.FILL)
@@ -250,28 +315,33 @@ class Settings(gtk.Table):
         self.attach(self.hostnameport, 1, 4, 0, 1)
         
         # Second row.
-        userlabel, self.user = self._factory(_('User Name'), "admin", "user")
+        userlabel, self.user = self._factory(_('User Name'), "ampache", "user")
         l_attach(userlabel, 0, 1, 2, 3)
         self.attach(self.user, 1, 2, 2, 3)
         dblabel, self.database = self._factory(_('Database'), "ampache",
                                                                     "database")
         l_attach(dblabel, 2, 3, 2, 3)
         self.attach(self.database, 3, 4, 2, 3)
+
+        self.usesettings = UseSettings(self._controls[:])
+        self.textdict["songdb_usesettings_" + name] = self.usesettings
         
         # Third row.
-        passlabel, self.password = self._factory(_('Password'), "", "password")
+        passlabel, self.password = self._factory(_('Password'), "ampache",
+                                                                    "password")
         self.password.set_visibility(False)
         l_attach(passlabel, 0, 1, 3, 4)
         self.attach(self.password, 1, 2, 3, 4)
+        
 
     def get_data(self):
         """Collate parameters for DBAccessor contructors."""
         
-        data = {}
+        accdata = {}
         for key in "hostnameport user password database".split():
-            data[key] = getattr(self, key).get_text().strip()
+            accdata[key] = getattr(self, key).get_text().strip()
 
-        return data
+        return accdata, self.usesettings
 
     def set_sensitive(self, sens):
         """Just specific contents of the table are made insensitive."""
@@ -362,10 +432,8 @@ class PrefsControls(gtk.Frame):
         self.activedict = {"songdb_active": self.dbtoggle,
                             "songdb_page": self._notebook}
         self.textdict = {}
-        self.valuesdict = {}
         for each in self._settings:
             self.textdict.update(each.textdict)
-            self.valuesdict.update(each.valuesdict)
 
     def disconnect(self):
         self.dbtoggle.set_active(False)    
@@ -381,12 +449,12 @@ class PrefsControls(gtk.Frame):
         if widget.get_active():
             settings = self._notebook.get_nth_page(
                                             self._notebook.get_current_page())
-            data = settings.get_data()
-            data["notify"] = self._notify
+            accdata, usesettings = settings.get_data()
+            accdata["notify"] = self._notify
         else:
-            data = None
+            accdata = usesettings = None
 
-        callback(data)
+        callback(accdata, usesettings)
 
     def _cb_dbtoggle(self, widget):
         """Parameter widgets to be made insensitive when db is active."""
@@ -465,10 +533,11 @@ class PageCommon(gtk.VBox):
             else:
                 c.next()
 
-    def activate(self, accessor, db_type):
-        self._db_type = db_type
+    def activate(self, accessor, db_type, usesettings):
         self._acc = accessor
-        
+        self._db_type = db_type
+        self._usesettings = usesettings
+
     def deactivate(self):
         while self._update_id:
             context, namespace = self._update_id.popleft()
@@ -754,6 +823,12 @@ class TreePage(ViewerCommon):
 
     def activate(self, *args, **kwargs):
         PageCommon.activate(self, *args, **kwargs)
+        try:
+            layout_mode = self._usesettings["layout mode"]
+        except KeyError:
+            pass
+        else:
+            self.layout_combo.set_active(layout_mode)
 
     def deactivate(self):
         while self._pulse_id:
@@ -771,6 +846,7 @@ class TreePage(ViewerCommon):
         self.tree_view.set_model(store)
         for i, col in enumerate(self.tree_cols):
             col.set_visible(i not in hide)
+        self._usesettings["layout mode"] = widget.get_active()
 
     def _cb_tree_rebuild(self, widget):
         """(Re)load the tree with info from the database."""
@@ -1377,12 +1453,16 @@ class CatalogsPage(PageCommon):
         PageCommon.deactivate(self, *args, **kwargs)
         self.interface.clear()
 
+    def _get_active_catalogs(self):
+        return tuple(x[2] for x in self.list_store if x[0])
+        
     def _on_toggle(self, renderer, path):
         iter = self.list_store.get_iter(path)
         if iter is not None:
             old_val = self.list_store.get_value(iter, 0)
             self.list_store.set_value(iter, 0, not old_val)
             self.interface.update(self.list_store)
+            self._usesettings["active_catalogs"] = self._get_active_catalogs()
 
     def _on_refresh(self, widget):
         if self._db_type == AMPACHE:
@@ -1428,9 +1508,11 @@ class CatalogsPage(PageCommon):
     @threadslock
     def _update_1(self, acc, cursor, rows, namespace):
         if not namespace[0]:
-            old_data = {}
-            for row in self.list_store:
-                old_data[row[2]] = row[0]
+            try:
+                active_catalogs = self._usesettings["active_catalogs"]
+            except KeyError:
+                active_catalogs = ()
+
             self.list_store.clear()
             mount_finder = MountFinder(acc.hostname)
             
@@ -1442,8 +1524,8 @@ class CatalogsPage(PageCommon):
 
                 if db_row is None:
                     break
-            
-                active = old_data.get(db_row[0], 1)
+                
+                active = 1 if db_row[0] in active_catalogs else 0
                 mount_point = mount_finder.get(db_row[2])
                 if mount_point is None:
                     mount_point = "-"
@@ -1454,6 +1536,7 @@ class CatalogsPage(PageCommon):
                 self.list_store.append(
                             (active, mount_point) + db_row + (activatable,))
 
+        self._usesettings["active_catalogs"] = self._get_active_catalogs()
         self.tree_view.set_model(self.list_store)
         self.refresh.set_sensitive(True)
         self.interface.update(self.list_store)
@@ -1591,11 +1674,12 @@ class MediaPane(gtk.VBox):
             else:
                 target.set_col_widths(data)
 
-    def _dbtoggle(self, data):
-        if data:
+    def _dbtoggle(self, accdata, usesettings):
+        if accdata:
             # Connect and discover the database type.
+            self.usesettings = usesettings
             for i in range(1, 4):
-                setattr(self, "_acc%d" % i, DBAccessor(**data))
+                setattr(self, "_acc%d" % i, DBAccessor(**accdata))
             self._acc1.request(('SHOW tables',), self._stage_1, self._fail_1)
         else:
             try:
@@ -1618,10 +1702,10 @@ class MediaPane(gtk.VBox):
     def _safe_disconnect(self):
         glib.idle_add(threadslock(self.prefs_controls.disconnect))
 
-    def _hand_over(self, database_name):
-        self._tree_page.activate(self._acc1, database_name)
-        self._flat_page.activate(self._acc2, database_name)
-        self._catalogs_page.activate(self._acc3, database_name)
+    def _hand_over(self, db_name):
+        self._tree_page.activate(self._acc1, db_name, self.usesettings)
+        self._flat_page.activate(self._acc2, db_name, self.usesettings)
+        self._catalogs_page.activate(self._acc3, db_name, self.usesettings)
         glib.idle_add(threadslock(self.show))
             
     def _fail_1(self, exception, notify):
