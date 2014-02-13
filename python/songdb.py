@@ -19,13 +19,11 @@
 
 
 import os
-import re
+import ntpath
 import time
 import types
-import shlex
 import gettext
 import threading
-import socket
 import json
 from functools import partial, wraps
 from collections import deque, defaultdict
@@ -56,6 +54,17 @@ FUZZY, CLEAN, WHERE, DIRTY = xrange(4)
 
 t = gettext.translation(FGlobs.package_name, FGlobs.localedir, fallback=True)
 _ = t.gettext
+
+
+def dirname(pathname):
+    if pathname.startswith("/") and not pathname.startswith("//"):
+        return os.path.dirname(pathname)
+    return ntpath.dirname(pathname)
+
+def basename(pathname):
+    if pathname.startswith("/") and not pathname.startswith("//"):
+        return os.path.basename(pathname)
+    return ntpath.basename(pathname)
 
 
 def thread_only(func):
@@ -641,8 +650,12 @@ class ViewerCommon(PageCommon):
 
     def _cb_drag_data_get(self, tree_view, context, selection, target, etime):
         model, paths = self.tree_selection.get_selected_rows()
-        data = ("file://%s" % self.catalogs.transform_path(row) for row in
-                                                self._drag_data(model, paths))
+        data = []
+        for catalog, pathname in self._drag_data(model, paths):
+            valid, pathname = self.catalogs.transform_path(catalog, pathname)
+            if valid:
+                data.append("file://" + pathname)
+        print data
         selection.set(selection.target, 8, "\n".join(data))
 
     def _cond_cell_secs_to_h_m_s(self, column, renderer, model, iter, cell):
@@ -674,25 +687,23 @@ class ViewerCommon(PageCommon):
         renderer.props.foreground = col
 
     @staticmethod
-    def _cell_pathname(column, renderer, model, iter, cell, part, tx):
-        text = model.get_value(iter, cell)
-        trans = tx(text)
-        col = "black" if os.path.exists(trans) else "red"
-        
+    def _cell_pathname(column, renderer, model, iter, data, partition, transform):
+        catalog, text = model.get(iter, *data)
         if text:
-            renderer.props.foreground = col
-            renderer.props.text = part(tx(text))
-        else:
-            renderer.props.text = ""
+            present, text = transform(catalog, text)
+            renderer.props.foreground = "black" if present else "red"
+            text = partition(text)
+
+        renderer.props.text = text
         
     def _cell_path(self, *args, **kwargs):
-        kwargs["part"] = os.path.dirname
-        kwargs["tx"] = self.catalogs.transform_path
+        kwargs["partition"] = dirname
+        kwargs["transform"] = self.catalogs.transform_path
         self._cell_pathname(*args, **kwargs) 
         
     def _cell_filename(self, *args, **kwargs):
-        kwargs["part"] = os.path.basename
-        kwargs["tx"] = lambda p:p
+        kwargs["partition"] = basename
+        kwargs["transform"] = lambda c, p: (True, p)
         self._cell_pathname(*args, **kwargs)
     
     @staticmethod
@@ -735,9 +746,9 @@ class TreePage(ViewerCommon):
     """Browsable UI with tree structure."""
 
     # *depth*, *treecol*, album, album_prefix, year, disk, album_id,
-    # tracknumber, title, artist, artist_prefix, pathname, bitrate, length
+    # tracknumber, title, artist, artist_prefix, pathname, bitrate, length, catalog_id
     # The order chosen negates the need for a custom sort comparison function.
-    DATA_SIGNATURE = int, str, str, str, int, int, int, int, str, str, str, str, int, int
+    DATA_SIGNATURE = int, str, str, str, int, int, int, int, str, str, str, str, int, int, int
     BLANK_ROW = tuple(x() for x in DATA_SIGNATURE[2:])
 
     def __init__(self, notebook, catalogs):
@@ -783,9 +794,9 @@ class TreePage(ViewerCommon):
                 # TC: Track playback time.
                 (_('Duration'), 13, self._cond_cell_secs_to_h_m_s, -1, pango.ELLIPSIZE_NONE),
                 (_('Bitrate'), 12, self._cell_k, -1, pango.ELLIPSIZE_NONE),
-                (_('Filename'), 11, self._cell_filename, 100, pango.ELLIPSIZE_END),
+                (_('Filename'), (14, 11), self._cell_filename, 100, pango.ELLIPSIZE_END),
                 # TC: Directory path to a file.
-                (_('Path'), 11, self._cell_path, -1, pango.ELLIPSIZE_NONE),
+                (_('Path'), (14, 11), self._cell_path, -1, pango.ELLIPSIZE_NONE),
                 ))
 
         self.artist_store = gtk.TreeStore(*self.DATA_SIGNATURE)
@@ -865,7 +876,8 @@ class TreePage(ViewerCommon):
                     tracks.artist as artist,
                     "" as art_prefix,
                     CONCAT_WS('/',path,filename) as file,
-                    bitrate, length
+                    bitrate, length,
+                    0 as catalog_id
                     FROM tracks
                     LEFT JOIN albums on tracks.album = albums.name
                      AND tracks.artist = albums.artist
@@ -883,7 +895,8 @@ class TreePage(ViewerCommon):
                     artist.prefix as art_prefix,
                     file,
                     bitrate,
-                    time as length
+                    time as length,
+                    catalog.id as catalog_id
                     FROM song
                     LEFT JOIN artist ON song.artist = artist.id
                     LEFT JOIN album ON song.album = album.id
@@ -904,14 +917,14 @@ class TreePage(ViewerCommon):
             yield each 
                 
     def _more_drag_data(self, model, iter):
-        depth, pathname = model.get(iter, 0, 11)
+        depth, catalog, pathname = model.get(iter, 0, 14, 11)
         if depth == 0:
-            yield pathname
+            yield catalog, pathname
         else:
             iter = model.iter_children(iter)
             while iter is not None:
-                for pathname in self._more_drag_data(model, iter):
-                    yield pathname
+                for each in self._more_drag_data(model, iter):
+                    yield each
             
                 iter = model.iter_next(iter)
 
@@ -1140,9 +1153,9 @@ class FlatPage(ViewerCommon):
  
         # Row data specification:
         # index, ARTIST, ALBUM, TRACKNUM, TITLE, DURATION, BITRATE,
-        # pathname, disk
+        # pathname, disk, catalog_id
         self.list_store = gtk.ListStore(
-                                int, str, str, int, str, int, int, str, int)
+                            int, str, str, int, str, int, int, str, int, int)
         self.tree_cols = self._make_tv_columns(self.tree_view, (
             ("(0)", 0, self._cell_ralign, -1, pango.ELLIPSIZE_NONE),
             (_('Artist'), 1, self._cell_show_unknown, 100, pango.ELLIPSIZE_END),
@@ -1152,8 +1165,8 @@ class FlatPage(ViewerCommon):
             (_('Title'), 4, self._cell_show_unknown, 100, pango.ELLIPSIZE_END),
             (_('Duration'), 5, self._cell_secs_to_h_m_s, -1, pango.ELLIPSIZE_NONE),
             (_('Bitrate'), 6, self._cell_k, -1, pango.ELLIPSIZE_NONE),
-            (_('Filename'), 7, self._cell_filename, 100, pango.ELLIPSIZE_END),
-            (_('Path'), 7, self._cell_path, -1, pango.ELLIPSIZE_NONE),
+            (_('Filename'), (9, 7), self._cell_filename, 100, pango.ELLIPSIZE_END),
+            (_('Path'), (9, 7), self._cell_path, -1, pango.ELLIPSIZE_NONE),
             ))
 
         self.tree_view.set_rules_hint(True)
@@ -1182,7 +1195,7 @@ class FlatPage(ViewerCommon):
             {FUZZY: (CLEAN, """
                     SELECT artist,album,tracknumber,title,length,bitrate,
                     CONCAT_WS('/',path,filename) as file,
-                    0 as disk
+                    0 as disk, 0 as catalog_id
                     FROM tracks
                     WHERE MATCH (artist,album,title,filename) AGAINST (%s)
                     """),
@@ -1190,7 +1203,7 @@ class FlatPage(ViewerCommon):
             WHERE: (DIRTY, """
                     SELECT artist,album,tracknumber,title,length,bitrate,
                     CONCAT_WS('/',path,filename) as file,
-                    0 as disk
+                    0 as disk, 0 as catalog_id
                     FROM tracks WHERE (%s)
                     ORDER BY artist,album,path,tracknumber,title
                     """)},
@@ -1202,7 +1215,9 @@ class FlatPage(ViewerCommon):
                     concat_ws(" ",album.prefix,album.name),
                     track as tracknumber, title, time as length,bitrate,
                     file,
-                    album.disk as disk FROM song
+                    album.disk as disk,
+                    catalog.id as catalog_id
+                    FROM song
                     LEFT JOIN artist ON artist.id = song.artist
                     LEFT JOIN album ON album.id = song.album
                     LEFT JOIN catalog ON song.catalog = catalog.id
@@ -1218,7 +1233,9 @@ class FlatPage(ViewerCommon):
                     concat_ws(" ", album.prefix, album.name) as albumname,
                     track as tracknumber, title,time as length, bitrate,
                     file,
-                    album.disk as disk FROM song
+                    album.disk as disk,
+                    catalog.id as catalog_id
+                    FROM song
                     LEFT JOIN album on album.id = song.album
                     LEFT JOIN artist on artist.id = song.artist
                     LEFT JOIN catalog ON song.catalog = catalog.id
@@ -1266,11 +1283,11 @@ class FlatPage(ViewerCommon):
 
     @staticmethod
     def _drag_data(model, paths):
-        """Generate tuples of (path, filename) for the given paths."""
+        """Generate tuples of (catalog, pathname) for the given paths."""
         
         for path in paths:
             row = model[path]
-            yield row[7]
+            yield row[9], row[7]
 
     def _cb_fuzzysearch_changed(self, widget):
         if widget.get_text().strip():
@@ -1359,27 +1376,38 @@ class CatalogsInterface(gobject.GObject):
         self._dict.clear()
         for row in liststore:
             if row[0]:
-                self._dict[row[4]] = {
-                    "local_path" : row[1], "id" : row[2], "name" : row[3],
-                    "last_update" : row[5], "last_clean" : row[6],
-                    "last_add" : row[7]
+                self._dict[row[3]] = {
+                    "peel" : row[1], "prepend" : row[2],
+                    "name" : row[4], "path" : row[5], "last_update" : row[6],
+                    "last_clean" : row[7], "last_add" : row[8]
                 }
                 
         self.emit("changed")
 
-    def transform_path(self, path):
-        match = path
-        while 1:
-            if match in self._dict:
-                return self._dict[match]["local_path"] + path[len(match):]
-            oldmatch = match
-            match = os.path.split(match)[0]
-            if match == oldmatch:
-                # Leave unchanged.
-                return path
+    def transform_path(self, catalog, path):
+        if len(path) < 4:
+            return False, path  # Path too short to be valid.
+
+        # Conversion of Windows paths to a Unix equivalent.
+        if path[:2] in ("\\\\", "//"):
+            # Handle UNC paths. Throw away the server and share parts.
+            try:
+                path = ntpath.splitunc(path)[1].replace("\\", "/")
+            except Exception:
+                return False, path
+        elif path[0] != '/':
+            # Assume it's a regular Windows path and try to convert it.
+            path = '/' + path.replace('\\', '/')
+
+        peel = self._dict[catalog]["peel"]
+        if peel > 0:
+            path = "/" + path.split("/", peel + 1)[-1]
+
+        path = os.path.normpath(self._dict[catalog]["prepend"] + path)
+        return os.path.isfile(path), path
     
     def sql(self):
-        ids = tuple(x["id"] for x in self._dict.itervalues())
+        ids = tuple(x for x in self._dict.iterkeys())
         if not ids:
             return "FALSE"
 
@@ -1402,7 +1430,7 @@ class CatalogsInterface(gobject.GObject):
         for key1, val1 in _dict.iteritems():
             copy[key1] = {}
             for key2, val2 in val1.iteritems():
-                if key2 != "local_path":
+                if key2 not in ("peel", "prepend"):
                     copy[key1][key2] = val2
 
         return copy
@@ -1414,33 +1442,38 @@ class CatalogsPage(PageCommon):
         self.refresh = gtk.Button(stock=gtk.STOCK_REFRESH)
         self.refresh.connect("clicked", self._on_refresh)
         PageCommon.__init__(self, notebook, _("Catalogs"), self.refresh)
-        # active, local_path, id, name, path, last_update, last_clean, last_add, activatable
+        # active, peel, prepend, id, name, path, last_update, last_clean, last_add
         self.list_store = gtk.ListStore(
-                                int, str, int, str, str, int, int, int, int)
+                        int, int, str, int, str, str, int, int, int)
         self.tree_cols = self._make_tv_columns(self.tree_view, (
-            (_('Name'), 3, None, 65, pango.ELLIPSIZE_END),
-            (_('Remote Path'), 4, None, 100, pango.ELLIPSIZE_END),
-            (_('Local Path'), 1, None, -1, pango.ELLIPSIZE_NONE)
+            (_('Name'), 4, None, 65, pango.ELLIPSIZE_END),
+            (_('Catalog Path'), 5, None, 100, pango.ELLIPSIZE_END),
+            (_('Prepend Path'), 2, None, -1, pango.ELLIPSIZE_NONE)
             ))
 
         rend = gtk.CellRendererToggle()
         rend.set_activatable(True)
         rend.connect("toggled", self._on_toggle)
-        self.tree_view.insert_column_with_attributes(0, "", rend, active=0,
-                                                            activatable=8)
+        self.tree_view.insert_column_with_attributes(0, "", rend, active=0)
 
-        rend = self.tree_view.get_column(3).get_cell_renderers()[0]
-        rend.props.editable = False
-        rend.connect("edited", self._on_edited)
-        rend.connect("editing-started", self._on_editing_started)
-        rend.connect("editing-canceled", self._on_editing_cancelled)
+        adj = gtk.Adjustment(0.0, 0.0, 99.0, 1.0, 1.0)
+        rend = gtk.CellRendererSpin()
+        rend.props.editable = True
+        rend.props.adjustment = adj
+        rend.props.xalign = 1.0
+        rend.connect("editing-started", self._on_peel_editing_started)
+        rend.connect("edited", self._on_peel_edited)
+        col = self.tree_view.insert_column_with_attributes(3, _("Path Peel"),
+                                                                rend, text=1)
+
+        rend = self.tree_view.get_column(4).get_cell_renderers()[0]
+        rend.props.editable = True
+        rend.connect("edited", self._on_prepend_edited)
+        rend.connect("editing-started", self._on_prepend_editing_started)
+        rend.connect("editing-canceled", self._on_prepend_editing_cancelled)
 
         self.tree_view.set_rules_hint(True)
         self._in_text_entry = False
-        set_tip(self.tree_view, _(
-            "Select which catalogs you want to use here.\n\n"
-            "If using a remote database then any remote paths\n"
-            "will need to be made accessible locally using NFS."))
 
     def in_text_entry(self):
         return self._in_text_entry
@@ -1454,7 +1487,7 @@ class CatalogsPage(PageCommon):
         self.interface.clear()
 
     def _get_active_catalogs(self):
-        return tuple(x[2] for x in self.list_store if x[0])
+        return tuple(x[3] for x in self.list_store if x[0])
         
     def _on_toggle(self, renderer, path):
         iter = self.list_store.get_iter(path)
@@ -1469,32 +1502,37 @@ class CatalogsPage(PageCommon):
             self.refresh.set_sensitive(False)
             self.tree_view.set_model(None)
             query = """SELECT id, name, path, last_update, IFNULL(last_clean,0),
-                            last_add FROM catalog WHERE enabled=1 ORDER BY name"""
+                        last_add FROM catalog WHERE enabled=1 ORDER BY name"""
             self._acc.request((query,), self._handler, self._failhandler)
         
         elif self._db_type == PROKYON_3:
             self.list_store.clear()
-            mount_finder = MountFinder(self._acc.hostname)
-            for i, (remote, local) in enumerate(mount_finder):
-                self.list_store.append((1, local, i, "", remote, 0, 0, 0, 0))
             self.tree_view.set_model(self.list_store)
             self.interface.update(self.list_store)
 
-    def _on_editing_started(self, rend, editable, path):
+    def _on_peel_editing_started(self, rend, editable, path):
+        val = self.list_store[path][1]
+        rend.props.adjustment.props.value = val
+
+    def _on_peel_edited(self, rend, path, new_val):
+        self.list_store[path][1] = int(new_val)
+        self.interface.update(self.list_store)
+
+    def _on_prepend_editing_started(self, rend, editable, path):
         self._in_text_entry = True
         
-    def _on_editing_cancelled(self, rend):
+    def _on_prepend_editing_cancelled(self, rend):
         self._in_text_entry = False
 
-    def _on_edited(self, rend, path, new_text):
+    def _on_prepend_edited(self, rend, path, new_text):
         model = self.list_store
         self._in_text_entry = False
         new_text = new_text.strip()
         iter = model.get_iter(path)
         if iter is not None:
-            old_text = model.get_value(iter, 1)
-            if new_text and new_text != old_text:
-                model.set_value(iter, 1, new_text)
+            old_text = model.get_value(iter, 2)
+            if new_text != old_text:
+                model.set_value(iter, 2, new_text)
                 self.interface.update(self.list_store)
 
     def _failhandler(self, exception, notify):
@@ -1514,7 +1552,6 @@ class CatalogsPage(PageCommon):
                 active_catalogs = ()
 
             self.list_store.clear()
-            mount_finder = MountFinder(acc.hostname)
             
             while 1:
                 try:
@@ -1526,15 +1563,10 @@ class CatalogsPage(PageCommon):
                     break
                 
                 active = 1 if db_row[0] in active_catalogs else 0
-                mount_point = mount_finder.get(db_row[2])
-                if mount_point is None:
-                    mount_point = "-"
-                    active = activatable = 0
-                else:
-                    activatable = 1
+                stripval = 0
+                prepend = ""
 
-                self.list_store.append(
-                            (active, mount_point) + db_row + (activatable,))
+                self.list_store.append((active, stripval, prepend) + db_row)
 
         self._usesettings["active_catalogs"] = self._get_active_catalogs()
         self.tree_view.set_model(self.list_store)
@@ -1542,77 +1574,6 @@ class CatalogsPage(PageCommon):
         self.interface.update(self.list_store)
         return False
         
-
-class MountFinder(object):
-    nfs = re.compile(r"([^:]+):(/.*)")
-    
-    def __init__(self, hostname):
-        host = socket.gethostbyname(hostname)
-        
-        if host == socket.gethostbyname("localhost"):
-            self._mode = "local"
-        else:
-            for pathname in ("/proc/mounts", "/etc/mtab", "/etc/fstab"):
-                try:
-                    with open(pathname, "r") as f:
-                        mounttable = f.readlines()
-                        self._mode = "remote"
-                        break
-                except IOError:
-                    pass
-            else:
-                print "Failed to discover mount table."
-                self._mode = "broken"
-                return
-            
-            self._transform = {}
-            for row in mounttable:
-                try:
-                    parts = shlex.split(row)
-                except ValueError:
-                    continue
-                    
-                if len(parts) == 6:
-                    try:
-                        fs, ver = parts[2][:3], parts[2][3:]
-                        if fs == "nfs" and (ver == "" or ver in "34"):
-                            rhost, rpath = self.nfs.match(parts[0]).group(1, 2)
-                        else:
-                            continue
-                    except (AttributeError, IndexError):
-                        continue
-
-                    if socket.gethostbyname(rhost) == host:
-                        lpath = os.path.normpath(parts[1])
-                        if os.path.isdir(lpath):
-                            rpath = os.path.normpath(rpath)
-                            self._transform[rpath] = lpath
-                
-    def get(self, in_path):
-        if self._mode == "local":
-            return in_path
-
-        if self._mode == "broken":
-            return None    
-            
-        try_path = in_path
-        while 1:
-            if try_path in self._transform:
-                break
-
-            old_try_path = try_path
-            try_path = os.path.split(try_path)[0]
-            if try_path == old_try_path:
-                return None
-            
-        return self._transform[try_path] + in_path[len(try_path):]
-
-    def __iter__(self):
-        if self._mode in ("local", "broken") or not self._transform:
-            return iter((("/", "/"),))
-
-        return self._transform.iteritems()
-
 
 class MediaPane(gtk.VBox):
     """Database song details are displayed in this widget."""
