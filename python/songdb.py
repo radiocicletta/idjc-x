@@ -336,8 +336,7 @@ class Settings(gtk.Table):
         self.textdict["songdb_usesettings_" + name] = self.usesettings
         
         # Third row.
-        passlabel, self.password = self._factory(_('Password'), "ampache",
-                                                                    "password")
+        passlabel, self.password = self._factory(_('Password'), "", "password")
         self.password.set_visibility(False)
         l_attach(passlabel, 0, 1, 3, 4)
         self.attach(self.password, 1, 2, 3, 4)
@@ -499,7 +498,7 @@ class PrefsControls(gtk.Frame):
 class PageCommon(gtk.VBox):
     """Base class for all pages."""
     
-    def __init__(self, notebook, label_text, controls, dnd=False):
+    def __init__(self, notebook, label_text, controls):
         gtk.VBox.__init__(self)
         self.set_spacing(2)
         self.scrolled_window = gtk.ScrolledWindow()
@@ -512,12 +511,6 @@ class PageCommon(gtk.VBox):
         self.pack_start(controls, False)
         label = gtk.Label(label_text)
         notebook.append_page(self, label)
-        
-        if dnd:
-            self.tree_view.enable_model_drag_source(gtk.gdk.BUTTON1_MASK,
-             self._sourcetargets, gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_COPY)
-            self.tree_view.connect_after("drag-begin", self._cb_drag_begin)
-            self.tree_view.connect("drag-data-get", self._cb_drag_data_get)
         self._update_id = deque()
         self._acc = None
 
@@ -616,7 +609,11 @@ class ViewerCommon(PageCommon):
         self.catalogs = catalogs
         self.notebook = notebook
         self._reload_upon_catalogs_changed(enable_notebook_reload=True)
-        PageCommon.__init__(self, notebook, label_text, controls, dnd=True)
+        PageCommon.__init__(self, notebook, label_text, controls)
+        self.tree_view.enable_model_drag_source(gtk.gdk.BUTTON1_MASK,
+            self._sourcetargets, gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_COPY)
+        self.tree_view.connect_after("drag-begin", self._cb_drag_begin)
+        self.tree_view.connect("drag-data-get", self._cb_drag_data_get)
 
     def deactivate(self):
         self._reload_upon_catalogs_changed()
@@ -655,7 +652,6 @@ class ViewerCommon(PageCommon):
             valid, pathname = self.catalogs.transform_path(catalog, pathname)
             if valid:
                 data.append("file://" + pathname)
-        print data
         selection.set(selection.target, 8, "\n".join(data))
 
     def _cond_cell_secs_to_h_m_s(self, column, renderer, model, iter, cell):
@@ -1480,6 +1476,7 @@ class CatalogsPage(PageCommon):
 
     def activate(self, *args, **kwargs):
         PageCommon.activate(self, *args, **kwargs)
+        self.tree_view.get_column(0).set_visible(self._db_type in (AMPACHE,))
         self.refresh.clicked()
 
     def deactivate(self, *args, **kwargs):
@@ -1489,13 +1486,31 @@ class CatalogsPage(PageCommon):
     def _get_active_catalogs(self):
         return tuple(x[3] for x in self.list_store if x[0])
         
+    def _store_user_data(self):
+        dict_ = {}
+        for row in self.list_store:
+            dict_[str(row[3])] = (row[0], row[1], row[2])
+        self._usesettings["catalog_data"] = dict_
+        
+    def _restore_user_data(self):
+        try:
+            dict_ = self._usesettings["catalog_data"]
+        except:
+            return
+            
+        for row in self.list_store:
+            try:
+                row[0], row[1], row[2] = dict_[str(row[3])]
+            except KeyError:
+                pass
+        
     def _on_toggle(self, renderer, path):
         iter = self.list_store.get_iter(path)
         if iter is not None:
             old_val = self.list_store.get_value(iter, 0)
             self.list_store.set_value(iter, 0, not old_val)
+            self._store_user_data()
             self.interface.update(self.list_store)
-            self._usesettings["active_catalogs"] = self._get_active_catalogs()
 
     def _on_refresh(self, widget):
         if self._db_type == AMPACHE:
@@ -1508,6 +1523,8 @@ class CatalogsPage(PageCommon):
         elif self._db_type == PROKYON_3:
             self.list_store.clear()
             self.tree_view.set_model(self.list_store)
+            self.list_store.append((1, 0, "", 0, _('N/A'), _('N/A'), 0, 0, 0))
+            self._restore_user_data()
             self.interface.update(self.list_store)
 
     def _on_peel_editing_started(self, rend, editable, path):
@@ -1516,6 +1533,7 @@ class CatalogsPage(PageCommon):
 
     def _on_peel_edited(self, rend, path, new_val):
         self.list_store[path][1] = int(new_val)
+        self._store_user_data()
         self.interface.update(self.list_store)
 
     def _on_prepend_editing_started(self, rend, editable, path):
@@ -1533,6 +1551,7 @@ class CatalogsPage(PageCommon):
             old_text = model.get_value(iter, 2)
             if new_text != old_text:
                 model.set_value(iter, 2, new_text)
+                self._store_user_data()
                 self.interface.update(self.list_store)
 
     def _failhandler(self, exception, notify):
@@ -1546,11 +1565,6 @@ class CatalogsPage(PageCommon):
     @threadslock
     def _update_1(self, acc, cursor, rows, namespace):
         if not namespace[0]:
-            try:
-                active_catalogs = self._usesettings["active_catalogs"]
-            except KeyError:
-                active_catalogs = ()
-
             self.list_store.clear()
             
             while 1:
@@ -1562,13 +1576,9 @@ class CatalogsPage(PageCommon):
                 if db_row is None:
                     break
                 
-                active = 1 if db_row[0] in active_catalogs else 0
-                stripval = 0
-                prepend = ""
+                self.list_store.append((0, 0, "") + db_row)
 
-                self.list_store.append((active, stripval, prepend) + db_row)
-
-        self._usesettings["active_catalogs"] = self._get_active_catalogs()
+        self._restore_user_data()
         self.tree_view.set_model(self.list_store)
         self.refresh.set_sensitive(True)
         self.interface.update(self.list_store)
