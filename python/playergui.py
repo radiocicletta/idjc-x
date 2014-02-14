@@ -208,7 +208,6 @@ class NumberedLabel(gtk.Label):
         self.set_value(value)
 
 
-
 class CellRendererDuration(gtk.CellRendererText):
     """Render a value in frames as a time mm:ss:hs right justified."""
 
@@ -225,7 +224,6 @@ class CellRendererDuration(gtk.CellRendererText):
             s, f = divmod(value, 75)
             m, s = divmod(s, 60)
             self.props.text = "%d:%02d.%02d" % (m, s, f // 0.75)
-
 
 
 class CuesheetPlaylist(gtk.Frame):
@@ -357,6 +355,7 @@ class ButtonFrame(gtk.Frame):
         self.hbox.show()
         self.set_shadow_type(gtk.SHADOW_NONE)
         self.set_label_align(0.5, 0.5)
+
 
 class ExternalPL(gtk.Frame):
     def get_next(self):
@@ -1302,7 +1301,6 @@ class IDJC_Media_Player:
         if self.player_is_playing:
             self.stop.clicked()
 
-
     def save_session(self, where=None):
         if where is None:
             where = PM.basedir
@@ -1853,7 +1851,7 @@ class IDJC_Media_Player:
                 if mode_text == N_('Loop All'):
                     self.play.clicked()
             else:
-                treeselection.select_path(0)
+                treeselection.select_path(0)    
         elif mode_text == N_('Random'):
             # Not truly random. Effort is made to break the appearance of
             # having a set play order to a long term listener without
@@ -2150,6 +2148,8 @@ class IDJC_Media_Player:
                 print "Iter was cancelled probably due to song dragging"
             self.reselect_please = False
 
+        pl_mode = self.pl_mode.get_active()
+
         if self.progress_press == False:
             if self.runout.value and self.is_paused == False and \
                                         self.mixer_cid.value > self.player_cid:
@@ -2167,6 +2167,21 @@ class IDJC_Media_Player:
                             self.playtime_elapsed.value > 15 and \
                             self.parent.prefs_window.bonus_killer.get_active():
                     print "termination due to excessive silence"
+                    if pl_mode == 7 or (pl_mode == 0 and self.fade_inspect()):
+                        if not self.other_player_initiated:
+                            if self.playername == "left":
+                                self.parent.player_right.play.clicked()
+                            else:
+                                self.parent.player_left.play.clicked()
+                            self.other_player_initiated = True
+                        # Now do the crossfade
+                        if not self.crossfader_initiated:
+                            self.parent.passbutton.clicked()
+                            self.crossfader_initiated = True
+                            desired_direction = (self.playername == "left")
+                            if desired_direction != self.parent.crossdirection:
+                                self.parent.passbutton.clicked()
+                    
                     self.invoke_end_of_track_policy()
                     return False
             else:
@@ -2225,7 +2240,6 @@ class IDJC_Media_Player:
         else:
             rem = self.progress_stop_figure - self.progress_current_figure
 
-        pl_mode = self.pl_mode.get_active()
         if (rem == 5 or rem == 10) and not self.crossfader_initiated and not \
                                                         self.parent.simplemixer:
             next = self.model_playing.iter_next(self.iter_playing)
@@ -3654,64 +3668,65 @@ class IDJC_Media_Player:
             text = "%d:%02d" % (mins, secs)
             cell_renderer.set_property("text", text)
 
+    gray = gtk.gdk.color_parse("#BBB")
     # Class variable for use by rowconfig.
     control_cell_properties = {
         ">fade10":          (("cell-background", "dark red"),
-                            ("background", "gray"),
+                            ("background-gdk", gray),
                             ("foreground", "dark red"),
                             # TC: Playlist control.
                             ("text", _('Fade 10s'))),
                     
         ">fade5":           (("cell-background", "dark red"),
-                            ("background", "gray"),
+                            ("background-gdk", gray),
                             ("foreground", "dark red"),
                             # TC: Playlist control.
                             ("text", _('Fade 5s'))),
         ">fadenone":        (("cell-background", "dark red"),
-                            ("background", "gray"),
+                            ("background-gdk", gray),
                             ("foreground", "dark red"),
                             # TC: Playlist control.
                             ("text", _('No Fade'))),
         ">announcement":    (("cell-background", "dark blue"),
-                            ("background", "gray"),
+                            ("background-gdk", gray),
                             ("foreground", "dark blue"),
                             # TC: Playlist control.
                             ("text", _('Announcement'))),
         ">normalspeed":     (("cell-background", "dark green"),
-                            ("background", "gray"),
+                            ("background-gdk", gray),
                             ("foreground", "dark green"),
                             # TC: Playlist control.
                             ("text", _('>> Normal Speed <<'))),
         ">stopplayer":      (("cell-background", "red"),
-                            ("background", "gray"),
+                            ("background-gdk", gray),
                             ("foreground", "red"),
                             # TC: Playlist control.
                             ("text", _('Player stop'))),
         ">stopplayer2":     (("cell-background", "red"),
-                            ("background", "gray"),
+                            ("background-gdk", gray),
                             ("foreground", "red"),
                             # TC: Playlist control.
                             ("text", _('Player stop 2'))),
         ">jumptotop":       (("cell-background", "dark magenta"),
-                            ("background", "gray"),
+                            ("background-gdk", gray),
                             ("foreground", "dark magenta"),
                             # TC: Playlist control.
                             ("text", _('Jump To Top'))),
         ">stopstreaming":   (("cell-background", "black"),
-                            ("background", "gray"),
+                            ("background-gdk", gray),
                             ("foreground", "black"),
                             # TC: Playlist control.
                             ("text", _('Stop streaming'))),
         ">stoprecording":   (("cell-background", "black"),
-                            ("background", "gray"),
+                            ("background-gdk", gray),
                             ("foreground", "black"),
                             # TC: Playlist control.
                             ("text", _('Stop recording'))),
         ">transfer":        (("cell-background", "magenta"),
-                            ("background", "gray"),
+                            ("background-gdk", gray),
                             ("foreground", "magenta")),
         ">crossfade":       (("cell-background", "blue"),
-                            ("background", "gray"),
+                            ("background-gdk", gray),
                             ("foreground", "blue"))
         }
 

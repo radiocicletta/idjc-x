@@ -1,5 +1,9 @@
 * Changes in version 0.8.14 *
 
+Fix for playlist controls having an overly dark background.
+
+Improved reliability for 'Fade Over' playlist mode and 'Crossfade' playlist control when using the silence killer. 
+
 Song title database browse mode setting is now saved/restored.
 
 Added Ampache music catalogs support.
