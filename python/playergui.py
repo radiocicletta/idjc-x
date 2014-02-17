@@ -2117,6 +2117,21 @@ class IDJC_Media_Player:
                     self.parent.prefs_window.silence_killer.get_active() and \
                     self.eos_inspect() == False:
                 print "termination by check mixer signal"
+                pl_mode = self.pl_mode.get_active()
+                if pl_mode == 7 or (pl_mode == 0 and self.fade_inspect()):
+                    if not self.other_player_initiated:
+                        if self.playername == "left":
+                            self.parent.player_right.play.clicked()
+                        else:
+                            self.parent.player_left.play.clicked()
+                        self.other_player_initiated = True
+                    # Now do the crossfade
+                    if not self.crossfader_initiated:
+                        self.parent.passbutton.clicked()
+                        self.crossfader_initiated = True
+                        desired_direction = (self.playername == "left")
+                        if desired_direction != self.parent.crossdirection:
+                            self.parent.passbutton.clicked()
                 self.invoke_end_of_track_policy()
 
     @threadslock
