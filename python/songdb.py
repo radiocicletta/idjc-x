@@ -1447,32 +1447,34 @@ class CatalogsPage(PageCommon):
             (_('Prepend Path'), 2, None, -1, pango.ELLIPSIZE_NONE)
             ))
 
-        rend = gtk.CellRendererToggle()
-        rend.set_activatable(True)
-        rend.connect("toggled", self._on_toggle)
-        self.tree_view.insert_column_with_attributes(0, "", rend, active=0)
+        rend1 = gtk.CellRendererToggle()
+        rend1.set_activatable(True)
+        rend1.connect("toggled", self._on_toggle)
+        self.tree_view.insert_column_with_attributes(0, "", rend1, active=0)
 
-        adj = gtk.Adjustment(0.0, 0.0, 99.0, 1.0, 1.0)
-        rend = gtk.CellRendererSpin()
-        rend.props.editable = True
-        rend.props.adjustment = adj
-        rend.props.xalign = 1.0
-        rend.connect("editing-started", self._on_peel_editing_started)
-        rend.connect("edited", self._on_peel_edited)
+        adj = gtk.Adjustment(0.0, 0.0, 999.0, 1.0, 1.0)
+        rend2 = gtk.CellRendererSpin()
+        rend2.props.editable = True
+        rend2.props.adjustment = adj
+        rend2.props.xalign = 1.0
+        rend2.connect("editing-started", self._on_peel_editing_started)
+        rend2.connect("edited", self._on_peel_edited)
         col = self.tree_view.insert_column_with_attributes(3, _("Path Peel"),
-                                                                rend, text=1)
+                                                                rend2, text=1)
 
-        rend = self.tree_view.get_column(4).get_cell_renderers()[0]
-        rend.props.editable = True
-        rend.connect("edited", self._on_prepend_edited)
-        rend.connect("editing-started", self._on_prepend_editing_started)
-        rend.connect("editing-canceled", self._on_prepend_editing_cancelled)
+        rend3 = self.tree_view.get_column(4).get_cell_renderers()[0]
+        rend3.props.editable = True
+        rend3.connect("edited", self._on_prepend_edited)
+
+        for rend in (rend2, rend3):
+            rend.connect("editing-started", self._on_editing_started)
+            rend.connect("editing-canceled", self._on_editing_cancelled)
 
         self.tree_view.set_rules_hint(True)
-        self._in_text_entry = False
+        self._block_key_bindings = False
 
     def in_text_entry(self):
-        return self._in_text_entry
+        return self._block_key_bindings
 
     def activate(self, *args, **kwargs):
         PageCommon.activate(self, *args, **kwargs)
@@ -1527,32 +1529,39 @@ class CatalogsPage(PageCommon):
             self._restore_user_data()
             self.interface.update(self.list_store)
 
+    def _on_editing_started(self, rend, editable, path):
+        self._block_key_bindings = True
+
+    def _on_editing_cancelled(self, rend):
+        self._block_key_bindings = False
+
     def _on_peel_editing_started(self, rend, editable, path):
         val = self.list_store[path][1]
         rend.props.adjustment.props.value = val
 
-    def _on_peel_edited(self, rend, path, new_val):
-        self.list_store[path][1] = int(new_val)
-        self._store_user_data()
-        self.interface.update(self.list_store)
-
-    def _on_prepend_editing_started(self, rend, editable, path):
-        self._in_text_entry = True
-        
-    def _on_prepend_editing_cancelled(self, rend):
-        self._in_text_entry = False
-
-    def _on_prepend_edited(self, rend, path, new_text):
-        model = self.list_store
-        self._in_text_entry = False
-        new_text = new_text.strip()
-        iter = model.get_iter(path)
-        if iter is not None:
-            old_text = model.get_value(iter, 2)
-            if new_text != old_text:
-                model.set_value(iter, 2, new_text)
+    def _on_peel_edited(self, rend, path, new_data):
+        self._block_key_bindings = False
+        row = self.list_store[path]
+        try:
+            val = int(new_data.strip() or 0)
+        except ValueError:
+            pass
+        else:
+            if val >= 0 and val != row[1]:
+                row[1] = min(val, int(rend.props.adjustment.props.upper))
                 self._store_user_data()
                 self.interface.update(self.list_store)
+
+    def _on_prepend_edited(self, rend, path, new_data):
+        self._block_key_bindings = False
+        row = self.list_store[path]
+        new_data = new_data.strip()
+        if new_data != row[2]:
+            row[2] = new_data
+            self._store_user_data()
+            self.interface.update(self.list_store)
+
+    ###########################################################################
 
     def _failhandler(self, exception, notify):
         notify(str(exception))
