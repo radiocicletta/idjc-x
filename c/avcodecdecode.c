@@ -25,6 +25,9 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <libavutil/opt.h>
+#ifdef HAVE_LIBAVUTIL_CHANNEL_LAYOUT_H
+#include <libavutil/channel_layout.h>
+#endif
 #include <libavutil/samplefmt.h>
 #include "main.h"
 #include "xlplayer.h"
@@ -81,8 +84,8 @@ static void avcodecdecode_init(struct xlplayer *xlplayer)
         av_seek_frame(self->ic, -1, (int64_t)xlplayer->seek_s * AV_TIME_BASE, 0);
         switch (self->c->codec_id)
             {
-            case CODEC_ID_MUSEPACK7:   /* add formats here that glitch when seeked */
-            case CODEC_ID_MUSEPACK8:
+            case AV_CODEC_ID_MUSEPACK7:   /* add formats here that glitch when seeked */
+            case AV_CODEC_ID_MUSEPACK8:
                 self->drop = 1.6;
                 fprintf(stderr, "dropping %0.2f seconds of audio\n", self->drop);
             default:

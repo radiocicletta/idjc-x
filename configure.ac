@@ -152,7 +152,7 @@ else
    AC_SUBST([HAVE_OGGFLAC],[0])
 fi
 
-AC_CHECK_HEADERS([mpg123.h])
+AC_CHECK_HEADERS([mpg123.h libavutil/channel_layout.h])
 
 AC_ARG_ENABLE(mpg123,
    AC_HELP_STRING([--disable-mpg123],[remove capability to play mp3 format]),[makempg123=$enableval],[makempg123="maybe"])

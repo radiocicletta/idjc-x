@@ -20,6 +20,7 @@
 #include "../config.h"
 
 #include <stdio.h>
+#include <string.h>
 #include "main.h"
 #include "sourceclient.h"
 
@@ -283,7 +284,7 @@ static AVCodec *aac_codec()
         if ((codec = avcodec_find_encoder_by_name(*name)))
             return codec;
 
-    return avcodec_find_encoder(CODEC_ID_AAC);
+    return avcodec_find_encoder(AV_CODEC_ID_AAC);
 }
 
 static AVCodec *aacplus_codec()
