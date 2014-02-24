@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([idjc], [0.8.14], 
+AC_INIT([idjc], [0.8.15_development], 
                 [http://idjc.sourceforge.net])
 AC_SUBST(COPYRIGHT_YEAR, [2013])
 AC_CANONICAL_SYSTEM
@@ -89,6 +89,8 @@ else
    AC_SUBST(HAVE_AVUTIL, 0)
    AC_SUBST(HAVE_SWRESAMPLE, 0)
 fi
+
+AC_CHECK_LIB([avutil], [av_opt_set_sample_fmt], AC_DEFINE(USE_SWRESAMPLE, 1, [Set if libswresample allows format conversion]))
 
 AC_ARG_ENABLE([speex],
    AC_HELP_STRING([--disable-speex],[remove the capability to play/stream speex]),

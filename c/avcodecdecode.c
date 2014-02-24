@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <libavutil/opt.h>
+#include <libavutil/samplefmt.h>
 #include "main.h"
 #include "xlplayer.h"
 #include "avcodecdecode.h"
@@ -198,7 +199,7 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
             continue;
             }
 
-#ifdef HAVE_SWRESAMPLE
+#if defined (HAVE_SWRESAMPLE) && defined(USE_SWRESAMPLE)
         if (!self->swr)
             {
             int64_t layout;
@@ -229,8 +230,6 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
             av_opt_set_int(self->swr, "out_channel_layout", (self->channels == 2) ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO, 0);
             av_opt_set_sample_fmt(self->swr, "in_sample_fmt", self->c->sample_fmt, 0);
             av_opt_set_sample_fmt(self->swr, "out_sample_fmt", AV_SAMPLE_FMT_FLT, 0);
-            //av_opt_set_int(self->swr, "in_sample_rate",     44100,                0);
-            //av_opt_set_int(self->swr, "out_sample_rate",    44100,                0);
 
             if (swr_init(self->swr))
                 {
@@ -385,7 +384,7 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
                 return;
             }
    
-#endif /* HAVE_SWRESAMPLE */
+#endif /* defined (HAVE_SWRESAMPLE) && defined(USE_SWRESAMPLE) */
 
         if (self->resample)
             {
@@ -474,7 +473,7 @@ int avcodecdecode_reg(struct xlplayer *xlplayer)
     pthread_mutex_unlock(&g.avc_mutex);
 
     self->c = self->ic->streams[self->stream]->codec;
-#ifndef HAVE_SWRESAMPLE
+#ifndef USE_SWRESAMPLE
     self->c->request_sample_fmt = AV_SAMPLE_FMT_FLT;
     self->c->request_channel_layout = AV_CH_LAYOUT_STEREO_DOWNMIX;
 #endif

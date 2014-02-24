@@ -1,3 +1,7 @@
+* Changes in version 0.8.15 *
+
+Build fix for older ffmpeg dependency.
+
 * Changes in version 0.8.14 *
 
 Fix for playlist controls having an overly dark background.
