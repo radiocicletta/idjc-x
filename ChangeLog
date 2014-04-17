@@ -1,5 +1,9 @@
 * Changes in version 0.8.15 *
 
+Updated copyright year.
+
+Can now obtain listener stats from Shoutcast 2 servers.
+
 Applied patches for libav 9 and 10 build and build warnings, courtesy: Sebastian Ramacher <sramacher@debian.org>
 
 Build fix for older ffmpeg dependency.

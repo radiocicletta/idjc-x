@@ -34,6 +34,7 @@ import xml.etree.ElementTree
 import ctypes
 from collections import namedtuple
 from threading import Thread
+from contextlib import closing
 
 import dbus
 import pango
@@ -296,6 +297,8 @@ class StatsThread(Thread):
 
 
     def run(self):
+        class NoStats(ValueError):
+            pass
         class BadXML(ValueError):
             pass
         
@@ -313,18 +316,33 @@ class StatsThread(Thread):
         opener.addheaders = [('User-agent', 'Mozilla/5.0')]
         
         try:
-            f = opener.open(stats_url)
-            xmlfeed = f.read()
-        except:
-            print "failed to get server stats for", self.url
+            try:
+                with closing(opener.open(stats_url)) as h:
+                    data = h.read()
+            except Exception:
+                raise NoStats
+
+            try:
+                dom = mdom.parseString(data)
+            except Exception:
+                if self.is_shoutcast:
+                    # SC2 servers will return an HTML page, not XML.
+                    try:
+                        # No need to log in. :)
+                        with closing(urllib2.urlopen("http://%s/statistics" %
+                                                                hostport)) as h:
+                            data = h.read()
+                        dom = mdom.parseString(data)
+                    except Exception:
+                        raise NoStats
+
+                else:
+                    raise NoStats
+                    
+        except NoStats:
+            print "failed to obtain server stats for", self.url
             return
-        f.close()
-        try:
-            dom = mdom.parseString(xmlfeed)
-        except:
-            print "failed to parse server stats for", self.url
-            return
-        
+
         try:
             if self.is_shoutcast:
                 if dom.documentElement.tagName == u'SHOUTCASTSERVER':
