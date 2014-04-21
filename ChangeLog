@@ -1,5 +1,7 @@
 * Changes in version 0.8.15 *
 
+Build system now handles problem with a too old libogg breaking Opus support. 
+
 Updated copyright year.
 
 Can now obtain listener stats from Shoutcast 2 servers.

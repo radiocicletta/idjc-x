@@ -218,31 +218,40 @@ AC_ARG_ENABLE([opus],
    AC_HELP_STRING([--disable-opus],[remove capability to play/stream in opus format]),
    [makeopus=$enableval],[makeopus="maybe"])
 
-if test $makeopus != "no" ; then
-   PKG_CHECK_MODULES([OPUS], [opus],
-            [
-            AC_DEFINE(HAVE_OPUS, 1, [Set if libopus was found])
-            AC_SUBST(HAVE_OPUS, 1)],
-            [AC_SUBST(HAVE_OPUS, 0),
+AC_CHECK_LIB([ogg], [ogg_stream_flush_fill],[
+    if test $makeopus != "no" ; then
+       PKG_CHECK_MODULES([OPUS], [opus],
+                [
+                AC_DEFINE(HAVE_OPUS, 1, [Set if libopus was found])
+                AC_SUBST(HAVE_OPUS, 1)],
+                [AC_SUBST(HAVE_OPUS, 0),
 
-            if test $makeopus = "yes" ; then
-               AC_MSG_ERROR([libopus not detected but specifically requested in configure options])
-            else
-               AC_MSG_WARN([IDJC will be built without opus playback or streaming support])
-            fi])
-else
-   AC_SUBST([HAVE_OPUS],[0])
-fi
+                if test $makeopus = "yes" ; then
+                   AC_MSG_ERROR([libopus not detected but specifically requested in configure options])
+                else
+                   AC_MSG_WARN([IDJC will be built without opus playback or streaming support])
+                fi])
+    else
+       AC_SUBST([HAVE_OPUS], 0)
+    fi
+    ],
+    [
+    if test $makeopus = "yes" ; then
+        AC_MSG_ERROR([specifically requested opus support requires newer libogg])
+    fi
+    AC_MSG_WARN([opus streaming requires newer libogg])
+    AC_SUBST([HAVE_OPUS], 0)]
+    )
 
-AC_CHECK_LIB([pthread], [pthread_create], :, AC_MSG_ERROR("libpthread not detected"))
+AC_CHECK_LIB([pthread], [pthread_create], :, AC_MSG_ERROR([libpthread not detected]))
 
 # Conditionally include libm.  Some standard libraries could have inbuilt math stuff.
 AC_CHECK_FUNCS([sqrt pow], :, [AC_CHECK_LIB([m], [sqrt, pow], AC_SUBST(LIBM, "-lm"),
-	AC_MSG_ERROR("math library is missing critical function"))])
+	AC_MSG_ERROR([math library is missing critical function]))])
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([fcntl.h jack/jack.h jack/transport.h pthread.h], :, AC_MSG_ERROR("Critical header file missing"))
+AC_CHECK_HEADERS([fcntl.h jack/jack.h jack/transport.h pthread.h], :, AC_MSG_ERROR([Critical header file missing]))
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -253,7 +262,7 @@ AC_TYPE_SIZE_T
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS([memset strchr], :, AC_MSG_ERROR("Critical function missing"))
+AC_CHECK_FUNCS([memset strchr], :, AC_MSG_ERROR([Critical function missing]))
 AC_CHECK_FUNCS([getline strndup canonicalize_file_name], :,
       [AC_DEFINE([USE_BSD_COMPAT],[1],
       [Set if GNU extensions need to be replicated])])
