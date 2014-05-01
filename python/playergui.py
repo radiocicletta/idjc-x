@@ -66,8 +66,8 @@ def N_(text):
 
 PM = ProfileManager()
 
+EasyID3.RegisterTXXXKey('TXXX_replaygain_track_gain', 'replaygain_track_gain')
 link_uuid_reg = LinkUUIDRegistry()
-
 
 # Suppress the warning that occurs when None is placed in a ListStore element
 # where some kind of GObject is expected.
@@ -1077,9 +1077,12 @@ class IDJC_Media_Player:
             pass
         else:
             try:
-                rg = str(audio["replaygain_track_gain"][0].rstrip(" dB")) + " RG"
+                rg = str(audio["TXXX_replaygain_track_gain"][0].rstrip(" dB")) + " RG"
             except:
-                pass
+                try:
+                    rg = str(audio["replaygain_track_gain"][0].rstrip(" dB")) + " RG"
+                except:
+                    pass
             try:
                 artist = audio["artist"]
             except:

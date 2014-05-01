@@ -1,5 +1,7 @@
 * Changes in version 0.8.15 *
 
+Can now read ReplayGain info from ID3 TXXX tags. Has priority over RVAD/RVA2 tags.
+
 Build system now handles problem with a too old libogg breaking Opus support. 
 
 Updated copyright year.
