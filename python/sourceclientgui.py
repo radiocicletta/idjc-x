@@ -1309,6 +1309,11 @@ class StreamTab(Tab):
         """Reference counting starter and stopper for the encoder."""
                 
         if command == ENCODER_START:
+            if not self.format_control.running:
+                # Custom metadata encoding may have been changed.
+                self.metadata_update.clicked()
+
+            # Must run this to bump reference counter regardless of if running.
             self.format_control.start_encoder_rc()
         elif command == ENCODER_STOP:
             self.format_control.stop_encoder_rc()
