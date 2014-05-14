@@ -49,6 +49,7 @@ from .gtkstuff import threadslock, gdklock, DefaultEntry, NotebookSR
 __all__ = ['MediaPane', 'have_songdb']
 
 AMPACHE = "Ampache"
+AMPACHE_3_7 = "Ampache 3.7"
 PROKYON_3 = "Prokyon 3"
 FUZZY, CLEAN, WHERE, DIRTY = xrange(4)
 
@@ -666,7 +667,7 @@ class ViewerCommon(PageCommon):
             renderer.set_property("text", "")
         elif self._db_type == "P3":
             renderer.set_property("text", "%dk" % bitrate)
-        elif bitrate > 9999 and self._db_type == AMPACHE:
+        elif bitrate > 9999 and self._db_type in (AMPACHE, AMPACHE_3_7):
             renderer.set_property("text", "%dk" % (bitrate // 1000))
         renderer.set_property("xalign", 1.0)
 
@@ -878,7 +879,7 @@ class TreePage(ViewerCommon):
                     LEFT JOIN albums on tracks.album = albums.name
                      AND tracks.artist = albums.artist
                     ORDER BY tracks.artist, album, tracknumber, title"""
-        elif self._db_type == AMPACHE:
+        elif self._db_type in (AMPACHE, AMPACHE_3_7):
             query = """SELECT
                     album.name as album,
                     album.prefix as alb_prefix,
@@ -1239,6 +1240,7 @@ class FlatPage(ViewerCommon):
                     artist.name, album.name, file, album.disk, track, title
                     """)}
     }
+    _queries_table[AMPACHE_3_7] = _queries_table[AMPACHE]
 
     def _cb_update(self, widget):
         self._old_cat_data = self.catalogs.copy_data()
@@ -1478,7 +1480,7 @@ class CatalogsPage(PageCommon):
 
     def activate(self, *args, **kwargs):
         PageCommon.activate(self, *args, **kwargs)
-        self.tree_view.get_column(0).set_visible(self._db_type in (AMPACHE,))
+        self.tree_view.get_column(0).set_visible(self._db_type in (AMPACHE, AMPACHE_3_7))
         self.refresh.clicked()
 
     def deactivate(self, *args, **kwargs):
@@ -1515,11 +1517,18 @@ class CatalogsPage(PageCommon):
             self.interface.update(self.list_store)
 
     def _on_refresh(self, widget):
-        if self._db_type == AMPACHE:
+        if self._db_type in (AMPACHE, AMPACHE_3_7):
             self.refresh.set_sensitive(False)
             self.tree_view.set_model(None)
-            query = """SELECT id, name, path, last_update, IFNULL(last_clean,0),
-                        last_add FROM catalog WHERE enabled=1 ORDER BY name"""
+            if self._db_type == AMPACHE:
+                query = """SELECT id, name, path, last_update, IFNULL(last_clean,0),
+                           last_add FROM catalog WHERE enabled=1 ORDER BY name"""
+            else:
+                query = """SELECT catalog.id, name, path, last_update, IFNULL(last_clean,0),
+                           last_add FROM catalog
+                           LEFT JOIN catalog_local on catalog.id = catalog_id
+                           AND catalog.catalog_type = "local"
+                           WHERE enabled=1 ORDER BY name"""
             self._acc.request((query,), self._handler, self._failhandler)
         
         elif self._db_type == PROKYON_3:
@@ -1774,6 +1783,20 @@ class MediaPane(gtk.VBox):
     def _stage_8(self, acc, request, cursor, notify, rows):
         request(("ALTER TABLE song ADD FULLTEXT idjc (title)",), self._stage_9,
                                                                 self._fail_2)
-
     def _stage_9(self, acc, request, cursor, notify, rows):
-        self._hand_over(AMPACHE)
+        notify("Checking ampache type")
+        request(("DESCRIBE catalog",), self._stage_10, self._fail_2)
+
+    def _stage_10(self, acc, request, cursor, notify, rows):
+        if self.schema_test("path", cursor.fetchall()):
+            self._hand_over(AMPACHE)
+        else:
+            request(("DESCRIBE catalog_local",), self._stage_11, self._fail_2)
+
+    def _stage_11(self, acc, request, cursor, notify, rows):
+        if self.schema_test("path", cursor.fetchall()):
+            notify('Found Ampache 3.7 schema')
+            self._hand_over(AMPACHE_3_7)
+        else:
+            notify('Unrecognised database')
+            self._safe_disconnect()
