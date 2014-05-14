@@ -1245,6 +1245,15 @@ class StreamTab(Tab):
             self.send(self.connection_string)
             self.receive()
 
+    @classmethod
+    def get_latin1_text(cls, widget):
+        text = cls.get_utf8_text(widget)
+        return text.decode("utf-8").encode("latin1", "replace")
+
+    @staticmethod
+    def get_utf8_text(widget):
+        return widget.get_text().strip()
+
     def cb_server_connect(self, widget):
         if widget.get_active():
             self.start_stop_encoder(ENCODER_START)
@@ -1258,7 +1267,17 @@ class StreamTab(Tab):
             else:
                 user_agent = ""
             
-            self.troubleshooting.user_agent_entry.get_text().strip()
+            # Determine the correct character encoding for fixed metadata.
+            if d["server_type"] == 1:
+                if self.shoutcast_latin1.get_active():
+                    proc = self.get_latin1_text
+                else:
+                    proc = self.get_utf8_text
+            else:
+                if self.format_control.get_settings()["family"] == "mpeg":
+                    proc = self.get_latin1_text
+                else:
+                    proc = self.get_utf8_text
 
             self.connection_string = "\n".join((
                     "stream_source=" + str(self.numeric_id),
@@ -1270,13 +1289,13 @@ class StreamTab(Tab):
                     "login=" + d["login"],
                     "password=" + d["password"],
                     "useragent=" + user_agent,
-                    "dj_name=" + self.dj_name_entry.get_text().strip(),
-                    "listen_url=" + self.listen_url_entry.get_text().strip(),
-                    "description=" + self.description_entry.get_text().strip(),
-                    "genre=" + self.genre_entry.get_text().strip(),
-                    "irc=" + self.irc_entry.get_text().strip(),
-                    "aim=" + self.aim_entry.get_text().strip(),
-                    "icq=" + self.icq_entry.get_text().strip(),
+                    "dj_name=" + proc(self.dj_name_entry),
+                    "listen_url=" + proc(self.listen_url_entry),
+                    "description=" + proc(self.description_entry),
+                    "genre=" + proc(self.genre_entry),
+                    "irc=" + proc(self.irc_entry),
+                    "aim=" + proc(self.aim_entry),
+                    "icq=" + proc(self.icq_entry),
                     "make_public=" + str(bool(self.make_public.get_active())),
                     "command=server_connect\n"))
             self.send(self.connection_string)
@@ -1668,8 +1687,9 @@ class StreamTab(Tab):
         stream_details_pane.show()
 
         vbox = gtk.VBox()
+        vbox.set_border_width(10)
+        vbox.set_spacing(10)
         alhbox = gtk.HBox()
-        alhbox.set_border_width(10)
         alhbox.set_spacing(3)
         label = gtk.Label(_('Master server admin password'))
         alhbox.pack_start(label, False)
@@ -1684,9 +1704,8 @@ class StreamTab(Tab):
         self.admin_password_entry.show()
         vbox.pack_start(alhbox, False)
         alhbox.show()
-              
+
         frame = CategoryFrame(" %s " % _('Contact Details'))
-        frame.set_shadow_type(gtk.SHADOW_NONE)
         frame.set_border_width(0)
         self.irc_entry = gtk.Entry()
         set_tip(self.irc_entry,
@@ -1709,6 +1728,13 @@ class StreamTab(Tab):
         
         vbox.pack_start(frame, False)
         frame.show_all()
+
+        self.shoutcast_latin1 = gtk.CheckButton(
+                        _('Use ISO-8859-1 encoding for fixed metadata'))
+        set_tip(self.shoutcast_latin1,
+                        _('Enable this if sending to a Shoutcast V1 server.'))
+        vbox.pack_start(self.shoutcast_latin1, False)
+        self.shoutcast_latin1.show()
 
         label = gtk.Label(_('Extra Shoutcast'))
         self.details_nb.append_page(vbox, label)
@@ -1757,6 +1783,7 @@ class StreamTab(Tab):
             "irc_data" : (self.ircpane, "marshall"),
             "format_data" : (self.format_control, "marshall"),
             "details_nb" : (self.details_nb, "current_page"),
+            "shoutcast_latin1" : (self.shoutcast_latin1, "active"),
         }
                                 
         self.objects.update(self.troubleshooting.objects)
