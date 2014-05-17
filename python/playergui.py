@@ -427,9 +427,8 @@ class ExternalPL(gtk.Frame):
         self.active.show()
 
         filefilter = gtk.FileFilter()
-        filefilter.add_pattern("*.m3u")
-        filefilter.add_pattern("*.pls")
-        filefilter.add_pattern("*.xspf")
+        for each in supported.playlists:
+            filefilter.add_pattern(each)
 
         self.filechooser = gtk.FileChooserDialog(title = 
         _('Choose a playlist file') + PM.title_extra, buttons = \
@@ -665,7 +664,7 @@ class Supported(object):
 
     def __init__(self):
         self.media = [".ogg", ".oga", ".wav", ".aiff", ".au", ".txt", ".cue"]
-        self.playlists = [".m3u", ".xspf", ".pls"]
+        self.playlists = [".m3u", ".m3u8", ".xspf", ".pls"]
 
         if FGlobs.have_libmpg123:
             self.media.insert(0, ".mp3")
@@ -930,9 +929,9 @@ class CueSheet(object):
 class IDJC_Media_Player:
     playlisttype_extension = tuple(zip(
         # File format selection items from a list (user can pick only one).
-        (_('By Extension'), _('M3U playlist'),
+        (_('By Extension'), _('M3U playlist'), _('M3U8 playlist'),
         _('XSPF playlist'), _('PLS playlist')),
-        ('', 'm3u', 'xspf', 'pls'),))
+        ('', 'm3u', 'm3u8', 'xspf', 'pls'),))
 
     def make_cuesheet_playlist_entry(self, cue_pathname):
         cuesheet_liststore = CueSheetListStore()
@@ -1036,7 +1035,10 @@ class IDJC_Media_Player:
 
         # Strip away any file:// prefix
         if filename.count("file://", 0, 7):
-            filename = filename[7:]
+            host, filename = filename[7:].split("/", 1)
+            filename = "/" + urllib.unquote(filename)
+            if host not in ("", "localhost", "127.0.0.1", "::1"):
+                return NOTVALID._replace(filename=filename)
         elif filename.count("file:", 0, 5):
             filename = filename[5:]
 
@@ -2595,113 +2597,117 @@ class IDJC_Media_Player:
                 ext = useext
         chosenfile = main + ext
 
-        validlist = [x for x in self.liststore if x[0][0] != ">" and x[2] >= 0]
+        if ext != ".xspf":
+            # Filter out playlist controls.
+            data = [x for x in self.liststore if x[0][0] != ">" and x[2] >= 0]
+        else:
+            data = self.liststore
 
         print "Chosenfile is", chosenfile
         try:
-            pl = open(chosenfile, "w")
+            with open(chosenfile, "w") as h:
+                if ext in (".m3u", ".m3u8"):
+                    if ext == ".m3u":
+                        proc = lambda x: x.decode("UTF-8").encode("ISO8859-1", "replace")
+                    else:
+                        proc = lambda x: x
+                    self.write_m3u_playlist(h, data, proc)
+                elif ext == ".pls":
+                    self.write_pls_playlist(h, data)
+                elif ext == ".xspf":
+                    self.write_xspf_playlist(h, data)
         except IOError:
-            print "Can't open file for writing.  Permissions problem?"
-        else:
-            if (ext == ".m3u"):
-                try:
-                    pl.write("#EXTM3U\r\n")
-                    for each in validlist:
-                        pl.write("#EXTINF:%d,%s\r\n" % (each[2], each[3].decode(
-                                    "UTF-8").encode("ISO8859-1", "replace")))
-                        pl.write(each[1] + "\r\n")
-                except IndexError:
-                    pl.close()
-                except IOError:
-                    pl.close()
-                    print "That was odd\n"
+            print "problem writing out playlist file"
+            
+    def write_m3u_playlist(self, h, data, proc):
+        h.write("#EXTM3U\r\n")
+        for each in data:
+            h.write("#EXTINF:%d,%s\r\n" % (each[2], proc(each[3])))
+            h.write("file://" + urllib.quote(each[1]) + "\r\n")
 
-            if ext == ".pls":
-                pl.write("[playlist]\r\nNumberOfEntries=%d\r\n\r\n" % \
-                                                                len(validlist))
-                for i in range(1, len(validlist) + 1):
-                    each = validlist[i - 1]
-                    pl.write("File%d=%s\r\n" % (i, each[1]))
-                    pl.write("Title%d=%s\r\n" % (i, each[3]))
-                    pl.write("Length%d=%d\r\n\r\n" % (i, each[2]))
-                pl.write("Version=2\r\n")
+    def write_pls_playlist(self, h, data):
+        h.write("[playlist]\r\nNumberOfEntries=%d\r\n\r\n" % len(data))
+        for i in range(1, len(data) + 1):
+            each = data[i - 1]
+            h.write("File%d=%s\r\n" % (i, each[1]))
+            h.write("Title%d=%s\r\n" % (i, each[3]))
+            h.write("Length%d=%d\r\n\r\n" % (i, each[2]))
+        h.write("Version=2\r\n")
 
-            if ext == ".xspf":
-                doc = mdom.getDOMImplementation().createDocument(
-                                    'http://xspf.org/ns/0/', 'playlist', None)
+    def write_xspf_playlist(self, h, data):
+        doc = mdom.getDOMImplementation().createDocument(
+                            'http://xspf.org/ns/0/', 'playlist', None)
 
-                playlist = doc.documentElement
-                playlist.setAttribute('version', '1')
-                playlist.setAttribute('xmlns', 'http://xspf.org/ns/0/')
-                playlist.setAttribute(
-                                'xmlns:idjc', 'http://idjc.sourceforge.net/ns/')
+        playlist = doc.documentElement
+        playlist.setAttribute('version', '1')
+        playlist.setAttribute('xmlns', 'http://xspf.org/ns/0/')
+        playlist.setAttribute('xmlns:idjc', 'http://idjc.sourceforge.net/ns/')
 
-                trackList = doc.createElement('trackList')
-                playlist.appendChild(trackList)
+        trackList = doc.createElement('trackList')
+        playlist.appendChild(trackList)
 
-                for each in self.liststore:
-                    row = PlayerRow(*each)
+        for each in data:
+            row = PlayerRow(*each)
 
-                    track = doc.createElement('track')
-                    trackList.appendChild(track)
+            track = doc.createElement('track')
+            trackList.appendChild(track)
 
-                    if row.rsmeta.startswith(">"):
-                        extension = doc.createElement('extension')
-                        track.appendChild(extension)
-                        extension.setAttribute(
-                            'application', 'http://idjc.sourceforge.net/ns/')
+            if row.rsmeta.startswith(">"):
+                extension = doc.createElement('extension')
+                track.appendChild(extension)
+                extension.setAttribute(
+                    'application', 'http://idjc.sourceforge.net/ns/')
 
-                        pld = doc.createElementNS(
-                            'http://idjc.sourceforge.net/ns/', 'idjc:pld')
-                        extension.appendChild(pld)
-                        pld.setAttribute('rsmeta', row.rsmeta)
-                        pld.setAttribute('length', str(row.length))
-                    else:
-                        location = doc.createElement('location')
-                        track.appendChild(location)
-                        locationText = doc.createTextNode(
-                                            "file://" + urllib.quote(each[1]))
-                        location.appendChild(locationText)
+                pld = doc.createElementNS(
+                    'http://idjc.sourceforge.net/ns/', 'idjc:pld')
+                extension.appendChild(pld)
+                pld.setAttribute('rsmeta', row.rsmeta)
+                pld.setAttribute('length', str(row.length))
+            else:
+                location = doc.createElement('location')
+                track.appendChild(location)
+                locationText = doc.createTextNode(
+                                    "file://" + urllib.quote(each[1]))
+                location.appendChild(locationText)
 
-                        if each[6]:
-                            creator = doc.createElement('creator')
-                            track.appendChild(creator)
-                            creatorText = doc.createTextNode(each[6])
-                            creator.appendChild(creatorText)
+                if each[6]:
+                    creator = doc.createElement('creator')
+                    track.appendChild(creator)
+                    creatorText = doc.createTextNode(each[6])
+                    creator.appendChild(creatorText)
 
-                        if each[5]:
-                            title = doc.createElement('title')
-                            track.appendChild(title)
-                            titleText = doc.createTextNode(each[5])
-                            title.appendChild(titleText)
+                if each[5]:
+                    title = doc.createElement('title')
+                    track.appendChild(title)
+                    titleText = doc.createTextNode(each[5])
+                    title.appendChild(titleText)
 
-                        if each[9]:
-                            album = doc.createElement('album')
-                            track.appendChild(album)
-                            albumText = doc.createTextNode(each[9])
-                            album.appendChild(albumText)
+                if each[9]:
+                    album = doc.createElement('album')
+                    track.appendChild(album)
+                    albumText = doc.createTextNode(each[9])
+                    album.appendChild(albumText)
 
-                        duration = doc.createElement('duration')
-                        track.appendChild(duration)
-                        durationText = doc.createTextNode(str(each[2] * 1000))
-                        duration.appendChild(durationText)
+                duration = doc.createElement('duration')
+                track.appendChild(duration)
+                durationText = doc.createTextNode(str(each[2] * 1000))
+                duration.appendChild(durationText)
 
-                xmltext = doc.toxml("UTF-8").replace("><", ">\n<").splitlines()
-                spc = ""
-                for i in range(len(xmltext)):
-                    if xmltext[i][1] == "/":
-                        spc = spc[2:]
-                    if len(xmltext[i]) < 3 or xmltext[i].startswith("<?") or \
-                            xmltext[i][-2] == "/" or xmltext[i].count("<") == 2:
-                        xmltext[i] = spc + xmltext[i]
-                    else:
-                        xmltext[i] = spc + xmltext[i]
-                        if xmltext[i][len(spc) + 1] != "/":
-                            spc = spc + "  "
-                pl.write("\r\n".join(xmltext))
-                pl.write("\r\n")
-                doc.unlink()
-                pl.close()
+        xmltext = doc.toxml("UTF-8").replace("><", ">\n<").splitlines()
+        spc = ""
+        for i in range(len(xmltext)):
+            if xmltext[i][1] == "/":
+                spc = spc[2:]
+            if len(xmltext[i]) < 3 or xmltext[i].startswith("<?") or \
+                    xmltext[i][-2] == "/" or xmltext[i].count("<") == 2:
+                xmltext[i] = spc + xmltext[i]
+            else:
+                xmltext[i] = spc + xmltext[i]
+                if xmltext[i][len(spc) + 1] != "/":
+                    spc = spc + "  "
+        h.write("\r\n".join(xmltext))
+        h.write("\r\n")
+        doc.unlink()
 
     def plfile_destroy(self, widget):
         self.showing_pl_save_requester = False
@@ -2809,7 +2815,7 @@ class IDJC_Media_Player:
             ext = os.path.splitext(pathnames[0])[1]
             if ext in (".cue", ".txt"):
                 return self.get_elements_from_cue(pathnames[0])
-            if ext == ".m3u":
+            elif ext in (".m3u", ".m3u8"):
                 return self.get_elements_from_m3u(pathnames[0])
             elif ext == ".pls":
                 return self.get_elements_from_pls(pathnames[0])
@@ -2882,11 +2888,18 @@ class IDJC_Media_Player:
             return
         basepath = os.path.split(filename)[0] + "/"
         data = data.splitlines()
+        
         for line, each in enumerate(data):
             if each[0] == "#":
                 continue
             if each[0] != "/":
-                each = basepath + each
+                if each.startswith("file://"):
+                    host, abspathname = each[7:].split("/", 1)
+                    if host not in ("", "localhost", "127.0.0.1", "::1"):
+                        continue
+                    each = "/" + urllib.unquote(abspathname)
+                else:
+                    each = basepath + each
             # handle special case of a single element referring to a directory
             if line == 0 and len(data) == 1 and os.path.isdir(each):
                 gen = self.get_elements_from_directory(each)
@@ -4047,7 +4060,7 @@ class IDJC_Media_Player:
         self.plfilefilter_playlists = gtk.FileFilter()
         # TC: File filter text.
         self.plfilefilter_playlists.set_name(
-                                    _('Playlist types (*.m3u, *.xspf, *.pls)'))
+                    _('Playlist types') + " " + supported.playlists_as_text())
         self.plfilefilter_playlists.add_mime_type("audio/x-mpegurl")
         self.plfilefilter_playlists.add_mime_type("application/xspf+xml")
         self.plfilefilter_playlists.add_mime_type("audio/x-scpls")

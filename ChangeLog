@@ -1,5 +1,7 @@
 * Changes in version 0.8.15 *
 
+Added support for generating m3u8 playlist files and added support for file URI's in m3u files.
+
 Fixed metadata to icecast servers now sent with latin1 encoding when streaming mpeg formats.
 
 User can now select latin1 encoding for fixed metadata to shoutcast servers.
