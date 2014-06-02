@@ -24,6 +24,7 @@ import json
 import time
 import sys
 import threading
+import traceback
 import gettext
 from inspect import getargspec
 from functools import wraps, partial
@@ -36,6 +37,8 @@ try:
     from irc import client
     from irc import events
 except ImportError:
+    traceback.print_exc()
+    print "No IRC support"
     HAVE_IRC = False
 else:
     HAVE_IRC = True
