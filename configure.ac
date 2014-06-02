@@ -298,6 +298,7 @@ AC_CONFIG_FILES([Makefile
                   doc/Makefile
                   python/__init__.py.in
                   idjc.in
-                  idjc.desktop.in])
+                  idjc.desktop.in
+                  idjc.appdata.xml.in])
 
 AC_OUTPUT

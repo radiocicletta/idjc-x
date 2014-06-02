@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright @COPYRIGHT_YEAR@ Stephen Fairchild <s-fairchild@users.sourceforge.net> -->
+<application>
+ <id type="desktop">@PACKAGE_NAME@.desktop</id>
+ <metadata_license>CC0-1.0</metadata_license>
+ <project_license>GPL-2.0+ and GFDL-1.3</project_license>
+ <name>Internet DJ Console</name>
+ <summary>Be a DJ on the Internet</summary>
+ <description>
+  <p>
+    A powerful yet easy to use source-client for people interested in streaming
+    live radio shows over the Internet using Shoutcast or Icecast servers.      
+  </p>
+  <p>
+    Up to 9 simultaneous streams. 12 mono or 6 stereo general purpose audio inputs.
+    3 media players. An effects rack. The audio routing flexibility of Jack Audio Connection Kit.
+    IRC announcements. Ampache music database support.
+  </p>
+ </description>
+ <screenshots>
+  <screenshot type="default" width="1088" height="612">http://idjc.sourceforge.net/appdata_screenshot.png</screenshot>
+ </screenshots>
+ <url type="homepage">http://idjc.sourceforge.net</url>
+ <updatecontact>http://sourceforge.net/api/file/index/project-id/135773/mtime/desc/limit/20/rss</updatecontact>
+</application>

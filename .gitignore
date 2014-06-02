@@ -25,6 +25,8 @@ idjc
 idjc.in
 idjc.desktop
 idjc.desktop.in
+idjc.appdata.xml
+idjc.appdata.xml.in
 python/*.pyc
 python/__init__.py
 python/__init__.py.in

@@ -38,7 +38,7 @@ UPLOAD = find site -type f -exec curl --retry 3 --connect-timeout 10 -n -T "{}" 
 # Upload everything to the website.
 site:
 	$(DIRPREP)
-	cp $(HTML) $(IMAGES) $(STATIC) *.hq.png site/
+	cp $(HTML) $(IMAGES) $(STATIC) *.hq.png appdata_screenshot.png site/
 	$(UPLOAD)
 
 # Convenience uploader for all except images.

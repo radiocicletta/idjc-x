@@ -5,14 +5,19 @@ nodist_bin_SCRIPTS=${PACKAGE_NAME}
 dist_noinst_SCRIPTS=idjc.in.in bootstrap
 nodist_doc_DATA=AUTHORS.gz NEWS.gz README.gz ChangeLog.gz
 docdir=${prefix}/share/doc/${PACKAGE_NAME}-${PACKAGE_VERSION}
-dist_noinst_DATA=idjc.desktop.in.in
+dist_noinst_DATA=idjc.desktop.in.in idjc.appdata.xml.in.in
 nodist_appmenu_DATA=${PACKAGE_NAME}.desktop
 appmenudir=${prefix}/share/applications
+nodist_appdata_DATA=${PACKAGE_NAME}.appdata.xml
+appdatadir=${prefix}/share/appdata
 
 ${PACKAGE_NAME}: idjc.in
 	@sed -e 's|$${prefix}|${prefix}|g' -e 's|$${pkglibdir}|${pkglibdir}|g' $? >$@
 
 ${PACKAGE_NAME}.desktop: idjc.desktop.in
+	@sed -e 's|$${prefix}|${prefix}|g' -e 's|$${exec_prefix}|${exec_prefix}|g' $? >$@
+
+${PACKAGE_NAME}.appdata.xml: idjc.appdata.xml.in
 	@sed -e 's|$${prefix}|${prefix}|g' -e 's|$${exec_prefix}|${exec_prefix}|g' $? >$@
 
 AUTHORS.gz: AUTHORS
@@ -28,7 +33,7 @@ ChangeLog.gz: ChangeLog
 	@ gzip -c $? >$@
 
 clean-local:
-	rm -f ChangeLog.gz README.gz NEWS.gz AUTHORS.gz ${PACKAGE_NAME}.desktop idjcctrl ${PACKAGE_NAME}
+	rm -f ChangeLog.gz README.gz NEWS.gz AUTHORS.gz ${PACKAGE_NAME}.desktop ${PACKAGE_NAME}.appdata.xml ${PACKAGE_NAME}
 
 dtdist:
 	make dist
