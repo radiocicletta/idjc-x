@@ -603,68 +603,33 @@ class EditChannelsDialog(ChannelsDialog, EditDialogMixin):
         self.channels.set_text(orig_data[0])
 
 
-class MessageDialog(gtk.Dialog):
+class MessageDialog(ChannelsDialog):
     """Message entry dialog."""
     
-    icon = gtk.STOCK_NEW
-
     def __init__(self, title=None):
-        if title is None:
-            title = self.title
+        ChannelsDialog.__init__(self, title)
         
-        gtk.Dialog.__init__(
-                        self, title + " - IDJC" + ProfileManager().title_extra)
-
-        hbox1 = gtk.HBox()
-        hbox1.set_spacing(6)
-        # TC: An IRC channel #chan or user name entry box label.
-        l = gtk.Label(_("Channels/Users"))
-        self.channels = gtk.Entry()
-        hbox1.pack_start(l, False)
-        hbox1.pack_start(self.channels, True)
-        set_tip(self.channels, _("The comma or space separated list of channels"
-        " and/or users to whom the message will be sent.\n\nProtected channels "
-        "are included with the form:\n#channel:keyword."))
-        
-        hbox2 = gtk.HBox()
-        hbox2.set_spacing(6)
+        hbox = gtk.HBox()
+        hbox.set_spacing(6)
         # TC: Message text to send to an IRC channel. Widget label.
         l = gtk.Label(_("Message"))
         self.message = IRCEntry()
-        hbox2.pack_start(l, False)
-        hbox2.pack_start(self.message)
+        hbox.pack_start(l, False)
+        hbox.pack_start(self.message)
         set_tip(self.message, _("The message to send.\n\nOn the pop-up window "
         "(mouse right click) are some useful options for embedding metadata and"
         " for text formatting.\n\nThe window below displays how the message "
         "will appear to users of XChat."))
+        self.mainbox.pack_start(hbox, False)
         
         sw = gtk.ScrolledWindow()
         sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_ALWAYS)
         irc_view = IRCView()
         sw.add(irc_view)
-        vbox = gtk.VBox()
-        vbox.set_spacing(5)
-        vbox.pack_start(hbox1, False)
-        vbox.pack_start(hbox2, False)
-        vbox.pack_start(sw)
-        
-        self.hbox = gtk.HBox()
-        self.hbox.set_border_width(16)
-        self.hbox.set_spacing(5)
-        self.image = gtk.image_new_from_stock(self.icon, gtk.ICON_SIZE_DIALOG)
-        self.image.set_alignment(0.5, 0)
-        self.hbox.pack_start(self.image, False, padding=20)
-        self.hbox.pack_start(vbox)
+        self.mainbox.pack_start(sw, False)
         
         self.message.connect("changed", 
                                     lambda w: irc_view.set_text(w.get_text()))
-        
-        self.get_content_area().add(self.hbox)
-        self.channels.grab_focus()
-        
-    def _from_channels(self):
-        text = self.channels.get_text().replace(",", " ").split()
-        return ",".join(x for x in text if x)
 
     def _pack(self, widgets):
         vbox = gtk.VBox()
