@@ -1311,6 +1311,13 @@ class StreamTab(Tab):
                 self.server_connect.set_active(False)
                 self.connection_string = None
             else:
+                ircmetadata = {"djname": self.dj_name_entry.get_text().strip(),
+                    "description": self.description_entry.get_text().strip(),
+                    "url": self.listen_url_entry.get_text().strip(),
+                    "source": self.connection_pane.get_source_uri()
+                    }
+                self.ircpane.connections_controller.new_metadata(ircmetadata)
+                
                 self.connection_pane.streaming_set(True)
         else:
             self.send("command=server_disconnect\n")
@@ -2398,18 +2405,11 @@ class SourceClientGui(dbus.service.Object):
         if self.receive() == "succeeded":
             print "updated song metadata successfully"
 
-        common = {"artist": artist, "title": title, "album": album,
+        ircmetadata = {"artist": artist, "title": title, "album": album,
                                                         "songname": songname}
-        # Update the custom metadata on all stream tabs.
+        # Update the song metadata on all stream tabs.
         for tab in self.streamtabframe.tabs:  
             tab.metadata_update.clicked()
-            ircmetadata = {"djname": tab.dj_name_entry.get_text(),
-                            "description": tab.description_entry.get_text(),
-                            "url": tab.listen_url_entry.get_text(),
-                            "source": tab.connection_pane.get_source_uri()
-            }
-            ircmetadata.update(common)
-
             tab.ircpane.connections_controller.new_metadata(ircmetadata)
         
     def source_client_open(self):
