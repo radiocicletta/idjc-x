@@ -455,6 +455,13 @@ class ConnectionPane(gtk.VBox):
             return 0
         return 0 if s_type >= 2 else s_type + 1
 
+    def get_source_uri(self):
+        try:
+            config = ListLine(*self.liststore[0])
+        except IndexError:
+            return "No Master Server Configured"
+        return "{0.host}:{0.port}{0.mount}".format(config)
+
     def set_button(self, tab):
         st = self.get_master_server_type()
         if st:
@@ -2397,8 +2404,9 @@ class SourceClientGui(dbus.service.Object):
         for tab in self.streamtabframe.tabs:  
             tab.metadata_update.clicked()
             ircmetadata = {"djname": tab.dj_name_entry.get_text(),
-                                "description": tab.description_entry.get_text(),
-                                "url": tab.listen_url_entry.get_text()
+                            "description": tab.description_entry.get_text(),
+                            "url": tab.listen_url_entry.get_text(),
+                            "source": tab.connection_pane.get_source_uri()
             }
             ircmetadata.update(common)
 

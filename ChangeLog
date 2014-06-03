@@ -1,5 +1,7 @@
 * Changes in version 0.8.15 *
 
+IDJC now reports server connect/disconnect to IRC in a formalised manner and in messages %U can be used for the source URI.
+
 Added an AppData file.
 
 Added support for generating m3u8 playlist files and added support for file URI's in m3u files.

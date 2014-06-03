@@ -84,13 +84,15 @@ MESSAGE_CATEGORIES = (
         # TC: IRC message subcategory, triggered once when the stream starts.
         _("On stream up"),
         # TC: IRC message subcategory, triggered once at the stream's end.
-        _("On stream down"))
+        _("On stream down"),
+        # TC: IRC message subcategory, triggered once at the stream's end.
+        _("Operations"))
 
 ASCII_C0 = "".join(chr(x) for x in range(32))
 
-CODES_AND_DESCRIPTIONS = zip((u"%r", u"%t", u"%l", u"%s", u"%n", u"%d", u"%u"),
+CODES_AND_DESCRIPTIONS = zip((u"%r", u"%t", u"%l", u"%s", u"%n", u"%d", u"%u", u"%U"),
         (_('Artist'), _('Title'), _('Album'), _('Song name'),
-         _('DJ name'), _('Description'), _('Listen URL')))
+         _('DJ name'), _('Description'), _('Listen URL'), _('Source URI')))
 
 
 class IRCEntry(gtk.Entry):  # pylint: disable=R0904
@@ -537,8 +539,72 @@ message_offset_adj = gtk.Adjustment(0, 0, 9999, 1, 10)
 message_interval_adj = gtk.Adjustment(600, 60, 9999, 1, 10)
 
 
+class ChannelsDialog(gtk.Dialog):
+    """Channels entry dialog."""
+    
+    icon = gtk.STOCK_NEW
+    title = "missing title"
+
+    def __init__(self, title=None):
+        if title is None:
+            title = self.title
+        
+        gtk.Dialog.__init__(
+                        self, title + " - IDJC" + ProfileManager().title_extra)
+
+        chbox = gtk.HBox()
+        chbox.set_spacing(6)
+        # TC: An IRC channel #chan or user name entry box label.
+        l = gtk.Label(_("Channels/Users"))
+        self.channels = gtk.Entry()
+        chbox.pack_start(l, False)
+        chbox.pack_start(self.channels, True)
+        set_tip(self.channels, _("The comma or space separated list of channels"
+        " and/or users to whom the message will be sent.\n\nProtected channels "
+        "are included with the form:\n#channel:keyword."))
+        
+        self.mainbox = gtk.VBox()
+        self.mainbox.set_spacing(5)
+        self.mainbox.pack_start(chbox, False)
+        
+        self.hbox = gtk.HBox()
+        self.hbox.set_border_width(16)
+        self.hbox.set_spacing(5)
+        self.image = gtk.image_new_from_stock(self.icon, gtk.ICON_SIZE_DIALOG)
+        self.image.set_alignment(0.5, 0)
+        self.hbox.pack_start(self.image, False, padding=20)
+        self.hbox.pack_start(self.mainbox)
+       
+        self.get_content_area().add(self.hbox)
+        self.channels.grab_focus()
+        
+    def _from_channels(self):
+        text = self.channels.get_text().replace(",", " ").split()
+        return ",".join(x for x in text if x)
+
+    def as_tuple(self):
+        """Data extraction method."""
+
+        return (self._from_channels(),)
+
+
+class EditChannelsDialog(ChannelsDialog, EditDialogMixin):
+    """Adds delete and restore buttons to a channels dialog."""
+    
+    icon = gtk.STOCK_EDIT
+
+    def __init__(self, title, orig_data):
+        ChannelsDialog.__init__(self, title)
+        EditDialogMixin.__init__(self, orig_data)
+        
+    def from_tuple(self, orig_data):
+        """The data restore method."""
+        
+        self.channels.set_text(orig_data[0])
+
+
 class MessageDialog(gtk.Dialog):
-    """Base class for a message creation dialog."""
+    """Message entry dialog."""
     
     icon = gtk.STOCK_NEW
 
@@ -821,7 +887,9 @@ class IRCRowReference(NamedTreeRowReference):
         
         7: {"channels":5, "message":6},
 
-        9: {"channels":5, "message":6}
+        9: {"channels":5, "message":6},
+        
+        11: {"channels":5}
         }
 
     def get_index_for_name(self, tree_row_ref, name):
@@ -1032,25 +1100,31 @@ class IRCPane(gtk.VBox):
                     text += " " + ", ".join(opt)
             else:
                 channels = row.channels
-                message = row.message
+
+                if row.type < 11:
+                    message = row.message
                 
-                if row.type == 3:
-                    text = "+%d;%s; %s" % (row.delay, channels, message)
-                elif row.type == 5:
-                    text = "%d/%d;%s; %s" % (
-                                    row.offset, row.interval, channels, message)
-                else:
-                    text = channels + "; " + message
+                    if row.type == 3:
+                        text = "+%d;%s; %s" % (row.delay, channels, message)
+                    elif row.type == 5:
+                        text = "%d/%d;%s; %s" % (
+                                row.offset, row.interval, channels, message)
+                    elif row.type in (7, 9):
+                        text = channels + "; " + message
+                elif row.type == 11:
+                    text = channels
         else:
             text = (("Server", ) + MESSAGE_CATEGORIES)[row.type / 2]
 
         cell.props.text = text
 
 
-    # TC: Expander text encapsulating messages that play when stream goes up.
+    # TC: Dialog title text.
     _dsu = _("IRC stream up message")
-    # TC: Expander text encapsulating messages that play when stream goes down.
+    # TC: Dialog title text.
     _dsd = _("IRC stream down message")
+    # TC: Dialog title text.
+    _dso = _("IRC station operations")
 
     @glue
     def _on_new(self, mode, model, iter, dialog):
@@ -1063,28 +1137,32 @@ class IRCPane(gtk.VBox):
         elif mode in (6, 8):
             title = self._dsu if mode == 6 else self._dsd
             dialog(MessageDialog(title), self._add_message, mode)
+        elif mode == 10:
+            dialog(ChannelsDialog(self._dso), self._add_channels, mode)
         else:
-            if mode / 2 < len(MESSAGE_CATEGORIES):
-                print "there is no data entry dialog implemented for the '%s'" \
-                            " message category" % MESSAGE_CATEGORIES[mode / 2]
-            else:
-                print "unknown message category with numerical code,", mode
+            self._unhandled_mode(mode)
 
     @glue
     def _on_edit(self, mode, model, iter, dialog):
+        row = tuple(model[model.get_path(iter)])
+        
         if mode == 1:
-            dialog(EditServerDialog(tuple(model[model.get_path(iter)])[2:14]),
-                                                    self._standard_edit, 2)
-        if mode == 3:
-            dialog(EditAnnounceMessageDialog(tuple(model[model.get_path(iter)])
-                                                [4:7]), self._standard_edit, 4)
-        if mode == 5:
-            dialog(EditTimerMessageDialog(tuple(model[model.get_path(iter)])
-                                                [3:7]), self._standard_edit, 3)
-        if mode in (7, 9):
+            dialog(EditServerDialog(row[2:14]), self._standard_edit, 2)
+        elif mode == 3:
+            dialog(EditAnnounceMessageDialog(row[4:7]), self._standard_edit, 4)
+        elif mode == 5:
+            dialog(EditTimerMessageDialog(row[3:7]), self._standard_edit, 3)
+        elif mode in (7, 9):
             title = self._dsu if mode == 7 else self._dsd
-            dialog(EditMessageDialog(title, tuple(
-                model[model.get_path(iter)])[5:7]), self._standard_edit, 5)
+            dialog(EditMessageDialog(title, row[5:7]), self._standard_edit, 5)
+        elif mode == 11:
+            dialog(EditChannelsDialog(self._dso, row[5:6]), self._standard_edit, 5)
+        else:
+            self._unhandled_mode(mode)
+
+    @staticmethod
+    def _unhandled_mode(mode):
+        print "unhandled message category with numerical code,", mode
 
     def _standard_edit(self, d, model, iter, start):
         model.row_changed_block()
@@ -1122,6 +1200,11 @@ class IRCPane(gtk.VBox):
     def _add_message(self, d, model, parent_iter, mode):
         return model.insert(parent_iter, 0, (mode + 1, 1, 0, 0, 0) 
                                                 + d.as_tuple() + ("", ) * 8)
+
+    @highlight
+    def _add_channels(self, d, model, parent_iter, mode):
+        return model.insert(parent_iter, 0, (mode + 1, 1, 0, 0, 0) 
+                                                + d.as_tuple() + ("", ) * 9)
 
 
 class ConnectionsController(list):
@@ -1545,10 +1628,10 @@ class MessageHandler(gobject.GObject):
     def stream_active(self):
         return self._stream_active
 
-    subst_keys = ("artist", "title", "album", "songname",
-                                                "djname", "description", "url")
+    subst_keys = ("artist", "title", "album", "songname", "djname",
+                                    "description", "url", "source")
 
-    subst_tokens = ("%r", "%t", "%l", "%s", "%n", "%d", "%u")
+    subst_tokens = ("%r", "%t", "%l", "%s", "%n", "%d", "%u", "%U")
 
     subst = dict.fromkeys(subst_keys, "<No data>")
 
@@ -1627,7 +1710,7 @@ class MessageHandler(gobject.GObject):
         else:
             raise AttributeError("unknown property '%s'" % prop.name)
 
-    def issue_messages(self, delay_calc=lambda row: 0):
+    def issue_messages(self, delay_calc=lambda row: 0, forced_message=None):
         model = self.tree_row_ref.get_model()
         iter = model.get_iter(self.tree_row_ref.get_path())
         iter = model.iter_children(iter)
@@ -1640,7 +1723,10 @@ class MessageHandler(gobject.GObject):
                     targets = [x.split("!")[0] for x in row.channels.split(",")]
                     table = [("%%", "%")] + zip(self.subst_tokens, (
                                         self.subst[x] for x in self.subst_keys))
-                    message = string_multireplace(row.message, table)
+                    if forced_message is not None:
+                        message = string_multireplace(forced_message, table)
+                    else:
+                        message = string_multireplace(row.message, table)
                     self.emit("privmsg-ready", targets, message, delay_s)
           
             iter = model.iter_next(iter)
@@ -1694,3 +1780,10 @@ class MessageHandlerForType_7(MessageHandler):
 class MessageHandlerForType_9(MessageHandler):
     def on_stream_inactive(self):
         self.issue_messages()
+
+class MessageHandlerForType_11(MessageHandler):
+    def on_stream_active(self):
+        self.issue_messages(forced_message="!handover acquired %U")
+    
+    def on_stream_inactive(self):
+        self.issue_messages(forced_message="!handover dropped %U")
