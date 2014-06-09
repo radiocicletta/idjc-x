@@ -527,14 +527,14 @@ class PageCommon(gtk.VBox):
         return False
 
     def set_col_widths(self, data):
-        """Restore column width values."""
-         
-        c = self.tree_cols.__iter__()
-        for w in data.split(","):
-            if w != "0":
-                c.next().set_fixed_width(int(w))
-            else:
-                c.next()
+        """Restore column width values. Includes a data validity check."""
+
+        if len(self.tree_cols) == data.count(",") + 1:
+            for width, col in zip(data.split(","), self.tree_cols):
+                if width != "0":
+                    col.set_fixed_width(int(width))
+        else:
+            print "can't restore column widths"
 
     def activate(self, accessor, db_type, usesettings):
         self._acc = accessor
