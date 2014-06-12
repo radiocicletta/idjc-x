@@ -444,6 +444,20 @@ class PrefsControls(gtk.Frame):
         for each in self._settings:
             self.textdict.update(each.textdict)
 
+    def credentials(self):
+        if self.dbtoggle.get_active():
+            active = self._notebook.get_current_page()
+        else:
+            active = None
+
+        pages = []
+        for i, settings in enumerate(self._notebook.get_children()):
+            creddict = settings.get_data()[0]
+            creddict.update({"active": i == active})
+            pages.append(creddict)
+        
+        return pages
+
     def disconnect(self):
         self.dbtoggle.set_active(False)    
         

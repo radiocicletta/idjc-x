@@ -2035,6 +2035,11 @@ class MainWindow(dbus.service.Object):
             print "song title: %s\n" % self.songname
 
     @dbus.service.method(dbus_interface=PGlobs.dbus_bus_basename,
+                                                            out_signature="s")
+    def get_database_credentials(self):
+        return json.dumps(self.topleftpane.prefs_controls.credentials())
+
+    @dbus.service.method(dbus_interface=PGlobs.dbus_bus_basename,
                                                         in_signature="sssssb")
     def set_track_metadata(self, artist, title, album, songname, filename, log):
         args = artist, title, album, songname, filename

@@ -1,5 +1,7 @@
 * Changes in version 0.8.15 *
 
+Song title database credentials now exportable with DBus.
+
 'Last Played' column added to song title database viewer.
 
 Fix for IRC metadata so that Stream Info metadata updates are tied to stream connection, not song title changes.
