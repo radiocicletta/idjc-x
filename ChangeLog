@@ -1,5 +1,7 @@
 * Changes in version 0.8.15 *
 
+'Last Played' column added to song title database viewer.
+
 Fix for IRC metadata so that Stream Info metadata updates are tied to stream connection, not song title changes.
 
 IDJC now reports server connect/disconnect to IRC in a formalised manner and in messages %U can be used for the source URI.

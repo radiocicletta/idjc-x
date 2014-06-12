@@ -561,9 +561,14 @@ class PageCommon(gtk.VBox):
         """Build a TreeViewColumn list from a table of data."""
 
         list_ = []
-        for label, data_index, data_function, mw, el in parameters:
-            renderer = gtk.CellRendererText()
-            renderer.props.ellipsize = el
+        for p in parameters:
+            try:
+                # Check if there is an extra parameter to set the renderer
+                label, data_index, data_function, mw, el, renderer = p
+            except:
+                label, data_index, data_function, mw, el = p
+                renderer = gtk.CellRendererText()
+                renderer.props.ellipsize = el
             column = gtk.TreeViewColumn(label, renderer)
             if mw != -1:
                 column.set_resizable(True)
@@ -671,17 +676,58 @@ class ViewerCommon(PageCommon):
             renderer.set_property("text", "%dk" % (bitrate // 1000))
         renderer.set_property("xalign", 1.0)
 
-    @staticmethod
-    def _cell_show_unknown(column, renderer, model, iter, cell):
-        text = model.get_value(iter, cell) or _('<unknown>')
-        renderer.props.text = text
+    def _query_cook_common(self, query):
+        if self._db_type == AMPACHE:
+            query = query.replace("__played_by_me__", "'1' as played_by_me")
+        else:
+            query = query.replace("__played_by_me__", """IF(ISNULL(agent), NULL,
+                        IF(STRCMP(LEFT(agent,5), "IDJC:"), 2,
+                        IF(STRCMP(agent, "IDJC:1"), 0, 1))) as played_by_me""")
+        return query.replace("__catalogs__", self.catalogs.sql())
 
     @staticmethod
-    def _cell_show_nested(column, renderer, model, iter, cell):
-        text = model.get_value(iter, cell) or _('<unknown>')
-        col = "red" if model.iter_depth(iter) == 0 else "black"
+    def _cell_show_unknown(column, renderer, model, iter, data):
+        text, max_lastplay_date, played_by, played, played_by_me = model.get(iter, *data)
+        if text is None: text = _('<unknown>')
+        weight = pango.WEIGHT_NORMAL
+        if not played:
+            col = 'black'
+        else:
+            value, percent, weight = ViewerCommon._get_played_percent(max_lastplay_date)
+            col = ViewerCommon._set_color(played_by_me, percent)
         renderer.props.text = text
         renderer.props.foreground = col
+        renderer.props.weight = weight
+
+    @staticmethod
+    def _cell_show_nested(column, renderer, model, iter, data):
+        text, max_lastplay_date, played_by, played, played_by_me = model.get(iter, *data)
+        if text is None: text = _('<unknown>')
+        col = "black"
+        weight = pango.WEIGHT_NORMAL
+        if model.iter_depth(iter) == 0:
+            col = "red"
+        elif played:
+            value, percent, weight = ViewerCommon._get_played_percent(max_lastplay_date)
+            col = ViewerCommon._set_color(played_by_me, percent)
+        renderer.props.text = text
+        renderer.props.foreground = col
+        renderer.props.weight = weight
+
+    @staticmethod
+    def _cell_progress(column, renderer, model, iter, data):
+        max_lastplay_date, played_by, played = model.get(iter, *data)
+        if not played:
+            text = _("Not Played")
+            value = 0
+            renderer.props.visible = False
+        else:
+            value, percent, weight = ViewerCommon._get_played_percent(max_lastplay_date)
+            text = ViewerCommon._format_lastplay_date(max_lastplay_date)
+            text += "(" + (played_by or _('<unknown>')) + ")"
+            renderer.props.visible = True
+        renderer.props.text = text
+        renderer.props.value = value
 
     @staticmethod
     def _cell_pathname(column, renderer, model, iter, data, partition, transform):
@@ -706,9 +752,7 @@ class ViewerCommon(PageCommon):
     @staticmethod
     def _cell_secs_to_h_m_s(column, renderer, model, iter, cell):
         v_in = model.get_value(iter, cell)
-        m, s = divmod(v_in, 60)
-        h, m = divmod(m, 60)
-        d, h = divmod(h, 24)
+        d, h, m, s = ViewerCommon._secs_to_h_m_s(v_in)
         if d:
             v_out = "%dd:%02d:%02d" % (d, h, m)
         else:
@@ -728,6 +772,49 @@ class ViewerCommon(PageCommon):
         else:
             renderer.set_property("text", "")
 
+    @staticmethod
+    def _secs_to_h_m_s(value):
+        m, s = divmod(value, 60)
+        h, m = divmod(m, 60)
+        d, h = divmod(h, 24)
+        return d, h, m, s
+
+    @staticmethod
+    def _format_lastplay_date(value):
+        if value is None:
+            return _("<unknown>") + " "
+        difftime = time.time() - int(value)
+        d, h, m, s = ViewerCommon._secs_to_h_m_s(difftime)
+        return "%dd %dh %dm ago " % (d, h, m)
+
+    @staticmethod
+    def _get_played_percent(value):
+        if value is None:
+            return 0, 0.0, pango.WEIGHT_NORMAL + 50
+        now = time.time()
+        max_days_ago = (30 * 24 * 60 * 60) # 30 days. This should be adjustable
+        diff = now - int(value)
+        if diff > max_days_ago:
+            value = 0
+            percent = 0.35
+            weight = pango.WEIGHT_NORMAL + 100
+        else:
+            percent = 1.0 - (float(diff) / float(max_days_ago))
+            value = 100 * percent
+            # Refactor percent used for colors to be .4 to 1.0, as anything
+            # below about .35 starts to look to much like black.
+            percent = (percent * .6) + .4
+            # Get a weight from 500 to 900
+            weight = ((percent * .4) * 1000) + pango.WEIGHT_NORMAL + 100
+        return value, percent, weight
+
+    @staticmethod
+    def _set_color(text, percent=1.0):
+        return (gtk.gdk.color_from_hsv(0.0, 1.0, percent),
+                gtk.gdk.color_from_hsv(0.6666, 1.0, percent),
+                gtk.gdk.color_from_hsv(0.3333, 1.0, percent))[int(text)]
+
+
 class ExpandAllButton(gtk.Button):
     def __init__(self, expanded, tooltip=None):
         expander = gtk.Expander()
@@ -742,10 +829,14 @@ class ExpandAllButton(gtk.Button):
 class TreePage(ViewerCommon):
     """Browsable UI with tree structure."""
 
-    # *depth*, *treecol*, album, album_prefix, year, disk, album_id,
-    # tracknumber, title, artist, artist_prefix, pathname, bitrate, length, catalog_id
+    # *depth*(0), *treecol*(1), album(2), album_prefix(3), year(4), disk(5),
+    # album_id(6), tracknumber(7), title(8), artist(9), artist_prefix(10),
+    # pathname(11), bitrate(12), length(13), catalog_id(14), max_date_played(15),
+    # played_by(16), played(17), played_by_me(18)
     # The order chosen negates the need for a custom sort comparison function.
-    DATA_SIGNATURE = int, str, str, str, int, int, int, int, str, str, str, str, int, int, int
+    DATA_SIGNATURE = int, str, str, str, int,\
+                     int, int, int, str, str, str, str,\
+                     int, int, int, str, str, int, str
     BLANK_ROW = tuple(x() for x in DATA_SIGNATURE[2:])
 
     def __init__(self, notebook, catalogs):
@@ -781,7 +872,7 @@ class TreePage(ViewerCommon):
         tree_collapse.connect_object("clicked", gtk.TreeView.collapse_all,
                                                                 self.tree_view)
         self.tree_cols = self._make_tv_columns(self.tree_view, (
-                ("", 1, self._cell_show_nested, 180, pango.ELLIPSIZE_END),
+                ("", (1, 15, 16, 17, 18), self._cell_show_nested, 180, pango.ELLIPSIZE_END),
                 # TC: Track artist.
                 (_('Artist'), (10, 9), self._data_merge, 100, pango.ELLIPSIZE_END),
                 # TC: The disk number of the album track.
@@ -790,6 +881,7 @@ class TreePage(ViewerCommon):
                 (_('Track'), 7, self._cell_ralign, -1, pango.ELLIPSIZE_NONE),
                 # TC: Track playback time.
                 (_('Duration'), 13, self._cond_cell_secs_to_h_m_s, -1, pango.ELLIPSIZE_NONE),
+                (_('Last Played'), (15, 16, 17), self._cell_progress, -1, None, gtk.CellRendererProgress()),
                 (_('Bitrate'), 12, self._cell_k, -1, pango.ELLIPSIZE_NONE),
                 (_('Filename'), (14, 11), self._cell_filename, 100, pango.ELLIPSIZE_END),
                 # TC: Directory path to a file.
@@ -874,7 +966,11 @@ class TreePage(ViewerCommon):
                     "" as art_prefix,
                     CONCAT_WS('/',path,filename) as file,
                     bitrate, length,
-                    0 as catalog_id
+                    0 as catalog_id,
+                    0 as max_date_played,
+                    "" as played_by,
+                    0 as played,
+                    0 as played_by_me
                     FROM tracks
                     LEFT JOIN albums on tracks.album = albums.name
                      AND tracks.artist = albums.artist
@@ -893,14 +989,23 @@ class TreePage(ViewerCommon):
                     file,
                     bitrate,
                     time as length,
-                    catalog.id as catalog_id
+                    catalog.id as catalog_id,
+                    MAX(date) as max_date_played,
+                    user.fullname as played_by,
+                    played,
+                    __played_by_me__
                     FROM song
                     LEFT JOIN artist ON song.artist = artist.id
                     LEFT JOIN album ON song.album = album.id
+                    LEFT JOIN object_count ON song.id = object_count.object_id
+                                AND object_count.object_type = "song"
+                    LEFT JOIN user ON user.id = object_count.user
                     LEFT JOIN catalog ON song.catalog = catalog.id
                     WHERE __catalogs__
+                    GROUP BY song.id
                     ORDER BY artist.name, album, disk, tracknumber, title"""
-            query = query.replace("__catalogs__", self.catalogs.sql())
+                    
+            query = self._query_cook_common(query)
         else:
             print "unsupported database type:", self._db_type
             return
@@ -1019,7 +1124,7 @@ class TreePage(ViewerCommon):
                 iter_l = letter[art_letter] = r_append(None, (-1, art_letter) + BLANK_ROW)
             if album == row[0] and artist == row[7] and \
                                 alb_prefix == row[1] and art_prefix == row[8]:
-                r_append(iter_2, (0, row[6]) + row)
+                iter_3 = r_append(iter_2, (0, row[6]) + row)
                 continue
             else:
                 if artist != row[7] or art_prefix != row[8]:
@@ -1036,7 +1141,7 @@ class TreePage(ViewerCommon):
                     else:
                         albumtext = album
                     iter_2 = r_append(iter_1, (-3, albumtext) + BLANK_ROW)
-                r_append(iter_2, (0, row[6]) + row)
+                iter_3 = r_append(iter_2, (0, row[6]) + row)
                 
         done += do_max
         self.progress_bar.set_fraction(sorted((0.0, done / total, 1.0))[1])
@@ -1074,7 +1179,7 @@ class TreePage(ViewerCommon):
             else:
                 iter_l = letter[alb_letter] = append(None, (-1, alb_letter) + BLANK_ROW)
             if album_id == row[4]:
-                append(iter_2, (0, row[6]) + row)
+                iter_3 = append(iter_2, (0, row[6]) + row)
                 continue
             else:
                 if album != row[0] or year != row[2] or alb_prefix != row[1]:
@@ -1094,7 +1199,7 @@ class TreePage(ViewerCommon):
                     else:
                         iter_2 = append(iter_1, (-3, _('Disk %d') % disk)
                                                                 + BLANK_ROW)
-                append(iter_2, (0, row[6]) + row)
+                iter_3 = append(iter_2, (0, row[6]) + row)
 
         done += do_max
         self.progress_bar.set_fraction(min(done / total, 1.0))
@@ -1149,17 +1254,21 @@ class FlatPage(ViewerCommon):
                                                                     catalogs)
  
         # Row data specification:
-        # index, ARTIST, ALBUM, TRACKNUM, TITLE, DURATION, BITRATE,
-        # pathname, disk, catalog_id
+        # index(0), ARTIST(1), ALBUM(2), TRACKNUM(3), TITLE(4), DURATION(5), BITRATE(6),
+        # pathname(7), disk(8), catalog_id(9), max_date_played(10),
+        # played_by(11), played(12), played_by_me(13)
         self.list_store = gtk.ListStore(
-                            int, str, str, int, str, int, int, str, int, int)
+                            int, str, str, int, str, int, int,
+                            str, int, int, str,
+                            str, int, str)
         self.tree_cols = self._make_tv_columns(self.tree_view, (
             ("(0)", 0, self._cell_ralign, -1, pango.ELLIPSIZE_NONE),
-            (_('Artist'), 1, self._cell_show_unknown, 100, pango.ELLIPSIZE_END),
-            (_('Album'), 2, self._cell_show_unknown, 100, pango.ELLIPSIZE_END),
+            (_('Artist'), (1, 10, 11, 12, 13), self._cell_show_unknown, 100, pango.ELLIPSIZE_END),
+            (_('Album'), (2, 10, 11, 12, 13), self._cell_show_unknown, 100, pango.ELLIPSIZE_END),
+            (_('Title'), (4, 10, 11, 12, 13), self._cell_show_unknown, 100, pango.ELLIPSIZE_END),
+            (_('Last Played'), (10, 11, 12), self._cell_progress, -1, None, gtk.CellRendererProgress()),
             (_('Disk'), 8, self._cell_ralign, -1, pango.ELLIPSIZE_NONE),
             (_('Track'), 3, self._cell_ralign, -1, pango.ELLIPSIZE_NONE),
-            (_('Title'), 4, self._cell_show_unknown, 100, pango.ELLIPSIZE_END),
             (_('Duration'), 5, self._cell_secs_to_h_m_s, -1, pango.ELLIPSIZE_NONE),
             (_('Bitrate'), 6, self._cell_k, -1, pango.ELLIPSIZE_NONE),
             (_('Filename'), (9, 7), self._cell_filename, 100, pango.ELLIPSIZE_END),
@@ -1192,7 +1301,11 @@ class FlatPage(ViewerCommon):
             {FUZZY: (CLEAN, """
                     SELECT artist,album,tracknumber,title,length,bitrate,
                     CONCAT_WS('/',path,filename) as file,
-                    0 as disk, 0 as catalog_id
+                    0 as disk, 0 as catalog_id,
+                    0 as max_date_played,
+                    "" as played_by,
+                    0 as played,
+                    0 as played_by_me
                     FROM tracks
                     WHERE MATCH (artist,album,title,filename) AGAINST (%s)
                     """),
@@ -1200,7 +1313,11 @@ class FlatPage(ViewerCommon):
             WHERE: (DIRTY, """
                     SELECT artist,album,tracknumber,title,length,bitrate,
                     CONCAT_WS('/',path,filename) as file,
-                    0 as disk, 0 as catalog_id
+                    0 as disk, 0 as catalog_id,
+                    0 as max_date_played,
+                    "" as played_by,
+                    0 as played,
+                    0 as played_by_me
                     FROM tracks WHERE (%s)
                     ORDER BY artist,album,path,tracknumber,title
                     """)},
@@ -1213,15 +1330,23 @@ class FlatPage(ViewerCommon):
                     track as tracknumber, title, time as length,bitrate,
                     file,
                     album.disk as disk,
-                    catalog.id as catalog_id
+                    catalog.id as catalog_id,
+                    MAX(date) as max_date_played,
+                    user.fullname as played_by,
+                    played,
+                    __played_by_me__
                     FROM song
                     LEFT JOIN artist ON artist.id = song.artist
                     LEFT JOIN album ON album.id = song.album
+                    LEFT JOIN object_count ON song.id = object_count.object_id
+                                AND object_count.object_type = "song"
+                    LEFT JOIN user ON user.id = object_count.user
                     LEFT JOIN catalog ON song.catalog = catalog.id
                     WHERE
                          (MATCH(album.name) against(%s)
                           OR MATCH(artist.name) against(%s)
                           OR MATCH(title) against(%s)) AND __catalogs__
+                    GROUP BY song.id
                     """),
 
             WHERE: (DIRTY, """
@@ -1231,12 +1356,21 @@ class FlatPage(ViewerCommon):
                     track as tracknumber, title,time as length, bitrate,
                     file,
                     album.disk as disk,
-                    catalog.id as catalog_id
+                    catalog.id as catalog_id,
+                    MAX(date) as max_date_played,
+                    user.fullname as played_by,
+                    played,
+                    __played_by_me__
                     FROM song
                     LEFT JOIN album on album.id = song.album
                     LEFT JOIN artist on artist.id = song.artist
+                    LEFT JOIN object_count ON song.id = object_count.object_id
+                                AND object_count.object_type = "song"
+                    LEFT JOIN user ON user.id = object_count.user
                     LEFT JOIN catalog ON song.catalog = catalog.id
-                    WHERE (%s) AND __catalogs__ ORDER BY
+                    WHERE (%s) AND __catalogs__
+                    GROUP BY song.id
+                    ORDER BY
                     artist.name, album.name, file, album.disk, track, title
                     """)}
     }
@@ -1265,8 +1399,7 @@ class FlatPage(ViewerCommon):
                 self.list_store.clear()
                 return
 
-        query = query.replace("__catalogs__", self.catalogs.sql())
-
+        query = self._query_cook_common(query)
         qty = query.count("(%s)")
         if access_mode == CLEAN:
             query = (query, (user_text,) * qty)
@@ -1789,6 +1922,7 @@ class MediaPane(gtk.VBox):
 
     def _stage_10(self, acc, request, cursor, notify, rows):
         if self.schema_test("path", cursor.fetchall()):
+            notify('Found Ampache pre 3.7 schema')
             self._hand_over(AMPACHE)
         else:
             request(("DESCRIBE catalog_local",), self._stage_11, self._fail_2)
