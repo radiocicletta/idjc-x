@@ -1574,11 +1574,7 @@ class CatalogsInterface(gobject.GObject):
         return self._stripped_copy(self._dict) != self._stripped_copy(other)
 
     def lpscale(self, catalog):
-        print self._dict, catalog
-        try:
-            return self._dict[catalog]["lpscale"]
-        except KeyError:
-            return 0
+        return self._dict[catalog]["lpscale"]
 
     @staticmethod
     def _stripped_copy(_dict):
