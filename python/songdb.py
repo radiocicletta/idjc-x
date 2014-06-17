@@ -55,6 +55,7 @@ FUZZY, CLEAN, WHERE, DIRTY = xrange(4)
 
 t = gettext.translation(FGlobs.package_name, FGlobs.localedir, fallback=True)
 _ = t.gettext
+N_ = lambda t: t
 
 
 def dirname(pathname):
@@ -699,44 +700,41 @@ class ViewerCommon(PageCommon):
                         IF(STRCMP(agent, "IDJC:1"), 0, 1))) as played_by_me""")
         return query.replace("__catalogs__", self.catalogs.sql())
 
-    @staticmethod
-    def _cell_show_unknown(column, renderer, model, iter, data):
-        text, max_lastplay_date, played_by, played, played_by_me = model.get(iter, *data)
+    def _cell_show_unknown(self, column, renderer, model, iter, data):
+        text, max_lastplay_date, played_by, played, played_by_me, cat = model.get(iter, *data)
         if text is None: text = _('<unknown>')
         weight = pango.WEIGHT_NORMAL
         if not played:
             col = 'black'
         else:
-            value, percent, weight = ViewerCommon._get_played_percent(max_lastplay_date)
+            value, percent, weight = self._get_played_percent(cat, max_lastplay_date)
             col = ViewerCommon._set_color(played_by_me, percent)
         renderer.props.text = text
         renderer.props.foreground = col
         renderer.props.weight = weight
 
-    @staticmethod
-    def _cell_show_nested(column, renderer, model, iter, data):
-        text, max_lastplay_date, played_by, played, played_by_me = model.get(iter, *data)
+    def _cell_show_nested(self, column, renderer, model, iter, data):
+        text, max_lastplay_date, played_by, played, played_by_me, cat = model.get(iter, *data)
         if text is None: text = _('<unknown>')
         col = "black"
         weight = pango.WEIGHT_NORMAL
         if model.iter_depth(iter) == 0:
             col = "red"
         elif played:
-            value, percent, weight = ViewerCommon._get_played_percent(max_lastplay_date)
+            value, percent, weight = self._get_played_percent(cat, max_lastplay_date)
             col = ViewerCommon._set_color(played_by_me, percent)
         renderer.props.text = text
         renderer.props.foreground = col
         renderer.props.weight = weight
 
-    @staticmethod
-    def _cell_progress(column, renderer, model, iter, data):
-        max_lastplay_date, played_by, played = model.get(iter, *data)
+    def _cell_progress(self, column, renderer, model, iter, data):
+        max_lastplay_date, played_by, played, cat= model.get(iter, *data)
         if not played:
             text = _("Not Played")
             value = 0
             renderer.props.visible = False
         else:
-            value, percent, weight = ViewerCommon._get_played_percent(max_lastplay_date)
+            value, percent, weight = self._get_played_percent(cat, max_lastplay_date)
             text = ViewerCommon._format_lastplay_date(max_lastplay_date)
             text += "(" + (played_by or _('<unknown>')) + ")"
             renderer.props.visible = True
@@ -801,12 +799,11 @@ class ViewerCommon(PageCommon):
         d, h, m, s = ViewerCommon._secs_to_h_m_s(difftime)
         return "%dd %dh %dm ago " % (d, h, m)
 
-    @staticmethod
-    def _get_played_percent(value):
+    def _get_played_percent(self, catalog, value):
         if value is None:
             return 0, 0.0, pango.WEIGHT_NORMAL + 50
         now = time.time()
-        max_days_ago = (30 * 24 * 60 * 60) # 30 days. This should be adjustable
+        max_days_ago = self.catalogs.lpscale(catalog)
         diff = now - int(value)
         if diff > max_days_ago:
             value = 0
@@ -886,7 +883,7 @@ class TreePage(ViewerCommon):
         tree_collapse.connect_object("clicked", gtk.TreeView.collapse_all,
                                                                 self.tree_view)
         self.tree_cols = self._make_tv_columns(self.tree_view, (
-                ("", (1, 15, 16, 17, 18), self._cell_show_nested, 180, pango.ELLIPSIZE_END),
+                ("", (1, 15, 16, 17, 18, 14), self._cell_show_nested, 180, pango.ELLIPSIZE_END),
                 # TC: Track artist.
                 (_('Artist'), (10, 9), self._data_merge, 100, pango.ELLIPSIZE_END),
                 # TC: The disk number of the album track.
@@ -895,7 +892,7 @@ class TreePage(ViewerCommon):
                 (_('Track'), 7, self._cell_ralign, -1, pango.ELLIPSIZE_NONE),
                 # TC: Track playback time.
                 (_('Duration'), 13, self._cond_cell_secs_to_h_m_s, -1, pango.ELLIPSIZE_NONE),
-                (_('Last Played'), (15, 16, 17), self._cell_progress, -1, None, gtk.CellRendererProgress()),
+                (_('Last Played'), (15, 16, 17, 14), self._cell_progress, -1, None, gtk.CellRendererProgress()),
                 (_('Bitrate'), 12, self._cell_k, -1, pango.ELLIPSIZE_NONE),
                 (_('Filename'), (14, 11), self._cell_filename, 100, pango.ELLIPSIZE_END),
                 # TC: Directory path to a file.
@@ -1277,10 +1274,10 @@ class FlatPage(ViewerCommon):
                             str, int, str)
         self.tree_cols = self._make_tv_columns(self.tree_view, (
             ("(0)", 0, self._cell_ralign, -1, pango.ELLIPSIZE_NONE),
-            (_('Artist'), (1, 10, 11, 12, 13), self._cell_show_unknown, 100, pango.ELLIPSIZE_END),
-            (_('Album'), (2, 10, 11, 12, 13), self._cell_show_unknown, 100, pango.ELLIPSIZE_END),
-            (_('Title'), (4, 10, 11, 12, 13), self._cell_show_unknown, 100, pango.ELLIPSIZE_END),
-            (_('Last Played'), (10, 11, 12), self._cell_progress, -1, None, gtk.CellRendererProgress()),
+            (_('Artist'), (1, 10, 11, 12, 13, 9), self._cell_show_unknown, 100, pango.ELLIPSIZE_END),
+            (_('Album'), (2, 10, 11, 12, 13, 9), self._cell_show_unknown, 100, pango.ELLIPSIZE_END),
+            (_('Title'), (4, 10, 11, 12, 13, 9), self._cell_show_unknown, 100, pango.ELLIPSIZE_END),
+            (_('Last Played'), (10, 11, 12, 9), self._cell_progress, -1, None, gtk.CellRendererProgress()),
             (_('Disk'), 8, self._cell_ralign, -1, pango.ELLIPSIZE_NONE),
             (_('Track'), 3, self._cell_ralign, -1, pango.ELLIPSIZE_NONE),
             (_('Duration'), 5, self._cell_secs_to_h_m_s, -1, pango.ELLIPSIZE_NONE),
@@ -1501,6 +1498,8 @@ class FlatPage(ViewerCommon):
 
 class CatalogsInterface(gobject.GObject):
     __gsignals__ = { "changed" : (gobject.SIGNAL_RUN_LAST, None, ()) }
+    time_unit_table = {N_('Minutes'): 60, N_('Hours'): 3600,
+                       N_('Days'): 86400, N_('Weeks'): 604800}
     
     def __init__(self):
         gobject.GObject.__init__(self)
@@ -1521,13 +1520,18 @@ class CatalogsInterface(gobject.GObject):
         self._dict.clear()
         for row in liststore:
             if row[0]:
-                self._dict[row[3]] = {
+                self._dict[row[5]] = {
                     "peel" : row[1], "prepend" : row[2],
-                    "name" : row[4], "path" : row[5], "last_update" : row[6],
-                    "last_clean" : row[7], "last_add" : row[8]
+                    "lpscale" : self._lpscale_calc(row[3], row[4]),
+                    "name" : row[6], "path" : row[7], "last_update" : row[8],
+                    "last_clean" : row[9], "last_add" : row[10]
                 }
                 
         self.emit("changed")
+
+    @classmethod
+    def _lpscale_calc(cls, qty, unit):
+        return qty * cls.time_unit_table[unit]
 
     def transform_path(self, catalog, path):
         if len(path) < 4:
@@ -1569,13 +1573,20 @@ class CatalogsInterface(gobject.GObject):
 
         return self._stripped_copy(self._dict) != self._stripped_copy(other)
 
+    def lpscale(self, catalog):
+        print self._dict, catalog
+        try:
+            return self._dict[catalog]["lpscale"]
+        except KeyError:
+            return 0
+
     @staticmethod
     def _stripped_copy(_dict):
         copy = {}
         for key1, val1 in _dict.iteritems():
             copy[key1] = {}
             for key2, val2 in val1.iteritems():
-                if key2 not in ("peel", "prepend"):
+                if key2 not in ("peel", "prepend", "lpscale"):
                     copy[key1][key2] = val2
 
         return copy
@@ -1587,12 +1598,14 @@ class CatalogsPage(PageCommon):
         self.refresh = gtk.Button(stock=gtk.STOCK_REFRESH)
         self.refresh.connect("clicked", self._on_refresh)
         PageCommon.__init__(self, notebook, _("Catalogs"), self.refresh)
-        # active, peel, prepend, id, name, path, last_update, last_clean, last_add
+        
+        # active, peel, prepend, lpscale_qty, lpscale_unit, id, name, path,
+        # last_update, last_clean, last_add
         self.list_store = gtk.ListStore(
-                        int, int, str, int, str, str, int, int, int)
+                        int, int, str, int, str, int, str, str, int, int, int)
         self.tree_cols = self._make_tv_columns(self.tree_view, (
-            (_('Name'), 4, None, 65, pango.ELLIPSIZE_END),
-            (_('Catalog Path'), 5, None, 100, pango.ELLIPSIZE_END),
+            (_('Name'), 6, None, 65, pango.ELLIPSIZE_END),
+            (_('Catalog Path'), 7, None, 100, pango.ELLIPSIZE_END),
             (_('Prepend Path'), 2, None, -1, pango.ELLIPSIZE_NONE)
             ))
 
@@ -1601,21 +1614,46 @@ class CatalogsPage(PageCommon):
         rend1.connect("toggled", self._on_toggle)
         self.tree_view.insert_column_with_attributes(0, "", rend1, active=0)
 
+        col = gtk.TreeViewColumn(_('Last Played Scale'))
+
         adj = gtk.Adjustment(0.0, 0.0, 999.0, 1.0, 1.0)
         rend2 = gtk.CellRendererSpin()
         rend2.props.editable = True
         rend2.props.adjustment = adj
         rend2.props.xalign = 1.0
-        rend2.connect("editing-started", self._on_peel_editing_started)
-        rend2.connect("edited", self._on_peel_edited)
-        col = self.tree_view.insert_column_with_attributes(3, _("Path Peel"),
-                                                                rend2, text=1)
+        rend2.connect("editing-started", self._on_spin_editing_started, 3)
+        rend2.connect("edited", self._on_spin_edited, 3)
+        col.pack_start(rend2, False)
+        col.add_attribute(rend2, "text", 3)
 
-        rend3 = self.tree_view.get_column(4).get_cell_renderers()[0]
+        lp_unit_scale_store = gtk.ListStore(str)
+        for each in (N_('Minutes'), N_('Hours'), N_('Days'), N_('Weeks')):
+            lp_unit_scale_store.append((each,))
+        lp_unit_scale_cr = gtk.CellRendererCombo()
+        lp_unit_scale_cr.props.has_entry = False
+        lp_unit_scale_cr.props.editable = True
+        lp_unit_scale_cr.props.model = lp_unit_scale_store
+        lp_unit_scale_cr.props.text_column = 0
+        lp_unit_scale_cr.connect("changed", self._on_lp_unit_changed)
+        col.pack_start(lp_unit_scale_cr, False)
+        col.set_cell_data_func(lp_unit_scale_cr, self._translate_scale)
+        self.tree_view.insert_column(col, 3)
+
+        adj = gtk.Adjustment(0.0, 0.0, 999.0, 1.0, 1.0)
+        rend3 = gtk.CellRendererSpin()
         rend3.props.editable = True
-        rend3.connect("edited", self._on_prepend_edited)
+        rend3.props.adjustment = adj
+        rend3.props.xalign = 1.0
+        rend3.connect("editing-started", self._on_spin_editing_started, 1)
+        rend3.connect("edited", self._on_spin_edited, 1)
+        col = self.tree_view.insert_column_with_attributes(4, _("Path Peel"),
+                                                                rend3, text=1)
 
-        for rend in (rend2, rend3):
+        rend4 = self.tree_view.get_column(5).get_cell_renderers()[0]
+        rend4.props.editable = True
+        rend4.connect("edited", self._on_prepend_edited)
+
+        for rend in (rend3, rend4):
             rend.connect("editing-started", self._on_editing_started)
             rend.connect("editing-canceled", self._on_editing_cancelled)
 
@@ -1634,13 +1672,16 @@ class CatalogsPage(PageCommon):
         PageCommon.deactivate(self, *args, **kwargs)
         self.interface.clear()
 
+    def _translate_scale(self, col, cell, model, iter):
+        cell.props.text = _(model.get_value(iter, 4))
+
     def _get_active_catalogs(self):
         return tuple(x[3] for x in self.list_store if x[0])
         
     def _store_user_data(self):
         dict_ = {}
         for row in self.list_store:
-            dict_[str(row[3])] = (row[0], row[1], row[2])
+            dict_[str(row[5])] = (row[0], row[1], row[2], row[3], row[4])
         self._usesettings["catalog_data"] = dict_
         
     def _restore_user_data(self):
@@ -1648,13 +1689,16 @@ class CatalogsPage(PageCommon):
             dict_ = self._usesettings["catalog_data"]
         except:
             return
-            
+
         for row in self.list_store:
             try:
-                row[0], row[1], row[2] = dict_[str(row[3])]
+                row[0], row[1], row[2], row[3], row[4] = dict_[str(row[5])]
             except KeyError:
                 pass
-        
+            except ValueError:
+                row[0], row[1], row[2] = dict_[str(row[5])]
+                row[3], row[4] = 4, N_('Weeks') 
+
     def _on_toggle(self, renderer, path):
         iter = self.list_store.get_iter(path)
         if iter is not None:
@@ -1681,7 +1725,7 @@ class CatalogsPage(PageCommon):
         elif self._db_type == PROKYON_3:
             self.list_store.clear()
             self.tree_view.set_model(self.list_store)
-            self.list_store.append((1, 0, "", 0, _('N/A'), _('N/A'), 0, 0, 0))
+            self.list_store.append((1, 0, "", 0, _('N/A'), 0, _('N/A'), _('N/A'), 0, 0, 0))
             self._restore_user_data()
             self.interface.update(self.list_store)
 
@@ -1691,11 +1735,11 @@ class CatalogsPage(PageCommon):
     def _on_editing_cancelled(self, rend):
         self._block_key_bindings = False
 
-    def _on_peel_editing_started(self, rend, editable, path):
-        val = self.list_store[path][1]
+    def _on_spin_editing_started(self, rend, editable, path, index):
+        val = self.list_store[path][index]
         rend.props.adjustment.props.value = val
 
-    def _on_peel_edited(self, rend, path, new_data):
+    def _on_spin_edited(self, rend, path, new_data, index):
         self._block_key_bindings = False
         row = self.list_store[path]
         try:
@@ -1703,8 +1747,8 @@ class CatalogsPage(PageCommon):
         except ValueError:
             pass
         else:
-            if val >= 0 and val != row[1]:
-                row[1] = min(val, int(rend.props.adjustment.props.upper))
+            if val >= 0 and val != row[index]:
+                row[index] = min(val, int(rend.props.adjustment.props.upper))
                 self._store_user_data()
                 self.interface.update(self.list_store)
 
@@ -1716,6 +1760,12 @@ class CatalogsPage(PageCommon):
             row[2] = new_data
             self._store_user_data()
             self.interface.update(self.list_store)
+
+    def _on_lp_unit_changed(self, combo, path_string, new_iter):
+        text = combo.props.model.get_value(new_iter, 0)
+        self.list_store[path_string][4] = text
+        self._store_user_data()
+        self.interface.update(self.list_store)
 
     ###########################################################################
 
@@ -1741,7 +1791,7 @@ class CatalogsPage(PageCommon):
                 if db_row is None:
                     break
                 
-                self.list_store.append((0, 0, "") + db_row)
+                self.list_store.append((0, 0, "", 4, N_('Weeks')) + db_row)
 
         self._restore_user_data()
         self.tree_view.set_model(self.list_store)
