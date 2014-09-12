@@ -23,23 +23,23 @@ PROFILE=un profile existant à dupliquer.
 .PP
 .BR "\-i, \-\-icon\-pathname" =ICONE
 .RS
-ICON=le chemin vers un fichier image ex.: un fichier .png
+ICON=le chemin vers un fichier image ex. : un fichier .png
 .RE
 .PP
 .BR "\-n, \-\-nickname" =PSEUDO
 .RS
-PSEUDO=un nom alternatif pour le profile. Contrairement au profile n'importe quel caractère unicode est autorisé.
+PSEUDO=un nom alternatif pour le profile. Contrairement au profile, n'importe quel caractère unicode est autorisé.
 .RE
 .PP
 .BR "\-d, \-\-description" =DESC
 .RS
-DESC=un texte de description. Un texte pour votre profile décrivant ce pourquoi il est destiné.
+DESC=un texte de description. Un texte pour décrivant votre profile, ce à quoi il est destiné.
 .RE
 .PP
 .SS Obligatoire
 .B nom_de_profile
 .RS
-Le nom du nouveau profile. Limité aux lettres et chiffres du jeu ASCII et '_' le sous-ligné.
+Le nom du nouveau profile. Limité aux lettres et chiffres du jeu ASCII et «_» le sous-ligné.
 .RE
 .SH RAPPORTER DES BOGUESS
 .SH VOIR AUSSI

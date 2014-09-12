@@ -5,7 +5,7 @@ idjc\-auto \- Rendre un profile automatique
 .P
 idjc auto [\-h] nom_de_profile
 .SH DESCRIPTION
-Lorsqu'un profile est rendu automatique, la fenêtre du Gestionnaire de Profiles n'apparait pas au démarrage,  au lieu de ça, le profile est chargé. Un seul et unique profile peut être défini comme automatique.
+Lorsqu'un profile est rendu automatique, la fenêtre du Gestionnaire de Profiles n'apparait pas au démarrage, au lieu de ça, le profile est chargé. Un seul et unique profile peut être défini comme étant automatique.
 .SS Options
 .B \-h, \-\-help
 .RS

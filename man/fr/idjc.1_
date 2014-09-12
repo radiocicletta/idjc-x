@@ -5,9 +5,9 @@ idjc \- Devenez dj sur internet
 idjc [\-h] [\-v] {run,new,rm,auto,noauto,ls}
 .SH DESCRIPTION
 .B idjc
-est une puissante et simple application pour les individus intéressés dans le streaming shows radio en direct sur Internet par des serveurs Shoutcast ou Icecast ou par la création dde podcasts.
+est application une puissante et simple pour les personnes intéressées par le streaming de radio en direct sur Internet utilisant des serveurs Shoutcast et Icecast ou par la création de podcasts.
 
-Les fonctionalités incluent deux lecteurs média principaux avec crossfader, un lecteur de jingles, un traitement de signal microphone (limiter, noise gate, etc.), des anonces IRC, le démarrage/arret automatique du stream et la reconnection, le striming  simultané en mp3 et Ogg, jusqu'à 12 canaux d'entrées mono ou 6 stéréo, a DSP interface, une intégration VoIP, le support du contrôle par surfaces MIDI, et des vumètres de niveau audio.
+Les fonctionalités incluent deux lecteurs média principaux avec crossfader, un lecteur de jingles, un traitement de signal microphone (limiteur, noise gate, etc.), des anonces IRC, le démarrage/arret automatique du flux et la reconnection, le streaming simultané en mp3 et Ogg, jusqu'à 12 canaux d'entrées mono ou 6 stéréo, une interface DSP, l'intégration de la VoIP, le support du contrôle par surfaces MIDI et des vumètres de niveaux audio.
 
 Il utilise GTK+ pour son interface et JACK Audio Connection Kit pour faciliter l'inclusion d'applications tierces supportant JACK dans leur chaine audio.
 .SS Options
@@ -21,7 +21,7 @@ Affiche un message d'aide
 Affiche le numéro de version et quite.
 .RE
 .SS
-.BR Sous\-commandes " (chacunes possède sa propre page de manuel)"
+.BR Sous\-commandes " (chacune possède sa propre page de manuel)"
 .B run
 .RS
 Exécute l'application principale

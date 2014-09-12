@@ -5,7 +5,7 @@ idjc-noauto \- Pas de profile automatique
 .P
 idjc noauto [\-h]
 .SH DESCRIPTION
-Supprime le profile automatique lors du démarrage
+Supprime le profile automatique lors du démarrage de 
 .B idjc
 si aucun profile n'est choisi sur la ligne de commande, le Gestionnaire de Profiles apparaitra de façon à en choisir un manuellement.
 .SS Options

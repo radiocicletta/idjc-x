@@ -6,7 +6,6 @@ SUFFIXES = .1_ .1
 
 dist_noinst_DATA = $(SOURCES) $(COMMON)
 nodist_man_MANS = $(TARGETS)
-man1dir = ${mandir}/fr/man1
 
 $(TARGETS) : $(COMMON) Makefile.am
 

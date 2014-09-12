@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
-"POT-Creation-Date: 2014-02-17 19:31+0000\n"
+"POT-Creation-Date: 2014-09-12 10:30+0100\n"
 "PO-Revision-Date: 2013-11-07 16:47+0000\n"
 "Last-Translator: \n"
 "Language-Team: English <team@example.com>\n"
@@ -27,8 +27,8 @@ msgid ""
 "run command"
 msgstr ""
 "Afficher ce message d'aide et quitter -- plus d'aide est disponible pour "
-"chacune des sous-commandes, par exemple : « %(prog)s run --help » "
-"affichel'aide concernant la commande run"
+"chacune des sous-commandes, par exemple : « %(prog)s run --help » affiche "
+"l'aide concernant la commande run"
 
 #. TC: a command line option help string.
 #: python/prelims/__init__.py:108
@@ -130,7 +130,7 @@ msgstr "nom_du_serveur"
 
 #: python/prelims/__init__.py:166
 msgid "the named jack sound-server to connect with"
-msgstr "Nom du serveur Jack auqel se connecter"
+msgstr "Nom du serveur Jack auquel se connecter"
 
 #. TC: command line help placeholder.
 #: python/prelims/__init__.py:170
@@ -181,7 +181,7 @@ msgid ""
 "kick sources on servers -- note that this will be\n"
 "                done before any server connection attempts are made"
 msgstr ""
-"Balancer les soureces sur les serveurs -- notee que ceci sera fait\n"
+"Balancer les sources sur les serveurs -- notez que ceci sera fait\n"
 "                avant que toute tentative de connection ne soit effectuée"
 
 #: python/prelims/__init__.py:203
@@ -284,7 +284,7 @@ msgstr "le profil «%s» n'existe pas"
 #: python/prelims/__init__.py:479
 #, python-format
 msgid "profile %s is already running"
-msgstr "le profil %s est en cours d'utilisation"
+msgstr "le profil «%s» est en cours d'utilisation"
 
 #: python/prelims/__init__.py:492
 #, python-format
@@ -312,6 +312,7 @@ msgstr ""
 
 #. TC: text appears in the title bar when in session mode.
 #: python/prelims/__init__.py:590
+#, python-brace-format
 msgid "session={type}:{name}"
 msgstr "session={type}:{name}"
 
@@ -346,14 +347,17 @@ msgid "Profile %s is active."
 msgstr "Le profil %s est actif."
 
 #: python/prelims/__init__.py:791
+#, python-brace-format
 msgid "Cannot rename profile {0} to {1}, {1} currently exists."
 msgstr "Impossible de renommer le profil {0} en {1}, {1} existe déjà."
 
 #: python/prelims/__init__.py:795
+#, python-brace-format
 msgid "Error during attempt to rename {0} to {1}."
 msgstr "Erreur lors de la tentative de renommage de {0} en {1}."
 
 #: python/prelims/__init__.py:805
+#, python-brace-format
 msgid ""
 "<span weight='bold' size='12000'>Error while editing profile: {0}.</span>\n"
 "\n"
@@ -365,6 +369,7 @@ msgstr ""
 "{1}"
 
 #: python/prelims/__init__.py:824
+#, python-brace-format
 msgid "could not get a lock on profile {0}: {1}"
 msgstr "impossible d'obtenir le vérouillage du profil {0} : {1}"
 
@@ -434,7 +439,7 @@ msgstr "Le modèle de profil «%s» n'existe pas."
 #: python/prelims/__init__.py:933
 #, python-format
 msgid "could not write file %s"
-msgstr "impossible d'écrire le fichier %s"
+msgstr "impossible d'écrire le fichier «%s»"
 
 #: python/prelims/__init__.py:934
 #, python-format
@@ -475,7 +480,7 @@ msgstr "Modifier le profil %s"
 #: python/prelims/profiledialog.py:100
 #, python-format
 msgid "New profile based upon %s"
-msgstr "Nouveau profil basé sur %s"
+msgstr "Nouveau profil basé sur «%s»"
 
 #. TC: data entry dialog window title text.
 #: python/prelims/profiledialog.py:104
@@ -493,14 +498,14 @@ msgstr "Profil"
 
 #. TC: column heading. The profile nicknames.
 #. TC: IRC nickname data entry label.
-#: python/prelims/profiledialog.py:284 python/irc.py:446
+#: python/prelims/profiledialog.py:284 python/irc.py:451
 msgid "Nickname"
 msgstr "Pseudo"
 
 #. TC: column heading.
 #. TC: Station description.
-#: python/prelims/profiledialog.py:287 python/irc.py:90
-#: python/playergui.py:306 python/sourceclientgui.py:1640
+#: python/prelims/profiledialog.py:287 python/irc.py:95
+#: python/playergui.py:306 python/sourceclientgui.py:1696
 msgid "Description"
 msgstr "Description"
 
@@ -540,6 +545,7 @@ msgstr ""
 
 #. TC: The contents of <> and {} must not be changed.
 #: python/dialogs.py:198
+#, python-brace-format
 msgid ""
 "<span weight=\"bold\" size=\"12000\">The connection to the server in tab "
 "{servertab} has failed.</span>\n"
@@ -570,141 +576,152 @@ msgid "Released under the GNU General Public License V2.0+."
 msgstr "Distribué selon les termes de la Licence Publique Générale GNU, V2.0+"
 
 #. TC: IRC message subcategory, triggers on new track announcements.
-#: python/irc.py:78
+#: python/irc.py:81
 msgid "Track announce"
 msgstr "Annonce des pistes"
 
 #. TC: IRC message subcategory, triggered by a timer.
-#: python/irc.py:80
+#: python/irc.py:83
 msgid "Timer"
 msgstr "Timer"
 
 #. TC: IRC message subcategory, triggered once when the stream starts.
-#: python/irc.py:82
+#: python/irc.py:85
 msgid "On stream up"
 msgstr "En début de flux"
 
 #. TC: IRC message subcategory, triggered once at the stream's end.
-#: python/irc.py:84
+#: python/irc.py:87
 msgid "On stream down"
 msgstr "En fin de flux"
 
+#. TC: IRC message subcategory, triggered once at the stream's end.
+#: python/irc.py:89
+#, fuzzy
+msgid "Operations"
+msgstr "Autres options"
+
 #. TC: Track artist.
-#: python/irc.py:89 python/mutagentagger.py:375 python/songdb.py:785
-#: python/songdb.py:1157 python/sourceclientgui.py:92
+#: python/irc.py:94 python/mutagentagger.py:375 python/songdb.py:888
+#: python/songdb.py:1277 python/sourceclientgui.py:93
 msgid "Artist"
 msgstr "Artiste"
 
-#: python/irc.py:89 python/mutagentagger.py:375 python/songdb.py:1161
-#: python/sourceclientgui.py:92
+#: python/irc.py:94 python/mutagentagger.py:375 python/songdb.py:1279
+#: python/sourceclientgui.py:93
 msgid "Title"
 msgstr "Titre"
 
-#: python/irc.py:89 python/mutagentagger.py:376 python/songdb.py:1158
-#: python/sourceclientgui.py:92
+#: python/irc.py:94 python/mutagentagger.py:376 python/songdb.py:1278
+#: python/sourceclientgui.py:93
 msgid "Album"
 msgstr "Album"
 
-#: python/irc.py:89 python/sourceclientgui.py:93
+#: python/irc.py:94 python/sourceclientgui.py:94
 msgid "Song name"
 msgstr "Chanson"
 
 #. TC: The DJ or Stream name.
-#: python/irc.py:90 python/sourceclientgui.py:1637
+#: python/irc.py:95 python/sourceclientgui.py:1693
 msgid "DJ name"
 msgstr "Nom du DJ"
 
-#: python/irc.py:90 python/sourceclientgui.py:1638
+#: python/irc.py:95 python/sourceclientgui.py:1694
 msgid "Listen URL"
 msgstr "URL d'écoute"
 
+#: python/irc.py:95
+#, fuzzy
+msgid "Source URI"
+msgstr "Source"
+
 #. TC: Popup menu item for a GTK text entry widget.
-#: python/irc.py:133
+#: python/irc.py:138
 msgid "Insert Attribute or Colour Code"
 msgstr "Insérer un attribut ou un code couleur"
 
 #. TC: Text formatting style.
-#: python/irc.py:170
+#: python/irc.py:175
 msgid "<b>Bold</b>"
 msgstr "<b>Gras</b>"
 
 #. TC: Text formatting style.
-#: python/irc.py:172
+#: python/irc.py:177
 msgid "<u>Underline</u>"
 msgstr "<u>Sous-ligné</u>"
 
 #. TC: Text formatting style.
-#: python/irc.py:174
+#: python/irc.py:179
 msgid "Normal"
 msgstr "Normal"
 
-#: python/irc.py:180
+#: python/irc.py:185
 msgid "Colours"
 msgstr "Couleurs"
 
-#: python/irc.py:397
+#: python/irc.py:402
 msgid "Optional data entry field for information only."
 msgstr "Champ de donnée optionelle pour information uniquement."
 
 #. TC: Tab heading text.
-#: python/irc.py:400
+#: python/irc.py:405
 msgid "IRC server"
 msgstr "Serveur IRC"
 
-#: python/irc.py:412
+#: python/irc.py:417
 msgid "Manual start"
 msgstr "Départ manuel"
 
-#: python/irc.py:414
+#: python/irc.py:419
 msgid "Off when restarting IDJC and off initially."
 msgstr "Arrêté au redémarrage de IDJC et Arrêté au départ"
 
 #. TC: The IRC network e.g. EFnet.
-#: python/irc.py:438
+#: python/irc.py:443
 msgid "Network"
 msgstr "Réseau"
 
 #. TC: label for hostname entry.
-#: python/irc.py:440 python/sourceclientgui.py:206
+#: python/irc.py:445 python/sourceclientgui.py:207
 msgid "Hostname"
 msgstr "Nom de l'hôte"
 
 #. TC: TCP/IP port number label.
 #. TC: TCP port number.
-#: python/irc.py:442 python/sourceclientgui.py:678
+#: python/irc.py:447 python/sourceclientgui.py:703
 msgid "Port"
 msgstr "Port"
 
-#: python/irc.py:443
+#: python/irc.py:448
 msgid "User name"
 msgstr "Nom utilisateur"
 
-#: python/irc.py:444 python/songdb.py:339 python/sourceclientgui.py:207
+#: python/irc.py:449 python/songdb.py:341 python/sourceclientgui.py:208
 msgid "Password"
 msgstr "Mot de passe"
 
 #. TC: Second choice of IRC nickname.
-#: python/irc.py:448
+#: python/irc.py:453
 msgid "Second choice"
 msgstr "Second choix"
 
 #. TC: Third choice of IRC nickname.
-#: python/irc.py:450
+#: python/irc.py:455
 msgid "Third choice"
 msgstr "Troixième choix"
 
 #. TC: The IRC user's 'real' name.
-#: python/irc.py:452
+#: python/irc.py:457
 msgid "Real name"
 msgstr "Nom réel"
 
 #. TC: The NickServ password.
-#: python/irc.py:454
+#: python/irc.py:459
 msgid "NickServ p/w"
 msgstr "MdP NickServ"
 
 #. TC: Tooltip to IRC 'User name' field.
-#: python/irc.py:459
+#: python/irc.py:464
 msgid ""
 "Ideally set this to something even on servers that allow public anonymous "
 "access."
@@ -713,7 +730,7 @@ msgstr ""
 "anonyme ou public."
 
 #. TC: tooltip to all IRC nicknames entry fields.
-#: python/irc.py:469
+#: python/irc.py:474
 msgid ""
 "When a nickname is in use on the target IRC network, during connection these "
 "IRC nicknames are cycled through, then twice again after appending an "
@@ -725,7 +742,7 @@ msgstr ""
 "ligné jusqu'à ce la fin. Cela donne à IDJC un maximum de neuf pseudos à "
 "tenter."
 
-#: python/irc.py:474
+#: python/irc.py:479
 msgid ""
 "The real name you want to use which will be available regardless of whether "
 "the network connection was made with the primary nickname or not.\n"
@@ -737,7 +754,7 @@ msgstr ""
 "\n"
 "Remplissez le par quelque chose."
 
-#: python/irc.py:477
+#: python/irc.py:482
 msgid ""
 "If this value is set an attempt will be made to acquire your first choice "
 "IRC nickname (if needed) and log in with NickServ@services.\n"
@@ -751,7 +768,7 @@ msgstr ""
 "L'utilisation des services NickServ nécessitent qu'un enregistrement "
 "préalable du pseudo ait été effectué avec un client IRC standard."
 
-#: python/irc.py:505
+#: python/irc.py:510
 msgid ""
 "<span weight='bold' size='12000'>Permanently delete this server?</span>\n"
 "\n"
@@ -763,11 +780,11 @@ msgstr ""
 "Cette action effacera aussi tous les messages associés."
 
 #. TC: An IRC channel #chan or user name entry box label.
-#: python/irc.py:552
+#: python/irc.py:558
 msgid "Channels/Users"
 msgstr "Canaux/Utilisateurs"
 
-#: python/irc.py:556
+#: python/irc.py:562
 msgid ""
 "The comma or space separated list of channels and/or users to whom the "
 "message will be sent.\n"
@@ -782,11 +799,11 @@ msgstr ""
 "#canal:motclef"
 
 #. TC: Message text to send to an IRC channel. Widget label.
-#: python/irc.py:563
+#: python/irc.py:615
 msgid "Message"
 msgstr "Message"
 
-#: python/irc.py:567
+#: python/irc.py:619
 msgid ""
 "The message to send.\n"
 "\n"
@@ -798,23 +815,23 @@ msgstr ""
 "Le message à envoyer.\n"
 "\n"
 "Dans la fenêtre de pop-up (clic droit) se trouvent quelques options utiles "
-"pour les métadonnées et le formataze du texte.\n"
+"pour les métadonnées et le formatage du texte.\n"
 "\n"
 "La fenêtre ci-dessous affiche comment le message apparaitra aux utilisateurs "
 "de XChat XChat2 ou HexChat."
 
 #. TC: Dialog window title text.
-#: python/irc.py:638
+#: python/irc.py:672
 msgid "IRC track announce"
 msgstr "Annonce de pistes IRC"
 
 #. TC: Spinbutton label for a delay value.
-#: python/irc.py:645
+#: python/irc.py:679
 msgid "Delay"
 msgstr "Délais"
 
 #. TC: tooltip on a spinbutton widget.
-#: python/irc.py:647
+#: python/irc.py:681
 msgid ""
 "The delay time of this message.\n"
 "\n"
@@ -836,61 +853,65 @@ msgstr ""
 "message."
 
 #. TC: Dialog window title text.
-#: python/irc.py:675
+#: python/irc.py:709
 msgid "IRC timed message"
 msgstr "Message IRC temporisé"
 
 #. TC: Spinbutton time offset value label.
-#: python/irc.py:684
+#: python/irc.py:718
 msgid "Offset"
 msgstr "Offset"
 
 #. TC: Spinbutton timed interval duration value label.
-#: python/irc.py:686
+#: python/irc.py:720
 msgid "Interval"
 msgstr "Interval"
 
 #. TC: spinbutton tooltip
-#: python/irc.py:689
+#: python/irc.py:723
 msgid ""
 "The time offset within the below specified interval at which the message "
 "will be issued."
 msgstr ""
 "Offset de temps dans l'interval spécifié après lequel le message sera envoyé."
 
-#: python/irc.py:693
+#: python/irc.py:727
 msgid "The interval in seconds of the timed message."
 msgstr "Interval en secondes des messages temporisés."
 
-#: python/irc.py:930
-#, fuzzy
+#: python/irc.py:966
 msgid "This feature requires the installation of python-irc."
 msgstr "Cette fonctionalité nécessite l'installation de python-irclib"
 
 #. TC: Indicator text: We used a password.
-#: python/irc.py:1021
+#: python/irc.py:1057
 msgid "PASSWORD"
 msgstr "MOT DE PASSE"
 
 #. TC: Indicator text: We interact with NickServ.
-#: python/irc.py:1024
+#: python/irc.py:1060
 msgid "NICKSERV"
 msgstr "NICKSERV"
 
 #. TC: Indicator text: Server connection started manually.
-#: python/irc.py:1027
+#: python/irc.py:1063
 msgid "MANUAL"
 msgstr "MANUEL"
 
-#. TC: Expander text encapsulating messages that play when stream goes up.
-#: python/irc.py:1048
+#. TC: Dialog title text.
+#: python/irc.py:1088
 msgid "IRC stream up message"
 msgstr "Messages IRC vers le haut"
 
-#. TC: Expander text encapsulating messages that play when stream goes down.
-#: python/irc.py:1050
+#. TC: Dialog title text.
+#: python/irc.py:1090
 msgid "IRC stream down message"
 msgstr "Messages IRC vers le bas"
+
+#. TC: Dialog title text.
+#: python/irc.py:1092
+msgid "IRC station operations"
+msgstr ""
 
 #: python/jingles.py:95
 msgid "Stop"
@@ -901,7 +922,7 @@ msgstr "Stopper"
 msgid "Play"
 msgstr "Lire"
 
-#: python/jingles.py:122 python/sourceclientgui.py:1025
+#: python/jingles.py:122 python/sourceclientgui.py:1050
 msgid "Repeat"
 msgstr "Répéter"
 
@@ -909,7 +930,7 @@ msgstr "Répéter"
 msgid "Configure"
 msgstr "Configurer"
 
-#: python/jingles.py:326 python/playergui.py:4052
+#: python/jingles.py:326 python/playergui.py:4068
 msgid "Supported media"
 msgstr "Média supportaté"
 
@@ -987,7 +1008,7 @@ msgstr "Ports JACK"
 msgid "Help"
 msgstr "Aide"
 
-#: python/maingui.py:170 python/maingui.py:3653
+#: python/maingui.py:170 python/maingui.py:3658
 msgid "Streams"
 msgstr "Flux"
 
@@ -1001,13 +1022,13 @@ msgstr "Sortie"
 
 #: python/maingui.py:184
 msgid "Preferences"
-msgstr "Preferences"
+msgstr "Préférences"
 
 #: python/maingui.py:184
 msgid "Profiles"
-msgstr "Profils"
+msgstr "Profiles"
 
-#: python/maingui.py:187 python/songdb.py:405
+#: python/maingui.py:187 python/songdb.py:407
 msgid "Music Database"
 msgstr "Base de donnée musicale"
 
@@ -1039,7 +1060,7 @@ msgstr "Lecteur"
 msgid "VoIP"
 msgstr "VoIP"
 
-#: python/maingui.py:223 python/maingui.py:3093
+#: python/maingui.py:223 python/maingui.py:3098
 msgid "DSP"
 msgstr "DSP"
 
@@ -1075,10 +1096,12 @@ msgid "No compatible ports available."
 msgstr "Aucun port compatible n'est disponible"
 
 #: python/maingui.py:363
+#, python-brace-format
 msgid "{0} profile={1}:{2} settings saved."
 msgstr "{0} profil={1}:{2} paramêtres sauvegardés."
 
 #: python/maingui.py:366
+#, python-brace-format
 msgid "{0} session={1}:{2} settings saved."
 msgstr "{0} session={1}:{2} paramêtres sauvegardés."
 
@@ -1162,12 +1185,12 @@ msgid "'%s' control"
 msgstr "contrôle «%s»"
 
 #. TC: Insert playlist control to stop the player.
-#: python/maingui.py:744 python/playergui.py:4310
+#: python/maingui.py:744 python/playergui.py:4326
 msgid "Player Stop"
 msgstr "Arret lecteur"
 
 #. TC: Insert playlist control to stop the player.
-#: python/maingui.py:745 python/playergui.py:4317
+#: python/maingui.py:745 python/playergui.py:4333
 msgid "Player Stop 2"
 msgstr "Arret Lecteur 2"
 
@@ -1255,55 +1278,55 @@ msgstr ""
 "Indique l'état des différents flux. Clignottant indique que des paquets du "
 "flux sont écartés à cause d'une congestion du réseau. Partiellement rouge "
 "signifie que le tampon d'émission est partiellement plein, indiquant des "
-"difficultés de comunication avec le serveur. Vert indque que tout va bien."
+"difficultés de comunication avec le serveur. Vert indique que tout va bien."
 
 #: python/maingui.py:1376
 msgid "The combined total number of listeners in all server tabs."
 msgstr "Le nombre total d'auditeurs dans tous les onglets de serveurs."
 
 #. TC: Record as in, to make a recording.
-#: python/maingui.py:1824 python/sourceclientgui.py:2702
+#: python/maingui.py:1824 python/sourceclientgui.py:2760
 msgid "Record"
 msgstr "Enregistrer"
 
-#: python/maingui.py:2620
+#: python/maingui.py:2625
 msgid "Confirmation to quit IDJC is required."
 msgstr "Une confirmation est nécessaire pour quitter IDJC."
 
-#: python/maingui.py:2624
+#: python/maingui.py:2629
 msgid "All active recordings and radio streams will terminate."
 msgstr "Tous les entregistrements et flux radio seront arrêtés."
 
-#: python/maingui.py:2626
+#: python/maingui.py:2631
 msgid "All of the active radio streams will terminate."
 msgstr "Tous les flux radio en cours seront arrêtés."
 
-#: python/maingui.py:2628
+#: python/maingui.py:2633
 msgid "All active recordings will cease."
 msgstr "Tous les enregistrements sen cours seront arrêtés."
 
 #. TC: Popup menu item, wipes away the tracks played history text.
-#: python/maingui.py:2885 python/maingui.py:3317
+#: python/maingui.py:2890 python/maingui.py:3322
 msgid "Remove Contents"
 msgstr "Supprimer le contenu"
 
-#: python/maingui.py:3040
+#: python/maingui.py:3045
 msgid "Renameable Labels"
 msgstr "Labels renommables"
 
-#: python/maingui.py:3064
+#: python/maingui.py:3069
 msgid "Main Players"
 msgstr "Lecteur principal"
 
-#: python/maingui.py:3117
+#: python/maingui.py:3122
 msgid "Mix voice over IP audio to the output stream."
 msgstr "Mixe l'audio VoIP au flux de sortie"
 
-#: python/maingui.py:3130
+#: python/maingui.py:3135
 msgid "Mix voice over IP audio to the DJ only."
 msgstr "Mixe l'audio VoIP uniquement au DJ"
 
-#: python/maingui.py:3157
+#: python/maingui.py:3162
 msgid ""
 "This button steps through the active playlist, pausing between tracks. The "
 "active playlist is defined by the placement of the crossfader."
@@ -1311,44 +1334,45 @@ msgstr ""
 "Ce bouton avance dans la liste de lecture en s'arrêtant entre chaque piste. "
 "La liste de lecture en cours est définie par l'emplacement du crossfader."
 
-#: python/maingui.py:3202 python/preferences.py:870
+#: python/maingui.py:3207 python/preferences.py:870
 msgid "The volume control shared by both music players."
 msgstr "Le contrôle de volume partagé par les deux lecteurs."
 
-#: python/maingui.py:3213
+#: python/maingui.py:3218
 msgid "The volume control for the right music player."
 msgstr "Le Volume du lecteur de droite."
 
-#: python/maingui.py:3241
+#: python/maingui.py:3246
 msgid "VoIP level adjustment. 0dB gain is at the mid point."
 msgstr "Ajustement du niveau VoIP. 0dB est le point milieu."
 
-#: python/maingui.py:3264
+#: python/maingui.py:3269
 msgid "The stream volume level to send to the voice over IP connection."
 msgstr "Le niveau de volume à envoyer à la connexion VoIP."
 
-#: python/maingui.py:3291 python/preferences.py:1410
+#: python/maingui.py:3296 python/preferences.py:1410
 msgid "Tracks Played"
 msgstr "Pistes lues"
 
-#: python/maingui.py:3362 python/maingui.py:3364 python/maingui.py:3388
+#: python/maingui.py:3367 python/maingui.py:3369 python/maingui.py:3393
 msgid "Monitor Mix"
 msgstr "Monitor Mix"
 
-#: python/maingui.py:3371 python/maingui.py:3388 python/playergui.py:4251
+#: python/maingui.py:3376 python/maingui.py:3393 python/playergui.py:4267
 msgid "DJ"
 msgstr "DJ"
 
 #. TC: binding editor, action pane, first row, toplevel menu.
-#: python/maingui.py:3374 python/maingui.py:3388 python/midicontrols.py:154
-#: python/midicontrols.py:1506 python/playergui.py:4243
-#: python/sourceclientgui.py:2710
+#: python/maingui.py:3379 python/maingui.py:3393 python/midicontrols.py:154
+#: python/midicontrols.py:1506 python/playergui.py:4259
+#: python/sourceclientgui.py:2768
 msgid "Stream"
 msgstr "Flux"
 
 #. TC: Context {0}, {1}, {2} = Monitor Mix, Stream, DJ
 #. TC: Or whatever they become translated to.
-#: python/maingui.py:3384
+#: python/maingui.py:3389
+#, python-brace-format
 msgid ""
 "In IDJC there are are two audio paths and this '{0}' control toggles between "
 "them. When '{1}' is active you can hear what the listeners are hearing "
@@ -1361,82 +1385,82 @@ msgstr ""
 "pour pouvoir utiliser la fonctionalité VoIP"
 
 #. TC: Dropdown box title text widget.
-#: python/maingui.py:3397 python/maingui.py:3399
+#: python/maingui.py:3402 python/maingui.py:3404
 msgid "Metadata Source"
 msgstr "Source de métadonnées"
 
 #. TC: The chosen source of track metadata.
-#: python/maingui.py:3405 python/playergui.py:3961
+#: python/maingui.py:3410 python/playergui.py:3977
 msgid "Playlist 1"
 msgstr "Liste de lecture 1"
 
 #. TC: The chosen source of track metadata.
-#: python/maingui.py:3407 python/playergui.py:3962
+#: python/maingui.py:3412 python/playergui.py:3978
 msgid "Playlist 2"
 msgstr "Liste de lecture 2"
 
 #. TC: The chosen source of track metadata.
-#: python/maingui.py:3409
+#: python/maingui.py:3414 python/songdb.py:895 python/songdb.py:1280
 msgid "Last Played"
 msgstr "Dernière lue"
 
 #. TC: The chosen source of track metadata.
-#: python/maingui.py:3411 python/maingui.py:3448 python/maingui.py:3450
+#: python/maingui.py:3416 python/maingui.py:3453 python/maingui.py:3455
 msgid "Crossfader"
 msgstr "Crossfader"
 
 #. TC: The chosen source of track metadata. In this case no metadata.
 #. TC: Fade time is zero. No fade, none.
-#: python/maingui.py:3413 python/playergui.py:4226
+#: python/maingui.py:3418 python/playergui.py:4242
 msgid "None"
 msgstr "Aucune"
 
 #. TC: The chosen source of track metadata. In this case no metadata.
-#: python/maingui.py:3415
+#: python/maingui.py:3420
 msgid "Playlist 3"
 msgstr "Liste de lecture 3"
 
-#: python/maingui.py:3420
+#: python/maingui.py:3425
 msgid "Select the origin for the playing track metadata on the stream."
 msgstr "Sélectionner l'origine pour la piste de métadonnées"
 
 #. TC: Abbreviation of left.
-#: python/maingui.py:3430 python/maingui.py:3432
+#: python/maingui.py:3435 python/maingui.py:3437
 msgid "L"
 msgstr "G"
 
-#: python/maingui.py:3442
+#: python/maingui.py:3447
 msgid "Move the crossfader fully left."
 msgstr "Déplacer le crossfader totalement à gauche"
 
-#: python/maingui.py:3462
+#: python/maingui.py:3467
 msgid "The crossfader."
 msgstr "Le crossfader"
 
 #. TC: Abbreviation of right.
-#: python/maingui.py:3466 python/maingui.py:3468
+#: python/maingui.py:3471 python/maingui.py:3473
 msgid "R"
 msgstr "D"
 
-#: python/maingui.py:3478
+#: python/maingui.py:3483
 msgid "Move the crossfader fully right."
 msgstr "Déplacer le crossfader totalement à droite"
 
 #. TC: Describes a mid point.
-#: python/maingui.py:3487 python/maingui.py:3489
+#: python/maingui.py:3492 python/maingui.py:3494
 msgid "Middle"
 msgstr "Milieu"
 
-#: python/maingui.py:3506 python/maingui.py:3513
+#: python/maingui.py:3511 python/maingui.py:3518
 msgid "Move the crossfader to the middle of its range of travel."
 msgstr "Déplacer le crossfader au point milieu de son chemin."
 
 #. TC: The attenuation response curve of the crossfader. User selectable.
-#: python/maingui.py:3518 python/maingui.py:3520
+#: python/maingui.py:3523 python/maingui.py:3525
 msgid "Response"
 msgstr "Réponse"
 
-#: python/maingui.py:3542
+#: python/maingui.py:3547
 msgid ""
 "This selects the response curve of the crossfader.\n"
 "\n"
@@ -1446,11 +1470,11 @@ msgstr ""
 "Les atténuations au point milieu sont respectivement -3dB, 0dB et -22dB "
 
 #. TC: Duration in seconds.
-#: python/maingui.py:3556 python/maingui.py:3558
+#: python/maingui.py:3561 python/maingui.py:3563
 msgid "Time"
 msgstr "Durée"
 
-#: python/maingui.py:3575
+#: python/maingui.py:3580
 msgid ""
 "The time in seconds that the crossfader will take to automatically pass "
 "across when the button to the right is clicked."
@@ -1460,11 +1484,11 @@ msgstr ""
 
 #. TC: The crossfader pass-across button text.
 #. TC: The actual button appears as [<-->] with this text above it.
-#: python/maingui.py:3584 python/maingui.py:3586
+#: python/maingui.py:3589 python/maingui.py:3591
 msgid "Pass"
 msgstr "Passer"
 
-#: python/maingui.py:3599
+#: python/maingui.py:3604
 msgid ""
 "This button causes the crossfader to move to the opposite side at a speed "
 "determined by the speed selector to the left."
@@ -1472,30 +1496,30 @@ msgstr ""
 "Ce bouton fait passer le crossfader vers le côté opposé à la vitesse "
 "déterminée par le sélecteur de vitesse à gauche."
 
-#: python/maingui.py:3642
+#: python/maingui.py:3647
 msgid "Peak"
 msgstr "Pick"
 
-#: python/maingui.py:3645
+#: python/maingui.py:3650
 msgid "A peak hold meter indicating the signal strength of the stream audio."
 msgstr ""
 "Un indicateur de pic temporisé montrant la force du signal du flux audio."
 
 #. TC: This text appears above the stream mix VU meter.
-#: python/maingui.py:3667
+#: python/maingui.py:3672
 msgid "VU"
 msgstr "VU"
 
-#: python/maingui.py:3671
+#: python/maingui.py:3676
 msgid "A VU meter for the stream audio."
 msgstr "Un Vumêtre pour le flux audio."
 
 #. TC: Appears above the mic meters as a label followed by a number.
-#: python/maingui.py:3674
+#: python/maingui.py:3679
 msgid "Ch"
 msgstr "Ch"
 
-#: python/maingui.py:3701
+#: python/maingui.py:3706
 msgid ""
 "A peak hold meter indicating the microphone signal strength and a meter "
 "indicating attenuation levels in the microphone signal processing system. "
@@ -1529,7 +1553,7 @@ msgstr "Lecteur Lecture/pause"
 
 #. TC: Control method. Please keep it as Target:Action.
 #. TC: Playlist control.
-#: python/midicontrols.py:55 python/playergui.py:3719
+#: python/midicontrols.py:55 python/playergui.py:3735
 msgid "Player stop"
 msgstr "Arret lecteur"
 
@@ -1660,7 +1684,6 @@ msgstr "Lecteurs Afficher la tonalité"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:109
-#, fuzzy
 msgid "Players advance"
 msgstr "Lecteur Avance"
 
@@ -2065,7 +2088,7 @@ msgid " Additional Text Frames "
 msgstr " Champs texte additionnels "
 
 #. TC: The album track number.
-#: python/mutagentagger.py:376 python/songdb.py:789 python/songdb.py:1160
+#: python/mutagentagger.py:376 python/songdb.py:892 python/songdb.py:1282
 msgid "Track"
 msgstr "Piste"
 
@@ -2091,57 +2114,57 @@ msgstr "Nom du fichier :"
 msgid "Native"
 msgstr "Natif"
 
-#: python/songdb.py:174
+#: python/songdb.py:176
 msgid "Connecting"
 msgstr "Connexion"
 
 # python-format
-#: python/songdb.py:183
+#: python/songdb.py:185
 #, python-format
 msgid "Connection failed (try %d)"
 msgstr "Connexion échouée (essayez %d)"
 
-#: python/songdb.py:195
+#: python/songdb.py:197
 msgid "Connected: utf-8 mode failed"
 msgstr "Connecté : Echec du mode utf-8"
 
-#: python/songdb.py:197
+#: python/songdb.py:199
 msgid "Connected"
 msgstr "Connecté"
 
-#: python/songdb.py:205
+#: python/songdb.py:207
 msgid "Job dropped"
 msgstr "Tâche abandonnée"
 
-#: python/songdb.py:215 python/songdb.py:427
+#: python/songdb.py:217 python/songdb.py:429
 msgid "Disconnected"
 msgstr "Disconnecté"
 
-#: python/songdb.py:229
+#: python/songdb.py:231
 msgid "Problem dropping connection"
 msgstr "Problème lors de l'abandon de la tâche"
 
-#: python/songdb.py:231
+#: python/songdb.py:233
 msgid "Connection dropped"
 msgstr "Connexion abandonnée"
 
-#: python/songdb.py:322
+#: python/songdb.py:324
 msgid "Hostname[:Port]"
 msgstr "Hôte[:Port]"
 
-#: python/songdb.py:327
+#: python/songdb.py:329
 msgid "User Name"
 msgstr "Nom utilisateur"
 
-#: python/songdb.py:330
+#: python/songdb.py:332
 msgid "Database"
 msgstr "Base de données"
 
-#: python/songdb.py:385
+#: python/songdb.py:387
 msgid "Prokyon3 or Ampache (song title) Database"
 msgstr "Base de donnée Prokyon3 ou Ampache (titre de chanson)"
 
-#: python/songdb.py:386
+#: python/songdb.py:388
 msgid ""
 "You can make certain media databases accessible in IDJC for easy drag and "
 "drop into the playlists."
@@ -2149,142 +2172,168 @@ msgstr ""
 "Vous pouvez rendre certaines bases de données accessibles dans IDJC pour "
 "plusde facilités lors des glisser/déposer dans les listes de lectures"
 
-#: python/songdb.py:434
+#: python/songdb.py:436
 msgid "Module mysql-python (MySQLdb) required"
 msgstr "Module mysql-python (MySQLdb) nécessaire"
 
-#: python/songdb.py:675 python/songdb.py:680
+#: python/songdb.py:705 python/songdb.py:718 python/songdb.py:739
+#: python/songdb.py:797
 msgid "<unknown>"
 msgstr "<inconnu>"
 
-#: python/songdb.py:761
+#: python/songdb.py:733
+#, fuzzy
+msgid "Not Played"
+msgstr "Dernière lue"
+
+#: python/songdb.py:864
 msgid "Reload the database."
 msgstr "Recharger la base de données"
 
-#: python/songdb.py:766
+#: python/songdb.py:869
 msgid "Expand entire tree."
 msgstr "Développer l'arborescence."
 
-#: python/songdb.py:767
+#: python/songdb.py:870
 msgid "Collapse tree."
 msgstr "Enrouler l'arborescence."
 
-#: python/songdb.py:774
+#: python/songdb.py:877
 msgid "Browse"
 msgstr "Parcourrir"
 
 #. TC: The disk number of the album track.
-#: python/songdb.py:787 python/songdb.py:1159
+#: python/songdb.py:890 python/songdb.py:1281
 msgid "Disk"
 msgstr "Disque"
 
 #. TC: Track playback time.
 #. TC: Playback time.
-#: python/songdb.py:791 python/songdb.py:1162 python/playergui.py:312
+#: python/songdb.py:894 python/songdb.py:1283 python/playergui.py:312
 msgid "Duration"
 msgstr "Durée"
 
-#: python/songdb.py:792 python/songdb.py:1163
+#: python/songdb.py:896 python/songdb.py:1284
 msgid "Bitrate"
 msgstr "Bitrate"
 
-#: python/songdb.py:793 python/songdb.py:1164
+#: python/songdb.py:897 python/songdb.py:1285
 msgid "Filename"
 msgstr "Nom du fichier"
 
 #. TC: Directory path to a file.
-#: python/songdb.py:795 python/songdb.py:1165
+#: python/songdb.py:899 python/songdb.py:1286
 msgid "Path"
 msgstr "Répertoire"
 
-#: python/songdb.py:800
+#: python/songdb.py:904
 msgid "Artist - Album - Title"
 msgstr "Artiste - Album - Titre"
 
-#: python/songdb.py:801
+#: python/songdb.py:905
 msgid "Album - [Disk] - Title"
 msgstr "Album - [Disque] - Titre"
 
-#: python/songdb.py:821
+#: python/songdb.py:925
 msgid "Fetching"
 msgstr "Découverte"
 
-#: python/songdb.py:953
+#: python/songdb.py:1070
 msgid "Tree fetch failed"
 msgstr "Echec de la découverte de l'arborescence"
 
-#: python/songdb.py:955
+#: python/songdb.py:1072
 msgid "Fetch Failed!"
 msgstr "Echec de la découverte!"
 
-#: python/songdb.py:968
+#: python/songdb.py:1085
 msgid "Populating"
 msgstr "Popularité"
 
-#: python/songdb.py:1094
+#: python/songdb.py:1211
 #, python-format
 msgid "Disk %d"
 msgstr "Disque %d"
 
 #. TC: User specified search filter entry box title text.
-#: python/songdb.py:1113
+#: python/songdb.py:1230
 msgid "Filters"
 msgstr "Filtres"
 
 #. TC: A type of search on any data field matching paritial strings.
-#: python/songdb.py:1125
+#: python/songdb.py:1242
 msgid "Fuzzy Search"
 msgstr "Recherche floue"
 
 #. TC: WHERE is an SQL keyword.
-#: python/songdb.py:1134
+#: python/songdb.py:1251
 msgid "WHERE"
-msgstr "LA_OU"
+msgstr "WHERE"
 
-#: python/songdb.py:1147
+#: python/songdb.py:1264
 msgid "Search"
 msgstr "Recherche"
 
-#: python/songdb.py:1440
+#: python/songdb.py:1501 python/songdb.py:1626
+msgid "Minutes"
+msgstr ""
+
+#: python/songdb.py:1501 python/songdb.py:1626
+#, fuzzy
+msgid "Hours"
+msgstr "Couleurs"
+
+#: python/songdb.py:1502 python/songdb.py:1626
+msgid "Days"
+msgstr ""
+
+#: python/songdb.py:1502 python/songdb.py:1626 python/songdb.py:1696
+#: python/songdb.py:1790
+msgid "Weeks"
+msgstr ""
+
+#: python/songdb.py:1596
 msgid "Catalogs"
-msgstr ""
+msgstr "Catalogues"
 
-#: python/songdb.py:1445
-#, fuzzy
+#: python/songdb.py:1603
 msgid "Name"
-msgstr "Sans nom"
+msgstr "Nom"
 
-#: python/songdb.py:1446
+#: python/songdb.py:1604
 msgid "Catalog Path"
-msgstr ""
+msgstr "Chemin du Catalogue"
 
-#: python/songdb.py:1447
-#, fuzzy
+#: python/songdb.py:1605
 msgid "Prepend Path"
-msgstr "Avant"
+msgstr "Chemin Préfixe"
 
-#: python/songdb.py:1462
+#: python/songdb.py:1613
 #, fuzzy
+msgid "Last Played Scale"
+msgstr "Dernière lue"
+
+#: python/songdb.py:1645
 msgid "Path Peel"
-msgstr "Répertoire"
+msgstr "Chemin supprimable"
 
-#: python/songdb.py:1528
+#: python/songdb.py:1724
 msgid "N/A"
-msgstr ""
+msgstr "S/O"
 
-#: python/songdb.py:1703
+#: python/songdb.py:1905
 msgid "Failed to create FULLTEXT index"
-msgstr "Echec de la création de l'index PLEIN TEXTE"
+msgstr "Echec de la création de l'index TEXTE"
 
-#: python/songdb.py:1707
+#: python/songdb.py:1909
 msgid "Found existing FULLTEXT index"
-msgstr "Un index PLEIN TEXTE exite déjà"
+msgstr "Un index TEXTE exite déjà"
 
-#: python/songdb.py:1721 python/songdb.py:1734
+#: python/songdb.py:1923 python/songdb.py:1936
 msgid "Unrecognised database"
 msgstr "Base de données non reconnue"
 
-#: python/songdb.py:1729
+#: python/songdb.py:1931
 msgid "Found Prokyon 3 schema"
 msgstr "Schéma Prokyon 3 trouvé"
 
@@ -2311,266 +2360,272 @@ msgstr "Liste de lecture externe"
 msgid "Active"
 msgstr "Attivée"
 
-#: python/playergui.py:435
+#: python/playergui.py:434
 msgid "Choose a playlist file"
 msgstr "Sélectionner un fichier de liste de lecture"
 
-#: python/playergui.py:440
+#: python/playergui.py:439
 msgid "Choose a media directory"
 msgstr "Sélectionner un dossier de média"
 
-#: python/playergui.py:453
+#: python/playergui.py:452
 msgid "Choose a playlist file."
 msgstr "Sélectionner un fichier de liste de lecture."
 
-#: python/playergui.py:455
+#: python/playergui.py:454
 msgid "Choose a folder/directory of music."
 msgstr "Sélectionner un fichier de musique."
 
-#: python/playergui.py:522
+#: python/playergui.py:521
 msgid "Create a new announcement"
 msgstr "Créer une nouvelle annonce"
 
-#: python/playergui.py:525
+#: python/playergui.py:524
 msgid "Modify or Delete this announcement"
 msgstr "Modifier ou supprimer cette annonce"
 
 #. TC: Playlist control.
 #. TC: Embed a DJ announcement text into the playlist.
-#: python/playergui.py:528 python/playergui.py:3709 python/playergui.py:4347
+#: python/playergui.py:527 python/playergui.py:3725 python/playergui.py:4363
 msgid "Announcement"
 msgstr "Annonce"
 
 #. TC: The time format as minutes and seconds.
-#: python/playergui.py:555
+#: python/playergui.py:554
 msgid "mm:ss"
 msgstr "mm:ss"
 
 #. TC: Alongside the name of the next track.
-#: python/playergui.py:608
+#: python/playergui.py:607
 msgid "Next track"
 msgstr "Piste suivante"
 
-#: python/playergui.py:933
+#: python/playergui.py:932
 msgid "By Extension"
 msgstr "Par extention"
 
-#: python/playergui.py:933
+#: python/playergui.py:932
 msgid "M3U playlist"
 msgstr "Liste de lecture M3U"
 
-#: python/playergui.py:934
+#: python/playergui.py:932
+#, fuzzy
+msgid "M3U8 playlist"
+msgstr "Liste de lecture M3U"
+
+#: python/playergui.py:933
 msgid "XSPF playlist"
 msgstr "Liste de lecture XSPF"
 
-#: python/playergui.py:934
+#: python/playergui.py:933
 msgid "PLS playlist"
 msgstr "Liste de lecture PLS"
 
-#: python/playergui.py:1006
+#: python/playergui.py:1005
 #, python-format
 msgid "%d Audio Tracks"
 msgstr "%d pistes audio"
 
 #. TC: Missing metadata text.
-#: python/playergui.py:1016
+#: python/playergui.py:1015
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: python/playergui.py:1020
+#: python/playergui.py:1019
 msgid "(Cue sheet)"
 msgstr "(Cue Sheet)"
 
-#: python/playergui.py:1054
+#: python/playergui.py:1056
 msgid "Bad Tag"
 msgstr "Tag erroné"
 
-#: python/playergui.py:1830 python/playergui.py:4185
+#: python/playergui.py:1835 python/playergui.py:4201
 msgid "Manual"
 msgstr "Manuel"
 
-#: python/playergui.py:1834 python/playergui.py:4182
+#: python/playergui.py:1839 python/playergui.py:4198
 msgid "Play All"
 msgstr "Tout jouer"
 
-#: python/playergui.py:1842 python/playergui.py:1851 python/playergui.py:4183
+#: python/playergui.py:1847 python/playergui.py:1856 python/playergui.py:4199
 msgid "Loop All"
 msgstr "Tout boucler"
 
-#: python/playergui.py:1842 python/playergui.py:4186
+#: python/playergui.py:1847 python/playergui.py:4202
 msgid "Cue Up"
 msgstr "Pré-écoute"
 
-#: python/playergui.py:1843 python/playergui.py:4190
+#: python/playergui.py:1848 python/playergui.py:4206
 msgid "Fade Over"
 msgstr "Fondu dessus"
 
-#: python/playergui.py:1855 python/playergui.py:1926 python/playergui.py:4184
+#: python/playergui.py:1860 python/playergui.py:1931 python/playergui.py:4200
 msgid "Random"
 msgstr "Aléatoire"
 
-#: python/playergui.py:1895 python/playergui.py:4187
+#: python/playergui.py:1900 python/playergui.py:4203
 msgid "External"
 msgstr "Externe"
 
-#: python/playergui.py:1907 python/playergui.py:1923 python/playergui.py:4189
+#: python/playergui.py:1912 python/playergui.py:1928 python/playergui.py:4205
 msgid "Alternate"
 msgstr "Alternatif"
 
-#: python/playergui.py:1907 python/playergui.py:1925 python/playergui.py:4191
+#: python/playergui.py:1912 python/playergui.py:1930 python/playergui.py:4207
 msgid "Random Hop"
 msgstr "Hop aléatoire"
 
 #. TC: The remaining playlist time.
-#: python/playergui.py:2080 python/playergui.py:2086
+#: python/playergui.py:2085 python/playergui.py:2091
 msgid "Remaining"
 msgstr "Restant"
 
 #. TC: The estimated finish time of the playlist.
 #. TC: The estimated finish time of the playlist (ETA).
-#: python/playergui.py:2082 python/playergui.py:2086 python/playergui.py:2100
+#: python/playergui.py:2087 python/playergui.py:2091 python/playergui.py:2105
 msgid "Finish"
 msgstr "Fini"
 
 #. TC: The play duration of the block of audio tracks.
-#: python/playergui.py:2087 python/playergui.py:2098
+#: python/playergui.py:2092 python/playergui.py:2103
 msgid "Block size"
 msgstr "Taille de block"
 
 #. TC: File dialog title text.
-#: python/playergui.py:2485
+#: python/playergui.py:2490
 msgid "Add music to left playlist"
 msgstr "Ajouter de la musique à la liste de gauche"
 
 #. TC: File dialog title text.
-#: python/playergui.py:2488
+#: python/playergui.py:2493
 msgid "Add music to right playlist"
 msgstr "Ajouter de la musique à la liste de droite"
 
-#: python/playergui.py:2490
+#: python/playergui.py:2495
 msgid "Add background music"
 msgstr "ajouter une musique de fond"
 
 #. TC: File filter text.
-#: python/playergui.py:2502
+#: python/playergui.py:2507
 msgid "Supported Media Formats"
 msgstr "Formats de média supportés"
 
 #. TC: Expander text "Select File Type (.pls)" for the pls file type.
-#: python/playergui.py:2564
+#: python/playergui.py:2569
 msgid "Select File Type"
 msgstr "Sélectionner le type de fichier"
 
-#: python/playergui.py:3308
+#: python/playergui.py:3324
 msgid "Save left playlist"
 msgstr "Sauvegarder la liste de lecture de gauche"
 
-#: python/playergui.py:3310
+#: python/playergui.py:3326
 msgid "Save right playlist"
 msgstr "Sauvegarder la liste de lecture de droite"
 
-#: python/playergui.py:3312
+#: python/playergui.py:3328
 msgid "Save background playlist"
 msgstr "Sauvegarder la liste de lecture de fond"
 
-#: python/playergui.py:3330
+#: python/playergui.py:3346
 msgid "File Type"
 msgstr "Type de fichier"
 
-#: python/playergui.py:3335
+#: python/playergui.py:3351
 msgid "Extension"
 msgstr "Extention"
 
 #. TC: Playlist control.
 #. TC: Insert playlist control to do a ten second fade to the next track.
-#: python/playergui.py:3693 python/playergui.py:4358
+#: python/playergui.py:3709 python/playergui.py:4374
 msgid "Fade 10s"
 msgstr "Fondu 10s"
 
 #. TC: Playlist control.
 #. TC: Insert playlist control to do a five second fade to the next track.
-#: python/playergui.py:3699 python/playergui.py:4365
+#: python/playergui.py:3715 python/playergui.py:4381
 msgid "Fade 5s"
 msgstr "Fondu 5s"
 
 #. TC: Playlist control.
 #. TC: Insert playlist control to not do a fade to the next track.
-#: python/playergui.py:3704 python/playergui.py:4372
+#: python/playergui.py:3720 python/playergui.py:4388
 msgid "No Fade"
 msgstr "Aucun Fondu"
 
 #. TC: Playlist control.
-#: python/playergui.py:3714
+#: python/playergui.py:3730
 msgid ">> Normal Speed <<"
 msgstr ">> Vitesse normale <<"
 
 #. TC: Playlist control.
-#: python/playergui.py:3724
+#: python/playergui.py:3740
 msgid "Player stop 2"
 msgstr "Arret Lecteur 2"
 
 #. TC: Playlist control.
 #. TC: Insert playlist control to jump to the top of the playlist.
-#: python/playergui.py:3729 python/playergui.py:4324
+#: python/playergui.py:3745 python/playergui.py:4340
 msgid "Jump To Top"
 msgstr "Retour en haut"
 
 #. TC: Playlist control.
-#: python/playergui.py:3734 python/playergui.py:4384
+#: python/playergui.py:3750 python/playergui.py:4400
 msgid "Stop streaming"
 msgstr "Arret du flux"
 
 #. TC: Playlist control.
-#: python/playergui.py:3739 python/playergui.py:4392
+#: python/playergui.py:3755 python/playergui.py:4408
 msgid "Stop recording"
 msgstr "Arret de l'enregistrement"
 
 #. TC: Playlist control.
-#: python/playergui.py:3774
+#: python/playergui.py:3790
 msgid ">>> Transfer across >>>"
 msgstr ">>> Transfer en face >>>"
 
 #. TC: Playlist control.
-#: python/playergui.py:3777
+#: python/playergui.py:3793
 msgid "<<< Transfer across <<<"
 msgstr "<<< Transfer en face <<<"
 
 #. TC: Playlist control.
-#: python/playergui.py:3782
+#: python/playergui.py:3798
 msgid ">>> Fade across >>>"
 msgstr ">>> Fondu en face >>>"
 
 #. TC: Playlist control.
-#: python/playergui.py:3785
+#: python/playergui.py:3801
 msgid "<<< Fade across <<<"
 msgstr "<<< Fondu en face <<<"
 
 #. TC: Playlist control.
-#: python/playergui.py:3791
+#: python/playergui.py:3807
 msgid "Ignored playlist control"
 msgstr "Contrôle de liste de lecture ignoré"
 
-#: python/playergui.py:3859
+#: python/playergui.py:3875
+#, python-brace-format
 msgid "Playing track {0} of {1}"
 msgstr "Lecture piste {0} sur {1}"
 
 #. TC: Previous line: Playing track {0} of {1}
-#: python/playergui.py:3872
+#: python/playergui.py:3888
 #, python-format
 msgid "From the album, %s"
 msgstr "De l'album, %s"
 
-#: python/playergui.py:3879
+#: python/playergui.py:3895
 #, python-format
 msgid "Total number of tracks %d"
 msgstr "Nombre de piste total %d"
 
-#: python/playergui.py:3883 python/playergui.py:3885
+#: python/playergui.py:3899 python/playergui.py:3901
 #, python-format
 msgid "Total play duration %s"
 msgstr "Durée totale %s"
 
-#: python/playergui.py:3935
+#: python/playergui.py:3951
 msgid ""
 "Left click toggles between showing the amount of time elapsed or remaining "
 "on the current track being played."
@@ -2578,7 +2633,7 @@ msgstr ""
 "Clic à gauche pour afficher le temps écoulé ou le temps restant pour la "
 "piste en cours de reproduction."
 
-#: python/playergui.py:3953
+#: python/playergui.py:3969
 msgid ""
 "This slider acts as both a play progress indicator and as a means for "
 "seeking within the currently playing track."
@@ -2587,15 +2642,16 @@ msgstr ""
 "positionneur dans la piste en cours de reproduction."
 
 #. TC: File filter text.
-#: python/playergui.py:4042
+#: python/playergui.py:4058
 msgid "All file types"
 msgstr "Tout type de fichier"
 
-#: python/playergui.py:4047
-msgid "Playlist types (*.m3u, *.xspf, *.pls)"
-msgstr "Type de listes de lecture (*.m3u, *.xspf, *.pls)"
+#: python/playergui.py:4063
+#, fuzzy
+msgid "Playlist types"
+msgstr "Liste de lecture 1"
 
-#: python/playergui.py:4062
+#: python/playergui.py:4078
 msgid ""
 "'Block size' indicates the amount of time that it will take to play from the "
 "currently selected track to the next stop.\n"
@@ -2607,43 +2663,43 @@ msgstr ""
 "«Restant» indique le temps restant avant le prochain arret.\n"
 "«Fin» est le temps calculé lorsque la piste aura fini d'être lue."
 
-#: python/playergui.py:4085
+#: python/playergui.py:4101
 msgid "This adjusts the playback speed anywhere from 25% to 400%."
 msgstr "Ajuste la vitesse de reproduction entre 25% et 400%."
 
-#: python/playergui.py:4099
+#: python/playergui.py:4115
 msgid "This sets the playback speed back to normal."
 msgstr "Remet la vitesse de reproduction à sa valeur normale."
 
-#: python/playergui.py:4116
+#: python/playergui.py:4132
 msgid "Previous track."
 msgstr "Piste précédente"
 
-#: python/playergui.py:4128
+#: python/playergui.py:4144
 msgid "Play."
 msgstr "Lecture"
 
-#: python/playergui.py:4138
+#: python/playergui.py:4154
 msgid "Pause."
 msgstr "Pause"
 
-#: python/playergui.py:4148
+#: python/playergui.py:4164
 msgid "Stop."
 msgstr "Arret"
 
-#: python/playergui.py:4158
+#: python/playergui.py:4174
 msgid "Next track."
 msgstr "Piste suivante"
 
-#: python/playergui.py:4170
+#: python/playergui.py:4186
 msgid "Add tracks to the playlist."
 msgstr "Ajouter des pistes à la liste"
 
-#: python/playergui.py:4177 python/preferences.py:70
+#: python/playergui.py:4193 python/preferences.py:70
 msgid "Playlist Mode"
 msgstr "Mode de la liste de lecture"
 
-#: python/playergui.py:4196
+#: python/playergui.py:4212
 msgid ""
 "This sets the playlist mode which defines player behaviour after a track has "
 "finished playing.\n"
@@ -2708,31 +2764,31 @@ msgstr ""
 "opposée."
 
 #. TC: Fade time heading.
-#: python/playergui.py:4220 python/preferences.py:71
+#: python/playergui.py:4236 python/preferences.py:71
 msgid "Fade"
 msgstr "Fondu"
 
-#: python/playergui.py:4232
+#: python/playergui.py:4248
 msgid "This controls the amount of fade between tracks."
 msgstr "Contrôle le taux de fondu entre les pistes."
 
-#: python/playergui.py:4239
+#: python/playergui.py:4255
 msgid "Audio Feed"
 msgstr "Audio Feed"
 
-#: python/playergui.py:4249
+#: python/playergui.py:4265
 msgid "Make output from this player available for streaming."
 msgstr "Rendre la sortie de ce lecteur disponible pour le flux"
 
-#: python/playergui.py:4257
+#: python/playergui.py:4273
 msgid "Make output from this player audible to the DJ."
 msgstr "Rendre la sortie de ce lecteur audible au DJ"
 
-#: python/playergui.py:4259
+#: python/playergui.py:4275
 msgid "Force"
 msgstr "Forcer"
 
-#: python/playergui.py:4265
+#: python/playergui.py:4281
 msgid ""
 "When selected this player will be treated like a main player.\n"
 "It will be affected by microphone ducking and won't mute when a main player "
@@ -2743,122 +2799,122 @@ msgstr ""
 "lecteur principal est en fonction."
 
 #. TC: Insert playlist control.
-#: python/playergui.py:4278
+#: python/playergui.py:4294
 msgid "Insert control"
 msgstr "Insérer un contrôle"
 
 #. TC: The Item submenu.
-#: python/playergui.py:4287
+#: python/playergui.py:4303
 msgid "Item"
 msgstr "Elément"
 
 #. TC: The Playlist submenu.
-#: python/playergui.py:4292
+#: python/playergui.py:4308
 msgid "Playlist"
 msgstr "Liste de lecture"
 
 #. TC: Insert playlist control to set playback speed to normal.
-#: python/playergui.py:4303
+#: python/playergui.py:4319
 msgid "Normal Speed"
 msgstr "Vitesse normale"
 
 #. TC: Submenu Item. Parent menu is Playlist.
-#: python/playergui.py:4332 python/playergui.py:4486
+#: python/playergui.py:4348 python/playergui.py:4502
 msgid "Transfer"
 msgstr "Transfer"
 
-#: python/playergui.py:4340
+#: python/playergui.py:4356
 msgid "Crossfade"
 msgstr "Crossfader"
 
 #. TC: Menu item. Opens the metadata tagger on the selected track.
-#: python/playergui.py:4405
+#: python/playergui.py:4421
 msgid "Meta Tag"
 msgstr "Méta Tag"
 
 #. TC: Menu Item. Duplicates the selected track in the playlist.
-#: python/playergui.py:4411
+#: python/playergui.py:4427
 msgid "Duplicate"
 msgstr "Dupliquer"
 
 #. TC: Menu Item. Remove the selected track.
-#: python/playergui.py:4418
+#: python/playergui.py:4434
 msgid "Remove"
 msgstr "Supprimer"
 
 #. TC: Submenu Item. Parent menu item is Remove.
-#: python/playergui.py:4429
+#: python/playergui.py:4445
 msgid "This"
 msgstr "Ceci"
 
 #. TC: Submenu Item. Parent menu item is Remove.
-#: python/playergui.py:4436 python/preferences.py:1234
+#: python/playergui.py:4452 python/preferences.py:1234
 msgid "All"
 msgstr "Tout"
 
 #. TC: Submenu Item. Parent menu item is Remove.
-#: python/playergui.py:4443
+#: python/playergui.py:4459
 msgid "From Here"
 msgstr "Depuis ici"
 
 #. TC: Submenu Item. Parent menu item is Remove.
-#: python/playergui.py:4450
+#: python/playergui.py:4466
 msgid "To Here"
 msgstr "Jusqu'ici"
 
 #. TC: Open the file dialog for adding music to the chosen playlist.
-#: python/playergui.py:4463
+#: python/playergui.py:4479
 msgid "Add Music"
 msgstr "Ajouter de la musique"
 
 #. TC: Submenu Item. Parent menu is Playlist.
-#: python/playergui.py:4470
+#: python/playergui.py:4486
 msgid "Save"
 msgstr "Sauvegarder"
 
 #. TC: Submenu Item. Parent menu is Playlist.
-#: python/playergui.py:4481
+#: python/playergui.py:4497
 msgid "Copy"
 msgstr "Copier"
 
-#: python/playergui.py:4492
+#: python/playergui.py:4508
 msgid "Exchange"
 msgstr "Echanger"
 
 #. TC: Submenu Item. Parent menu is Playlist.
-#: python/playergui.py:4499
+#: python/playergui.py:4515
 msgid "Empty"
 msgstr "Vide"
 
 #. TC: Submenu Item. Parent menus are Playlist->Copy.
 #. TC: Submenu Item. Parent menus are Playlist->Transfer.
-#: python/playergui.py:4513 python/playergui.py:4552
+#: python/playergui.py:4529 python/playergui.py:4568
 msgid "Append"
 msgstr "Après"
 
 #. TC: Submenu Item. Parent menus are Playlist->Copy.
 #. TC: Submenu Item. Parent menus are Playlist->Transfer.
-#: python/playergui.py:4520 python/playergui.py:4559
+#: python/playergui.py:4536 python/playergui.py:4575
 msgid "Prepend"
 msgstr "Avant"
 
 #. TC: Submenu Item. Parent menus are Playlist->Copy.
-#: python/playergui.py:4531
+#: python/playergui.py:4547
 msgid "Append Cursor"
 msgstr "Ajouter après le curseur"
 
 #. TC: Submenu Item. Parent menus are Playlist->Copy.
-#: python/playergui.py:4538
+#: python/playergui.py:4554
 msgid "Prepend Cursor"
 msgstr "Ajouter avant le curseur"
 
 #. TC: Submenu Item. Parent menus are Playlist->Transfer.
-#: python/playergui.py:4570
+#: python/playergui.py:4586
 msgid "Append at Cursor"
 msgstr "Ajouter après au curseur"
 
 #. TC: Submenu Item. Parent menus are Playlist->Transfer.
-#: python/playergui.py:4577
+#: python/playergui.py:4593
 msgid "Prepend at Cursor"
 msgstr "Ajouter avant au curseur"
 
@@ -3549,64 +3605,64 @@ msgstr "Traducteurs"
 msgid "About"
 msgstr "Concernant…"
 
-#: python/sourceclientgui.py:89
+#: python/sourceclientgui.py:90
 msgid "Insert Attribute"
 msgstr "Insérer un attribut"
 
-#: python/sourceclientgui.py:133
+#: python/sourceclientgui.py:134
 msgid "Icecast 2 Master"
 msgstr "Icecast 2 Maitre"
 
-#: python/sourceclientgui.py:133
+#: python/sourceclientgui.py:134
 msgid "Shoutcast Master"
 msgstr "Shoutcast Maitre"
 
-#: python/sourceclientgui.py:134
+#: python/sourceclientgui.py:135
 msgid "Icecast 2 Stats/Relay"
 msgstr "Icecast 2 Stats/Relais"
 
-#: python/sourceclientgui.py:134
+#: python/sourceclientgui.py:135
 msgid "Shoutcast Stats/Relay"
 msgstr "Icecast 2 Stats/Relais"
 
-#: python/sourceclientgui.py:137
+#: python/sourceclientgui.py:138
 msgid "Enter new server connection details"
 msgstr "Insérer de nouveaux détails concernant la connexion au serveur"
 
-#: python/sourceclientgui.py:156
+#: python/sourceclientgui.py:157
 msgid "Edit existing server connection details"
 msgstr "Editer les détails de la connexion au serveur"
 
-#: python/sourceclientgui.py:193
+#: python/sourceclientgui.py:194
 msgid "This server is to be scanned for audience figures"
 msgstr "Ce serveur doit être scanné pour les stats d'audience"
 
-#: python/sourceclientgui.py:206
+#: python/sourceclientgui.py:207
 msgid "Server type"
 msgstr "Type de serveur"
 
-#: python/sourceclientgui.py:206
+#: python/sourceclientgui.py:207
 msgid "Port number"
 msgstr "Numéro du port"
 
-#: python/sourceclientgui.py:207
+#: python/sourceclientgui.py:208
 msgid "Mount point"
 msgstr "Point de montage"
 
-#: python/sourceclientgui.py:207
+#: python/sourceclientgui.py:208
 msgid "Login name"
 msgstr "Nome utente"
 
-#: python/sourceclientgui.py:449
+#: python/sourceclientgui.py:474
 msgid "Encoder Format Not Set/Compatible"
 msgstr "Format d'encodage non défini/incompatible"
 
 #. TC: Connection button text when no details have been entered.
-#: python/sourceclientgui.py:452
+#: python/sourceclientgui.py:477
 msgid "No Master Server Configured"
 msgstr "Aucun serveur maitre n'es configuré"
 
-#: python/sourceclientgui.py:654
+#: python/sourceclientgui.py:679
 msgid ""
 "A table of servers with which to connect. Only one master server can be "
 "added for the purpose of streaming. All other servers will appear below the "
@@ -3618,41 +3674,41 @@ msgstr ""
 "sous le serveur maitre pour les statistiques, qui peuvent être occultés par "
 "serveurs."
 
-#: python/sourceclientgui.py:670
+#: python/sourceclientgui.py:695
 msgid "Hostname/IP address"
 msgstr "Hôte/Adresse IP"
 
 #. TC: Mount point is a technical term in relation to icecast servers.
-#: python/sourceclientgui.py:683
+#: python/sourceclientgui.py:708
 msgid "Mount point       "
 msgstr "Point de montage  "
 
 #. TC: This is the listener count heading.
-#: python/sourceclientgui.py:692
+#: python/sourceclientgui.py:717
 msgid "Listeners"
 msgstr "Auditeurs"
 
-#: python/sourceclientgui.py:707
+#: python/sourceclientgui.py:732
 msgid "The sum total of listeners in this server tab."
 msgstr "Nombre total d'auditeurs pour cet onglet serveur"
 
-#: python/sourceclientgui.py:734
+#: python/sourceclientgui.py:759
 msgid "Never"
 msgstr "Jamais"
 
-#: python/sourceclientgui.py:737
+#: python/sourceclientgui.py:762
 msgid "Always"
 msgstr "Toujours"
 
-#: python/sourceclientgui.py:739
+#: python/sourceclientgui.py:764
 msgid "If connected"
 msgstr "Si connecté"
 
-#: python/sourceclientgui.py:995
+#: python/sourceclientgui.py:1020
 msgid "Custom user agent string"
 msgstr "User agent personnalisé"
 
-#: python/sourceclientgui.py:1002
+#: python/sourceclientgui.py:1027
 msgid ""
 "Set this on the occasion that the server or its firewall specifically "
 "refuses to allow libshout based clients."
@@ -3660,16 +3716,16 @@ msgstr ""
 "A configurer au cas ou le serveur ou le pare-feux refuse spécialement "
 "d'autoriser les clients basés sur libshout."
 
-#: python/sourceclientgui.py:1007
+#: python/sourceclientgui.py:1032
 msgid "If the connection breaks reconnect to the server"
 msgstr "Si la connexion est interrompue, se reconnecter au sserveur"
 
 #. TC: Label for a comma separated list of delay times.
-#: python/sourceclientgui.py:1017
+#: python/sourceclientgui.py:1042
 msgid "Delay times"
 msgstr "Temps de délais"
 
-#: python/sourceclientgui.py:1021
+#: python/sourceclientgui.py:1046
 msgid ""
 "A comma separated list of delays in seconds between reconnection attempts. "
 "Note that bad values or values less than 5 will be interpreted as 5."
@@ -3678,45 +3734,45 @@ msgstr ""
 "tentatives de reconnexion. Notez que de mauvaises valeurs ou inférieures à 5 "
 "seront interprétées comme 5."
 
-#: python/sourceclientgui.py:1027
+#: python/sourceclientgui.py:1052
 msgid "Repeat the sequence of delays indefinitely."
 msgstr "Répéter la saquence de délais indéfiniment."
 
 #. TC: User specifies no dialog box to be shown.
-#: python/sourceclientgui.py:1030
+#: python/sourceclientgui.py:1055
 msgid "Quiet"
 msgstr "Muet"
 
-#: python/sourceclientgui.py:1032
+#: python/sourceclientgui.py:1057
 msgid "Keep the reconnection dialogue box hidden at all times."
 msgstr "Laisser la boite de reconnexion cachée tout le temps."
 
-#: python/sourceclientgui.py:1037
+#: python/sourceclientgui.py:1062
 msgid "The contingency plan upon the stream buffer becoming full is..."
 msgstr "Le plan d'action lorsque le tampon de streaming est plein est…"
 
-#: python/sourceclientgui.py:1046
+#: python/sourceclientgui.py:1071
 msgid "Discard audio data for as long as needed."
 msgstr "Laisser tomber les données audio pour la durée nécessaire."
 
-#: python/sourceclientgui.py:1048
+#: python/sourceclientgui.py:1073
 msgid "Assume the connection is beyond saving and reconnect."
 msgstr ""
 "Assumer que la connexion est interrompue, se déconnecter et se reconnecter."
 
-#: python/sourceclientgui.py:1300
+#: python/sourceclientgui.py:1356
 msgid "Shoutcast"
 msgstr "Shoucast"
 
-#: python/sourceclientgui.py:1337
+#: python/sourceclientgui.py:1393
 msgid "[Metadata suppressed]"
 msgstr "[Métadonnée supprimmée]"
 
-#: python/sourceclientgui.py:1416
+#: python/sourceclientgui.py:1472
 msgid "Individual Controls"
 msgstr "Contrôles individuels"
 
-#: python/sourceclientgui.py:1430
+#: python/sourceclientgui.py:1486
 msgid ""
 "Connect to or disconnect from the radio server. If the button does not stay "
 "in, the connection failed for some reason.\n"
@@ -3738,11 +3794,11 @@ msgstr ""
 "capable de sélectionner le format du flux."
 
 #. TC: Kick whoever is on the server.
-#: python/sourceclientgui.py:1447
+#: python/sourceclientgui.py:1503
 msgid "Kick Source"
 msgstr "Kick Source"
 
-#: python/sourceclientgui.py:1449
+#: python/sourceclientgui.py:1505
 msgid ""
 "This will disconnect whoever is currently using the server, freeing it up "
 "for personal use."
@@ -3750,61 +3806,58 @@ msgstr ""
 "Déconnectera tous ceux qui utilisent le serveurs, le libérant ainsi pour une "
 "utilisation privée."
 
-#: python/sourceclientgui.py:1459
-#, fuzzy
+#: python/sourceclientgui.py:1515
 msgid "Timer:"
-msgstr "Timer"
+msgstr "Timer :"
 
-#: python/sourceclientgui.py:1463
-#, fuzzy
+#: python/sourceclientgui.py:1519
 msgid "From"
-msgstr "Depuis ici"
+msgstr "Depuis"
 
-#: python/sourceclientgui.py:1464
+#: python/sourceclientgui.py:1520
 msgid ""
 "Automatically connect to the server at a specific time in 24 hour format, "
 "midnight being 00:00"
 msgstr ""
 "Se connecter à une heure spécifique au format 24 heures, minuit étant 00:00"
 
-#: python/sourceclientgui.py:1469
+#: python/sourceclientgui.py:1525
 msgid "Kick"
 msgstr ""
 
-#: python/sourceclientgui.py:1471
+#: python/sourceclientgui.py:1527
 msgid "Disconnect whoever is using the server just before start time."
 msgstr "Déconnecter tous ceux qui utilisent le serveur avant de démarrer."
 
-#: python/sourceclientgui.py:1480
+#: python/sourceclientgui.py:1536
 msgid "To"
 msgstr ""
 
-#: python/sourceclientgui.py:1481
+#: python/sourceclientgui.py:1537
 msgid ""
 "Automatically disconnect from the server at a specific time in 24 hour "
 "format."
 msgstr ""
 "Se déconnecter automatiquement à une heure spécifique au format 24 heures"
 
-#: python/sourceclientgui.py:1484
-#, fuzzy
+#: python/sourceclientgui.py:1540
 msgid "Fade out"
-msgstr "Fondu 5s"
+msgstr "Fondu"
 
-#: python/sourceclientgui.py:1486
+#: python/sourceclientgui.py:1542
 msgid "Fade audio before disconnecting."
-msgstr ""
+msgstr "Fondu audio avant la déconnexion."
 
-#: python/sourceclientgui.py:1500
+#: python/sourceclientgui.py:1556
 msgid "At connect:"
 msgstr "A la connection :"
 
 #. TC: [x] Start player (*) 1 ( ) 2
-#: python/sourceclientgui.py:1504
+#: python/sourceclientgui.py:1560
 msgid "Start player"
 msgstr "Démarrer le lecteur"
 
-#: python/sourceclientgui.py:1509
+#: python/sourceclientgui.py:1565
 msgid ""
 "Have one of the players start automatically when a radio server connection "
 "is successfully made."
@@ -3813,32 +3866,32 @@ msgstr ""
 "connexion au serveur radio a réussie."
 
 #. TC: [x] Start recorder (*) 1 ( ) 2
-#: python/sourceclientgui.py:1517
+#: python/sourceclientgui.py:1573
 msgid "Start recorder"
 msgstr "Démarrer l'enregistreur"
 
-#: python/sourceclientgui.py:1524
+#: python/sourceclientgui.py:1580
 msgid ""
 "Have a recorder start automatically when a radio server connection is "
 "successfully made."
 msgstr ""
-"Pour avoir l'enregistreur qui démarre automatiquement lorsque la connexion "
-"au serveur radio a réussie."
+"Pour démarrer automatiquement un enregistreur lorsqu'une connexion au "
+"serveur radio est établie."
 
-#: python/sourceclientgui.py:1529
+#: python/sourceclientgui.py:1585
 msgid "Metadata"
 msgstr "Métadonnées"
 
-#: python/sourceclientgui.py:1539
+#: python/sourceclientgui.py:1595
 msgid "Format String"
 msgstr "Chaine de format"
 
 #. TC: Label for the metadata fallback value.
-#: python/sourceclientgui.py:1541
+#: python/sourceclientgui.py:1597
 msgid "Fallback"
 msgstr "Fallback"
 
-#: python/sourceclientgui.py:1555
+#: python/sourceclientgui.py:1611
 msgid ""
 "You can enter text to accompany the stream here and can specify placemarkers "
 "%r %t %l %s for the artist, title, album, and songname respectively, or "
@@ -3862,7 +3915,7 @@ msgstr ""
 "Lorsque ce champ est vide, les flux Ogg utiliseront les tags standards "
 "vorbis et les mp3 utiliseront %s."
 
-#: python/sourceclientgui.py:1563
+#: python/sourceclientgui.py:1619
 msgid ""
 "The fallback text to use when %r %t %l metadata is unavailable. See the "
 "format string to the left."
@@ -3870,7 +3923,7 @@ msgstr ""
 "Texte de remplacement lorsque les métadonnées %r %t %l ne sont pas "
 "disponibles. voir Chaine de format à gauche."
 
-#: python/sourceclientgui.py:1565
+#: python/sourceclientgui.py:1621
 msgid ""
 "Metadata normally updates only on song title changes but you can force an "
 "immediate update here."
@@ -3878,28 +3931,28 @@ msgstr ""
 "Les métadonnées se mettent à jour lorsque le titre change mais vous pouvez "
 "aussi forcer leur mise à jour immédiate ici."
 
-#: python/sourceclientgui.py:1584
+#: python/sourceclientgui.py:1640
 msgid "Configuration"
 msgstr "Configuration"
 
-#: python/sourceclientgui.py:1585
+#: python/sourceclientgui.py:1641
 msgid "The controls for configuring a stream."
 msgstr "Les contrôles pour configurer un flux."
 
-#: python/sourceclientgui.py:1593
+#: python/sourceclientgui.py:1649
 msgid "Connection"
 msgstr "Connexion"
 
-#: python/sourceclientgui.py:1598
+#: python/sourceclientgui.py:1654
 msgid "Format"
 msgstr "Format"
 
 #. TC: Tab heading. User can enter information about the stream here.
-#: python/sourceclientgui.py:1607
+#: python/sourceclientgui.py:1663
 msgid "Stream Info"
 msgstr "Informations sur le flux"
 
-#: python/sourceclientgui.py:1612
+#: python/sourceclientgui.py:1668
 msgid ""
 "Enter your DJ name or station name here. Typically this information will be "
 "displayed by listener clients."
@@ -3907,7 +3960,7 @@ msgstr ""
 "Saisissez le nom du DJ ou de la station. Typiquement cette information sera "
 "affichée par les clients des Auditeurs."
 
-#: python/sourceclientgui.py:1615
+#: python/sourceclientgui.py:1671
 msgid ""
 "The URL of your radio station. This and the rest of the information below is "
 "intended for display on a radio station listings website."
@@ -3915,19 +3968,19 @@ msgstr ""
 "L'URL de votre station. Ceci ainsi que les informations suivantes sont "
 "destinées à l'affichage sur un site listant les stations."
 
-#: python/sourceclientgui.py:1620
+#: python/sourceclientgui.py:1676
 msgid "A description of your radio station."
 msgstr "Description de votre station."
 
-#: python/sourceclientgui.py:1625
+#: python/sourceclientgui.py:1681
 msgid "The musical genres you are likely to play."
 msgstr "Genres musicaux offerts."
 
-#: python/sourceclientgui.py:1628
+#: python/sourceclientgui.py:1684
 msgid "Make Public"
 msgstr "Rendre publique"
 
-#: python/sourceclientgui.py:1629
+#: python/sourceclientgui.py:1685
 msgid ""
 "Publish your radio station on a listings website. The website in question "
 "will depend on how the server to which you connect is configured."
@@ -3935,15 +3988,15 @@ msgstr ""
 "Publier votre station sur le site de liste. Le site en question dépends de "
 "la configuration du serveur auquel vous vous connectez."
 
-#: python/sourceclientgui.py:1641
+#: python/sourceclientgui.py:1697
 msgid "Genre(s)"
 msgstr "Genere(s)"
 
-#: python/sourceclientgui.py:1651
+#: python/sourceclientgui.py:1708
 msgid "Master server admin password"
 msgstr "Mot de passe administrateur principal"
 
-#: python/sourceclientgui.py:1656
+#: python/sourceclientgui.py:1713
 msgid ""
 "This is for kick and stats on Shoutcast master servers that have an "
 "administrator password. For those that don't leave this blank (the source "
@@ -3953,47 +4006,55 @@ msgstr ""
 "d'administration. Pour ceux n'en possédant pas, laissez vide (le mot de "
 "passe de la source est suffisant pour eux)"
 
-#: python/sourceclientgui.py:1665
+#: python/sourceclientgui.py:1722
 msgid "Contact Details"
 msgstr "Détails de contact"
 
-#: python/sourceclientgui.py:1670
+#: python/sourceclientgui.py:1726
 msgid "Internet Relay Chat connection info goes here."
 msgstr "Les informations d'IRC viennent ici"
 
-#: python/sourceclientgui.py:1673
+#: python/sourceclientgui.py:1729
 msgid "Connection info for AOL instant messenger goes here."
 msgstr "Informations de connexion au messager AOL viennent ici."
 
-#: python/sourceclientgui.py:1676
+#: python/sourceclientgui.py:1732
 msgid "ICQ instant messenger connection info goes here."
 msgstr "Les informations concernant le messager ICQ viennent ici."
 
-#: python/sourceclientgui.py:1679
+#: python/sourceclientgui.py:1735
 msgid "IRC"
 msgstr "IRC"
 
-#: python/sourceclientgui.py:1680
+#: python/sourceclientgui.py:1736
 msgid "AIM"
 msgstr "AIM"
 
-#: python/sourceclientgui.py:1681
+#: python/sourceclientgui.py:1737
 msgid "ICQ"
 msgstr "ICQ"
 
-#: python/sourceclientgui.py:1690
+#: python/sourceclientgui.py:1747
+msgid "Use ISO-8859-1 encoding for fixed metadata"
+msgstr ""
+
+#: python/sourceclientgui.py:1749
+msgid "Enable this if sending to a Shoutcast V1 server."
+msgstr ""
+
+#: python/sourceclientgui.py:1753
 msgid "Extra Shoutcast"
 msgstr "Extra Shoutcast"
 
-#: python/sourceclientgui.py:1695
+#: python/sourceclientgui.py:1758
 msgid "Troubleshooting"
 msgstr "Résolution des problèmes"
 
-#: python/sourceclientgui.py:1821
+#: python/sourceclientgui.py:1885
 msgid "Stop recording."
 msgstr "Arrêter l'enregistrement"
 
-#: python/sourceclientgui.py:1823
+#: python/sourceclientgui.py:1887
 msgid ""
 "Start recording.\n"
 "\n"
@@ -4006,20 +4067,20 @@ msgstr ""
 "sont pas corrects ou que les permissions d'écriture ne sont pas obtenues "
 "pour le dossier de destination."
 
-#: python/sourceclientgui.py:1828
+#: python/sourceclientgui.py:1892
 msgid "Pause recording."
 msgstr "Enregistrement en pause"
 
-#: python/sourceclientgui.py:1865
+#: python/sourceclientgui.py:1929
 msgid "Recording time elapsed."
 msgstr "Temps d'enregistement écoulé."
 
 #. TC: Dialog title bar text.
-#: python/sourceclientgui.py:1919
+#: python/sourceclientgui.py:1983
 msgid "Select the folder to record to"
 msgstr "Sélection du dossier pour l'enregistrement"
 
-#: python/sourceclientgui.py:1930
+#: python/sourceclientgui.py:1994
 msgid ""
 "Choose which stream to record or the 24 bit FLAC option. If the stream isn't "
 "already running the encoder will be started automatically using whatever "
@@ -4029,7 +4090,7 @@ msgstr ""
 "pas en cours de lecture, l'encodage commencera automatiquement quels que "
 "soient les paramêtres actuellement configurés."
 
-#: python/sourceclientgui.py:1934
+#: python/sourceclientgui.py:1998
 msgid ""
 "Choose which directory you want to save to. All file names will be in a "
 "timestamp format and have either an oga, mp3, or flac file extension. "
@@ -4041,69 +4102,70 @@ msgstr ""
 "Important : vous devez sélectionner un dossier avec les permissions en "
 "écriture adéquates."
 
-#: python/sourceclientgui.py:2038
+#: python/sourceclientgui.py:2102
 msgid "Perform operations on multiple servers in unison."
 msgstr "Effecter des opérations simultanément sur plusieurs serveurs."
 
-#: python/sourceclientgui.py:2050
+#: python/sourceclientgui.py:2114
 msgid "Connect"
 msgstr "Connecter"
 
-#: python/sourceclientgui.py:2067
+#: python/sourceclientgui.py:2131
 msgid "Disconnect"
 msgstr "Déconnecter"
 
-#: python/sourceclientgui.py:2075
+#: python/sourceclientgui.py:2139
 msgid "Kick Sources"
 msgstr "Kick Sources"
 
-#: python/sourceclientgui.py:2084
+#: python/sourceclientgui.py:2148
 msgid "Metadata:"
 msgstr "Metadonnées :"
 
-#: python/sourceclientgui.py:2114
+#: python/sourceclientgui.py:2178
 msgid "Group Controls"
 msgstr "Contrôles de groupe"
 
-#: python/sourceclientgui.py:2610
+#: python/sourceclientgui.py:2668
 msgid "Recording Facility Unavailable"
 msgstr "Fonctionalités d'enregistrement non disponibles"
 
-#: python/sourceclientgui.py:2613
+#: python/sourceclientgui.py:2671
 msgid "No Recorders Are Correctly Configured"
 msgstr "Aucun enregistreur configuré correctement"
 
 #. TC: Recorder menu format string.
-#: python/sourceclientgui.py:2626
+#: python/sourceclientgui.py:2684
+#, python-brace-format
 msgid "{numericid} [{source}] > [{directory}]"
 msgstr "{numericid} [{source}] > [{directory}]"
 
-#: python/sourceclientgui.py:2628
+#: python/sourceclientgui.py:2686
 msgid "Misconfigured"
 msgstr "Mal configuré"
 
-#: python/sourceclientgui.py:2649
+#: python/sourceclientgui.py:2707
 msgid "Streaming Facility Unavailable"
 msgstr "Fonctionalités de flux non disponibles"
 
-#: python/sourceclientgui.py:2651
+#: python/sourceclientgui.py:2709
 msgid "No Streams Are Currently Configured"
 msgstr "Aucun flux actuellement configuré"
 
-#: python/sourceclientgui.py:2654
+#: python/sourceclientgui.py:2712
 msgid "Group Connect"
 msgstr "Connexion de groupe"
 
-#: python/sourceclientgui.py:2660
+#: python/sourceclientgui.py:2718
 msgid "Group Disconnect"
 msgstr "Déconnetion de groupe"
 
 #. TC: Window title bar text.
-#: python/sourceclientgui.py:2691
+#: python/sourceclientgui.py:2749
 msgid "IDJC Output"
 msgstr "Sortie IDJC"
 
-#: python/sourceclientgui.py:2707
+#: python/sourceclientgui.py:2765
 msgid ""
 "Each one of these tabs represents a separate stream recorder. The LED "
 "indicator colours represent the following: Clear=Stopped Yellow=Paused "
@@ -4112,7 +4174,7 @@ msgstr ""
 "Chacun de ces onglets représente un enregistreur de flux. La couleur de la "
 "LED indique : Eteinte=Arret Jaune=Pause Rouge=Enregistrement."
 
-#: python/sourceclientgui.py:2715
+#: python/sourceclientgui.py:2773
 msgid ""
 "Each one of these tabs represents a separate radio streamer. The LED "
 "indicator colours represent the following: Clear=No connection "
@@ -4123,11 +4185,11 @@ msgstr ""
 "indique : Eteinte=Aucune connexion Jaune=En attente d'autentification. "
 "Verte=Connecté. Clignottante=Perte de paquet du à une mauvaise connexion."
 
-#: python/sourceclientgui.py:2733
+#: python/sourceclientgui.py:2791
 msgid " Stream "
 msgstr " Flux "
 
-#: python/sourceclientgui.py:2768
+#: python/sourceclientgui.py:2826
 msgid ""
 "<span weight=\"bold\" size=\"12000\">A connection to a radio server has "
 "failed.</span>\n"
@@ -4139,13 +4201,16 @@ msgstr ""
 "\n"
 "Aucune tentative de reconnexion ne sera faite."
 
-#: python/sourceclientgui.py:2773
+#: python/sourceclientgui.py:2831
 msgid ""
 "<span weight=\"bold\" size=\"12000\">A scheduled stream disconnection has "
 "occurred.</span>"
 msgstr ""
 "<span weight=\"bold\" size=\"12000\">Une déconnexion pré-programmée du flux "
 "s'est produite.</span>"
+
+#~ msgid "Playlist types (*.m3u, *.xspf, *.pls)"
+#~ msgstr "Type de listes de lecture (*.m3u, *.xspf, *.pls)"
 
 #~ msgid "File Path Modify"
 #~ msgstr "Modifier le chemin"

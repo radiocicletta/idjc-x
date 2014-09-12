@@ -1,13 +1,13 @@
 .TH "IDJC-RM" 1 "2012-02-06" "VERSION" "Internet DJ Console"
 .SH NOM
-idjc\-rm \- Remove a profile
+idjc\-rm \- Supprimer des profiles
 .SH SYNOPSIS
 .P
-idjc rm [\-h] nom_de_profile [nom_de_profile...]
+idjc rm [\-h] nom_de_profile [nom_de_profile…]
 .SH DESCRIPTION
-Supprime un ou des profiles 
+Supprime un ou des profiles
 .B idjc
-du dossier de configuration correspondant.
+du dossier de configuration correspondant
 .SS Options
 .B \-h, \-\-help
 .RS
