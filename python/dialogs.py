@@ -26,7 +26,7 @@ import pango
 
 from idjc import FGlobs
 from idjc.prelims import ProfileManager
-from .gtkstuff import threadslock
+from .gtkstuff import threadslock, idle_add
 
 import gettext
 t = gettext.translation(FGlobs.package_name, FGlobs.localedir, fallback=True)
