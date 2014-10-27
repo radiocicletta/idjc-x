@@ -45,6 +45,7 @@ from idjc import FGlobs, PGlobs
 from .utils import string_multireplace
 from .gtkstuff import DefaultEntry, threadslock, HistoryEntry
 from .gtkstuff import WindowSizeTracker, FolderChooserButton
+from .gtkstuff import timeout_add, source_remove
 from .dialogs import *
 from .irc import IRCPane
 from .format import FormatControl, FormatCodecMPEG
@@ -2336,7 +2337,7 @@ class SourceClientGui(dbus.service.Object):
         self.stop_recording_all()
         self.stop_streaming_all()
         self.stop_irc_all()
-        gobject.source_remove(self.monitor_source_id)
+        source_remove(self.monitor_source_id)
         self.monitor()
     def app_exit(self):
         if self.parent.session_loaded:
@@ -2831,7 +2832,7 @@ class SourceClientGui(dbus.service.Object):
             _('<span weight="bold" size="12000">A scheduled stream'
             ' disconnection has occurred.</span>'))
         
-        self.monitor_source_id = gobject.timeout_add(250, threadslock(self.monitor))
+        self.monitor_source_id = timeout_add(250, threadslock(self.monitor))
         self.window.realize()   # Prevent a rendering bug.
         
         dbus.service.Object.__init__(self,

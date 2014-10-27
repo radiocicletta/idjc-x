@@ -44,6 +44,7 @@ else:
 from idjc import FGlobs
 from .tooltips import set_tip
 from .gtkstuff import threadslock, gdklock, DefaultEntry, NotebookSR
+from .gtkstuff import idle_add, timeout_add, source_remove
 
 
 __all__ = ['MediaPane', 'have_songdb']
@@ -133,7 +134,7 @@ class DBAccessor(threading.Thread):
     def run(self):
         """This is the worker thread."""
 
-        notify = partial(glib.idle_add, threadslock(self.notify))
+        notify = partial(idle_add, threadslock(self.notify))
         
         try:
             while self.keepalive:
@@ -227,10 +228,9 @@ class DBAccessor(threading.Thread):
         try:
             self._handle.close()
         except sql.Error:
-            glib.idle_add(threadslock(self.notify),
-                                            _('Problem dropping connection'))
+            idle_add(threadslock(self.notify), _('Problem dropping connection'))
         else:
-            glib.idle_add(threadslock(self.notify), _('Connection dropped'))
+            idle_add(threadslock(self.notify), _('Connection dropped'))
 
     @thread_only
     def replace_cursor(self, cursor):
@@ -560,7 +560,7 @@ class PageCommon(gtk.VBox):
         while self._update_id:
             context, namespace = self._update_id.popleft()
             namespace[0] = True
-            glib.source_remove(context)
+            source_remove(context)
         
         self._acc = None
         model = self.tree_view.get_model()
@@ -604,7 +604,7 @@ class PageCommon(gtk.VBox):
         with gdklock():
             while self._update_id:
                 context, namespace = self._update_id.popleft()
-                glib.source_remove(context)
+                source_remove(context)
                 # Idle functions to receive the following and know to clean-up.
                 namespace[0] = True
 
@@ -620,7 +620,7 @@ class PageCommon(gtk.VBox):
         # Scrap intermediate jobs whose output would merely slow down the
         # user interface responsiveness.
         namespace = [False, ()]
-        context = glib.idle_add(self._update_1, acc, cursor, rows, namespace)
+        context = idle_add(self._update_1, acc, cursor, rows, namespace)
         self._update_id.append((context, namespace))
 
 class ViewerCommon(PageCommon):
@@ -943,7 +943,7 @@ class TreePage(ViewerCommon):
 
     def deactivate(self):
         while self._pulse_id:
-            glib.source_remove(self._pulse_id.popleft())
+            source_remove(self._pulse_id.popleft())
         self.progress_bar.set_fraction(0.0)
         super(TreePage, self).deactivate()
 
@@ -1021,7 +1021,7 @@ class TreePage(ViewerCommon):
             print "unsupported database type:", self._db_type
             return
             
-        self._pulse_id.append(glib.timeout_add(1000, self._progress_pulse))
+        self._pulse_id.append(timeout_add(1000, self._progress_pulse))
         self._acc.request((query,), self._handler, self._failhandler)
 
     def _drag_data(self, model, path):
@@ -1068,10 +1068,9 @@ class TreePage(ViewerCommon):
         print exception
         
         notify(_('Tree fetch failed'))
-        glib.idle_add(threadslock(self.loading_label.set_text),
-                                                        _('Fetch Failed!'))
+        idle_add(threadslock(self.loading_label.set_text), _('Fetch Failed!'))
         while self._pulse_id:
-            glib.source_remove(self._pulse_id.popleft())
+            source_remove(self._pulse_id.popleft())
         
         return True  # Drop job. Don't run handler.
 
@@ -1085,7 +1084,7 @@ class TreePage(ViewerCommon):
         self.loading_label.set_text(_('Populating'))
         # Turn off progress bar pulser.
         while self._pulse_id:
-            glib.source_remove(self._pulse_id.popleft())
+            source_remove(self._pulse_id.popleft())
 
         # Clean away old data.
         self.tree_view.set_model(None)
@@ -1095,7 +1094,7 @@ class TreePage(ViewerCommon):
         namespace = [False, (0.0, None, None, None, {}, None, None, None, None)]
         do_max = min(max(30, rows / 100), 200)  # Data size to process.
         total = 2.0 * rows
-        context = glib.idle_add(self._update_2, acc, cursor, total, do_max,
+        context = idle_add(self._update_2, acc, cursor, total, do_max,
                                                             [], namespace)
         self._update_id.append((context, namespace))
         return False
@@ -1114,7 +1113,7 @@ class TreePage(ViewerCommon):
         if not rows:
             store.sort()
             namespace = [False, (done, ) + (None, ) * 11]
-            context = glib.idle_add(self._update_3, acc, total, do_max,
+            context = idle_add(self._update_3, acc, total, do_max,
                                                         store, namespace)
             self._update_id.append((context, namespace))
             return False
@@ -1405,7 +1404,7 @@ class FlatPage(ViewerCommon):
                 self.where_entry.set_text("")
                 while self._update_id:
                     context, namespace = self._update_id.popleft()
-                    glib.source_remove(context)
+                    source_remove(context)
                     namespace[0] = True
                 self.list_store.clear()
                 return
@@ -1450,8 +1449,8 @@ class FlatPage(ViewerCommon):
         if exception[0] == 2006:
             raise
 
-        glib.idle_add(self.tree_view.set_model, None)
-        glib.idle_add(self.list_store.clear)
+        idle_add(self.tree_view.set_model, None)
+        idle_add(self.list_store.clear)
 
     ###########################################################################
     
@@ -1461,7 +1460,7 @@ class FlatPage(ViewerCommon):
             self.tree_view.set_model(None)
             self.list_store.clear()
             namespace[1] = (0, )  # found = 0
-            context = glib.idle_add(self._update_2, acc, cursor, namespace)
+            context = idle_add(self._update_2, acc, cursor, namespace)
             self._update_id.append((context, namespace))
         return False
 
@@ -1770,8 +1769,8 @@ class CatalogsPage(PageCommon):
         if exception[0] == 2006:
             raise
         
-        glib.idle_add(threadslock(self.tree_view.set_model), self.list_store)
-        glib.idle_add(threadslock(self.refresh.set_sensitive), True)
+        idle_add(threadslock(self.tree_view.set_model), self.list_store)
+        idle_add(threadslock(self.refresh.set_sensitive), True)
 
     @threadslock
     def _update_1(self, acc, cursor, rows, namespace):
@@ -1882,13 +1881,13 @@ class MediaPane(gtk.VBox):
     ###########################################################################
 
     def _safe_disconnect(self):
-        glib.idle_add(threadslock(self.prefs_controls.disconnect))
+        idle_add(threadslock(self.prefs_controls.disconnect))
 
     def _hand_over(self, db_name):
         self._tree_page.activate(self._acc1, db_name, self.usesettings)
         self._flat_page.activate(self._acc2, db_name, self.usesettings)
         self._catalogs_page.activate(self._acc3, db_name, self.usesettings)
-        glib.idle_add(threadslock(self.show))
+        idle_add(threadslock(self.show))
             
     def _fail_1(self, exception, notify):
         # Give up.

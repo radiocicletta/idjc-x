@@ -32,6 +32,7 @@ import dbus.service
 
 from idjc import FGlobs, PGlobs
 from .gtkstuff import threadslock
+from .gtkstuff import timeout_add, source_remove
 from .prelims import ProfileManager
 from .tooltips import set_tip
 
@@ -2167,9 +2168,8 @@ class BindingListModel(gtk.GenericTreeModel):
         self.highlights= owner.owner.highlights
         
     def on_realize(self, tree, column0, model_sort):
-        source= gobject.timeout_add(
-                            100, self.cb_highlights, tree, column0, model_sort)
-        tree.connect_object('destroy', gobject.source_remove, source)
+        source= timeout_add(100, self.cb_highlights, tree, column0, model_sort)
+        tree.connect_object('destroy', source_remove, source)
         
     @threadslock
     def cb_highlights(self, tree, column0, model_sort):

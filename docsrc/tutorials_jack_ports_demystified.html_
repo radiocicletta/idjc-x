@@ -61,7 +61,7 @@ The audio routing of IDJC to the soundcard happens via JACK ports.</p>
 <tr>
   <td><p>Misc</p></td>
   <td><p>The MIDI port can be connected to ports of MIDI devices to use them to control IDJC.</p>
-  <p>The DJ alarm port produces and audible tone when playlists are about to end.</p>
+  <p>The DJ alarm port produces an audible tone when playlists are about to end.</p>
   </td>
 </tr>
 </table> 

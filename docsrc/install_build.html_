@@ -54,25 +54,25 @@ which you typically want the library development packages whose names carry the 
       <td><a href="http://www.gtk.org/download.html">GLib2</a></td><td>2.0.0+</td><td>Required</td>
    </tr>
    <tr>
-      <td><a href="http://www.mpg123.de/">mpg123</a></td><td>1.13+</td><td>Required&#8212;provides support for mp2/mp3 playback</td>
+      <td><a href="http://www.mpg123.de/">mpg123</a></td><td>1.13+</td><td>Recommended&#8212;for mp2/mp3 playback</td>
    </tr>
    <tr>
-      <td><a href="http://www.twolame.org/">TwoLAME</a></td><td>0.3+</td><td>Required&#8212;provides support for streaming/recording in the mp2 format</td>
+      <td><a href="http://www.twolame.org/">TwoLAME</a></td><td>0.3+</td><td>Recommended&#8212;for streaming/recording in the mp2 format</td>
    </tr>
    <tr>
-      <td><a href="http://lame.sourceforge.net/">Lame</a></td><td>3.97+</td><td>Recommended&#8212;provides support for streaming/recording in the mp3 format</td>
+      <td><a href="http://lame.sourceforge.net/">Lame</a></td><td>3.97+</td><td>Recommended&#8212;for streaming/recording in the mp3 format</td>
    </tr>
    <tr>
-      <td><a href="http://www.ffmpeg.org/">FFmpeg's libav&hellip;</a></td><td>0.10/0.8+</td><td>Recommended&#8212;provides support for mp4/m4a, ape, mpc, aac(+)</td>
+      <td><a href="http://www.ffmpeg.org/">FFmpeg's libav&hellip;</a></td><td>0.10/0.8+</td><td>Recommended&#8212;for mp4/m4a, ape, mpc, aac(+)</td>
    </tr>
    <tr>
-      <td><a href="http://flac.sourceforge.net/">FLAC</a></td><td>1.1.3+</td><td>Recommended&#8212;provides support for FLAC playback, recording, and streaming</td>
+      <td><a href="http://flac.sourceforge.net/">FLAC</a></td><td>1.1.3+</td><td>Recommended&#8212;for FLAC playback, recording, and streaming</td>
    </tr>
    <tr>
-      <td><a href="http://www.speex.org/">Speex</a></td><td>1.2rc1+</td><td>Recommended&#8212;provides support for Speex playback and streaming</td>
+      <td><a href="http://www.speex.org/">Speex</a></td><td>1.2rc1+</td><td>Recommended&#8212;for Speex playback and streaming</td>
    </tr>
    <tr>
-      <td><a href="http://www.opus-codec.org/">Opus</a></td><td>1.0+</td><td>Recommended&#8212;provides support for Opus playback and streaming</td>
+      <td><a href="http://www.opus-codec.org/">Opus</a></td><td>1.0+</td><td>Recommended&#8212;for Opus playback and streaming</td>
    </tr>
 </table>
 <p>For Ubuntu users, this command should be enough to satisfy nearly all of the above.</p>

@@ -20,7 +20,7 @@ __all__ = ['PopupWindow']
 
 import gobject
 import gtk
-from .gtkstuff import threadslock
+from .gtkstuff import threadslock, timeout_add, source_remove
 
 
 class PopupWindow:
@@ -102,23 +102,23 @@ class PopupWindow:
         # Any event triggers destruction of popup windows currently open.
         if self.popup_window is not None:
             self.popup_window.destroy()
-            gobject.source_remove(self.timeout)
+            source_remove(self.timeout_id)
             self.popup_window = None
             self.message("popup window destroyed due to the sensing of an "
                                                         "event, timer removed")
             if data == "leave": return False
         if data == "enter" and self.inside_widget == False:
-            self.timeout = gobject.timeout_add(100, self.timeout_callback)
+            self.timeout_id = timeout_add(100, self.timeout_callback)
             self.inside_widget = True
             self.total_timer_count = 0
             self.message("timer started")
         if data == "leave":
-            gobject.source_remove(self.timeout)
+            source_remove(self.timeout_id)
             self.inside_widget = False
             self.message("timer removed")
         if data == "button" or data == "scroll" or self.inhibit_callback() \
                                                         and self.inside_widget:
-            gobject.source_remove(self.timeout)
+            source_remove(self.timeout_id)
             self.message("timer removed")
     
     def dummy(self): return False

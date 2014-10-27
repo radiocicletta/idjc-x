@@ -437,7 +437,7 @@ class WindowSizeTracker(object):
         self._window.unmaximize()
         self._window.resize(self._x, self._y)
         if self._max:
-            gobject.idle_add(threadslock(self._window.maximize))
+            idle_add(threadslock(self._window.maximize))
 
     def _on_configure_event(self, widget, event):
         if self._is_tracking and not self._max:
@@ -718,4 +718,37 @@ class FolderChooserButton(gtk.Button):
     def do_current_folder_changed(self, new_folder):
         self._current_folder = new_folder
         self._update_visual()
+
+
+def _source_wrapper(data):
+    if data[0]:
+        ret = data[1](*data[2], **data[3])
+        if ret:
+            return ret
+        data[0] = False
+
+
+def source_remove(data):
+    if data[0]:
+        glib.source_remove(data[4])
+    data[0] = False
+
+
+def timeout_add(interval, callback, *args, **kwargs):
+    data = [True, callback, args, kwargs]
+    data.append(glib.timeout_add(interval, _source_wrapper, data))
+    return data
+
+
+def timeout_add_seconds(interval, callback, *args, **kwargs):
+    data = [True, callback, args, kwargs]
+    data.append(glib.timeout_add_seconds(interval, _source_wrapper, data))
+    return data
+
+
+def idle_add(callback, *args, **kwargs):
+    data = [True, callback, args, kwargs]
+    data.append(glib.idle_add(_source_wrapper, data))
+    return data
+
 

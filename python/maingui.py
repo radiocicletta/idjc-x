@@ -53,6 +53,7 @@ from .utils import PathStr
 from .gtkstuff import threadslock, WindowSizeTracker, ConfirmationDialog
 from .gtkstuff import IconChooserButton, IconPreviewFileChooserDialog, LEDDict
 from .gtkstuff import LabelSubst, gdklock, nullcm
+from .gtkstuff import idle_add, timeout_add, timeout_add_seconds, source_remove
 from . import midicontrols
 from .tooltips import set_tip
 from . import songdb
@@ -1180,8 +1181,8 @@ class MicOpener(gtk.HBox):
         self._flashing_mode = False
         self._flashing_timer = 0
         self._headroom = 0.0
-        timeout = glib.timeout_add(700, self.cb_flash_timeout)
-        self.connect("destroy", lambda w: glib.source_remove(timeout))
+        timeout = timeout_add(700, self.cb_flash_timeout)
+        self.connect("destroy", lambda w: source_remove(timeout))
         self.opener_settings = OpenerSettings()
         self.opener_settings.connect("changed", self.cb_reconfigure)
 
@@ -2164,7 +2165,7 @@ class MainWindow(dbus.service.Object):
             time_lag = 0
         else:
             time_lag = int(time_lag / player.pbspeedfactor)
-        gobject.timeout_add(time_lag, self.new_songname_timeout,
+        timeout_add(time_lag, self.new_songname_timeout,
                         (song, artist, title, album, player, player_context))
 
     @threadslock
@@ -2231,7 +2232,7 @@ class MainWindow(dbus.service.Object):
                 self.player_right.advance()
         if data.startswith("cfm"):
             if self.crosspass:
-                gobject.source_remove(self.crosspass)
+                source_remove(self.crosspass)
                 self.crosspass = 0
             self.crossfade.set_value(data == "cfmright" and 100 \
                                     or data == "cfmmidl" and 48 \
@@ -2242,7 +2243,7 @@ class MainWindow(dbus.service.Object):
                 self.crossdirection = not self.crossdirection
             else:
                 self.crossdirection = (self.crossadj.get_value() <= 50)
-                self.crosspass = gobject.timeout_add(
+                self.crosspass = timeout_add(
                 int(self.passspeed_adj.get_value() * 10), self.cb_crosspass)
         if data == "Clear History":
             self.history_buffer.set_text("")
@@ -2573,7 +2574,7 @@ class MainWindow(dbus.service.Object):
         self.freewheel_button.set_active(False)
         self.save_session("atexit")
         if self.crosspass:
-            gobject.source_remove(self.crosspass)
+            source_remove(self.crosspass)
         self.server_window.cleanup()
         self.mic_opener.close_all()
         self.player_left.cleanup()
@@ -2583,9 +2584,9 @@ class MainWindow(dbus.service.Object):
         self.player_right.flush = True
         self.send_new_mixer_stats()
         self.prefs_window.songdbprefs.disconnect()
-        gobject.source_remove(self.statstimeout)
-        gobject.source_remove(self.vutimeout)
-        gobject.source_remove(self.savetimeout)
+        source_remove(self.statstimeout)
+        source_remove(self.vutimeout)
+        source_remove(self.savetimeout)
         self._mixer_ctrl.close()
         self.quitting()
         self.window.hide()
@@ -3859,15 +3860,14 @@ class MainWindow(dbus.service.Object):
         self.prefs_window.load_player_prefs()
         self.prefs_window.apply_player_prefs()
 
-        self.vutimeout = gobject.timeout_add(50, self.vu_update)
-        self.statstimeout = gobject.timeout_add(100, self.stats_update)
+        self.vutimeout = timeout_add(50, self.vu_update)
+        self.statstimeout = timeout_add(100, self.stats_update)
 
-        self.savetimeout = gobject.timeout_add_seconds(
+        self.savetimeout = timeout_add_seconds(
                                 120, threadslock(self.save_session), "periodic")
 
         for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
-            signal.signal(sig, lambda s, f: glib.idle_add(
-                                                    threadslock(self.destroy)))
+            signal.signal(sig, lambda s, f: idle_add(threadslock(self.destroy)))
         
         (self.full_wst, self.min_wst)[bool(self.simplemixer)].apply()
         self.window.connect("configure_event", self.configure_event)
@@ -3899,7 +3899,7 @@ class MainWindow(dbus.service.Object):
         self.window.connect("key-release-event", self.cb_key_capture)
       
         self.window.show()
-        gobject.idle_add(lambda: self.prefs_window.window.realize() and False)
+        idle_add(lambda: self.prefs_window.window.realize() and False)
         
         self.player_left.treeview.emit("cursor-changed")
         self.player_right.treeview.emit("cursor-changed")

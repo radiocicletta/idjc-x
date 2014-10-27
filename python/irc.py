@@ -49,6 +49,7 @@ from .gtkstuff import DefaultEntry
 from .gtkstuff import NamedTreeRowReference
 from .gtkstuff import ConfirmationDialog
 from .gtkstuff import threadslock, gdklock
+from .gtkstuff import timeout_add, source_remove
 from .utils import string_multireplace
 from .tooltips import set_tip
 
@@ -1711,11 +1712,11 @@ class MessageHandlerForType_5(MessageHandler):
             self.on_stream_active()
 
     def on_stream_active(self):
-        self._timeout_id = gobject.timeout_add(500, self._timeout)
+        self._timeout_id = timeout_add(500, self._timeout)
 
     def on_stream_inactive(self):
         if self._timeout_id is not None:
-            gobject.source_remove(self._timeout_id)
+            source_remove(self._timeout_id)
             self._timeout_id = None
 
     @threadslock
@@ -1734,7 +1735,7 @@ class MessageHandlerForType_5(MessageHandler):
             
     def cleanup(self):
         if self._timeout_id is not None:
-            gobject.source_remove(self._timeout_id)
+            source_remove(self._timeout_id)
 
 
 class MessageHandlerForType_7(MessageHandler):

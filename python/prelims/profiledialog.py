@@ -42,6 +42,7 @@ from ..gtkstuff import CellRendererTime
 from ..gtkstuff import threadslock
 from ..gtkstuff import IconChooserButton
 from ..gtkstuff import IconPreviewFileChooserDialog
+from ..gtkstuff import timeout_add
 
 
 import gettext
@@ -421,7 +422,7 @@ class ProfileDialog(gtk.Dialog):
     def _cb_visible(self, *args):
         self._update_data()
         if self.props.visible:
-            gobject.timeout_add(200, threadslock(self._update_data))
+            timeout_add(200, threadslock(self._update_data))
         
         
     def _cb_selection(self, ts):

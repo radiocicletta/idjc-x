@@ -29,6 +29,7 @@ from . import licence_window
 from . import songdb
 from . import midicontrols
 from .gtkstuff import WindowSizeTracker, DefaultEntry, threadslock
+from .gtkstuff import timeout_add, source_remove
 from .prelims import ProfileManager
 from .utils import PathStr
 from .tooltips import set_tip, MAIN_TIPS
@@ -176,9 +177,9 @@ class PanWidget(gtk.Frame):
             print "Attempt made to load a non existent pan preset"
         else:
             if self._source_id:
-                glib.source_remove(self._source_id)
+                source_remove(self._source_id)
                 
-            self._source_id = glib.timeout_add(5, self._timeout, target)
+            self._source_id = timeout_add(5, self._timeout, target)
 
     @threadslock
     def _timeout(self, target):

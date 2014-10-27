@@ -34,6 +34,7 @@ from .gtkstuff import LEDDict
 from .gtkstuff import WindowSizeTracker
 from .gtkstuff import DefaultEntry
 from .gtkstuff import threadslock
+from .gtkstuff import timeout_add, source_remove
 from .tooltips import set_tip
 from .utils import LinkUUIDRegistry
 
@@ -222,7 +223,7 @@ class Effect(gtk.HBox):
                 if self.effect_length == 0.0:
                     self.effect_length = self.interlude.get_media_metadata(self.pathname, True)
                 self.effect_start = time.time()
-                self.timeout_source_id = gobject.timeout_add(playergui.PROGRESS_TIMEOUT,
+                self.timeout_source_id = timeout_add(playergui.PROGRESS_TIMEOUT,
                                 self._progress_timeout)
                 self.tabeffectname.set_text(self.trigger_label.get_text())
                 self.tabeffecttime.set_text('0.0')
@@ -258,7 +259,7 @@ class Effect(gtk.HBox):
 
     def _stop_progress(self):
         if self.timeout_source_id:
-            gobject.source_remove(self.timeout_source_id)
+            source_remove(self.timeout_source_id)
             self.timeout_source_id = None
             self.progress.set_fraction(0.0)
             self.approot.jingles.nb_effects_box.remove(self.tabwidget)

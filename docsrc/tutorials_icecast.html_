@@ -230,9 +230,9 @@ inadequate write permissions and try again. Leave Icecast running for the time b
 
 <h4>Configuring IDJC</h4>
 
-<p>Start the Jack sound server as follows.</p>
+<p>Start the JACK sound server as follows.</p>
 <pre>$ jackd -d dummy -r 44100</pre>
-<p>This is done so that any media player, even one that does not support Jack Audio Connection Kit can be
+<p>This is done so that any media player, even one that does not support JACK Audio Connection Kit can be
 used for playing the stream on this machine.</p>
 
 <p>Run IDJC and click the Output button in the bottom left hand corner. Click Configuration so the
@@ -244,8 +244,7 @@ can be what you like but choose /listen, login name needs to be source and the p
 password, which is <span style="color:red;" title="Obviously a server exposed to the Internet should never&#32;
 be configured to use its default password">hackme</span>. Click Ok to add the server to the list.</p>
 
-<p>Click Format. Select the Sample rate drop down box and choose 44100. Select MP3 and the top drop down box.
-Choose 128, Quality 5, and Joint Stereo. </p>
+<p>Click Format. Select MPEG and click the right arrow repeatedly until all the option boxes appear.</p>
 
 <p>Click Individual Controls so the controls section is visible and click the button that says
 localhost:8000/listen.</p>
@@ -258,7 +257,7 @@ localhost:8000/listen.</p>
 playlist. Click play. Make sure the crossfader is set all the way to the left. Make sure Stream is on and DJ is off.
 You should be able to see the Str Peak meter is active.</p>
 
-<p>If you can't hear anything right now it's because DJ is off and/or you are running a dummy Jack soundcard,
+<p>If you can't hear anything right now it's because DJ is off and/or you are running a dummy JACK soundcard,
 which is what you want for the sake of this test.</p>
 
 <h4>Join the stream as a listener</h4>

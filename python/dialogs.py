@@ -207,7 +207,7 @@ class ReconnectionDialog(gtk.Dialog):
             self.label2.set_text(self.lines[1].format(countdown=self.remaining))
             if self.remaining == 0:
                 self.hide()
-                glib.idle_add(self.reconnect_idle)
+                idle_add(self.reconnect_idle)
                 
     @threadslock
     def reconnect_idle(self):

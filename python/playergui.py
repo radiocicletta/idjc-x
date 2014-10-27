@@ -53,6 +53,7 @@ from .utils import SlotObject
 from .utils import LinkUUIDRegistry
 from .utils import PathStr
 from .gtkstuff import threadslock, FolderChooserButton
+from .gtkstuff import idle_add, timeout_add, source_remove
 from .prelims import *
 from .tooltips import set_tip
 
@@ -481,7 +482,7 @@ class AnnouncementDialog(gtk.Dialog):
         gtk.Dialog.destroy(self)
 
     def timeout_remove(self, widget):
-        gobject.source_remove(self.timeout)
+        source_remove(self.timeout)
 
     def timer_update(self, lock=True):
         with (gdklock if lock else nullcm)():
@@ -581,7 +582,7 @@ class AnnouncementDialog(gtk.Dialog):
                 self.countdownlabel.set_attributes(self.attrlist)
                 self.oldinttime = -2
                 self.timer_update(False)
-                self.timeout = gobject.timeout_add(100, self.timer_update)
+                self.timeout = timeout_add(100, self.timer_update)
                 self.connect("destroy", self.timeout_remove)
                 chbox.pack_start(self.countdownlabel, True, False, 0)
                 self.countdownlabel.show()
@@ -1430,7 +1431,7 @@ class IDJC_Media_Player:
             print self.playername + (" player: the stored playlist data is not "
                                     "compatible with this version\nfiles placed"
                                     " in a queue for rescanning")
-            gobject.idle_add(self.cb_playlist_todo)
+            idle_add(self.cb_playlist_todo)
 
     @threadslock
     def cb_playlist_todo(self):
@@ -1495,7 +1496,7 @@ class IDJC_Media_Player:
         if self.is_playing == True:
             self.is_playing = False
             if self.timeout_source_id:
-                gobject.source_remove(self.timeout_source_id)
+                source_remove(self.timeout_source_id)
             # This will enable the play button to be toggled off.
             self.is_stopping = True
             self.play.set_active(False)
@@ -1690,12 +1691,12 @@ class IDJC_Media_Player:
             print "player startup was unsuccessful for file", \
                                                             self.music_filename
             # The regular code path can handle this.
-            self.timeout_source_id = gobject.idle_add(
+            self.timeout_source_id = idle_add(
                                 self.cb_play_progress_timeout, self.player_cid)
         else:
             print "player context id is %d\n" % self.player_cid
             if self.player_cid & 1:
-                self.timeout_source_id = gobject.timeout_add(PROGRESS_TIMEOUT,
+                self.timeout_source_id = timeout_add(PROGRESS_TIMEOUT,
                                 self.cb_play_progress_timeout, self.player_cid)
             else:
                 self.invoke_end_of_track_policy()
@@ -1718,7 +1719,7 @@ class IDJC_Media_Player:
 
         self.player_is_playing = False
         if self.timeout_source_id:
-            gobject.source_remove(self.timeout_source_id)
+            source_remove(self.timeout_source_id)
 
         self.progress_current_figure = 0
         self.playtime_elapsed.set_value(0)
@@ -1743,7 +1744,7 @@ class IDJC_Media_Player:
         print "player_restart %s" % self.playername
         self.parent.last_player = self.playername
 
-        gobject.source_remove(self.timeout_source_id)
+        source_remove(self.timeout_source_id)
         self.start_time = int (self.progressadj.get_value())
         self.silence_count = 0
 
@@ -1796,7 +1797,7 @@ class IDJC_Media_Player:
 
         print "player context id is %d\n" % self.player_cid
         # Restart a callback to update the progressbar.
-        self.timeout_source_id = gobject.timeout_add(
+        self.timeout_source_id = timeout_add(
             PROGRESS_TIMEOUT, self.cb_play_progress_timeout, self.player_cid)
         self.parent.send_new_mixer_stats()
         return True
@@ -2309,7 +2310,7 @@ class IDJC_Media_Player:
                 if self.playername == fader and (pl_mode in (3, 4) or
                                         (pl_mode == 0 and self.stop_inspect())):
                     self.parent.freewheel_button.set_active(False)
-                    gobject.timeout_add(1000, self.deferred_alarm)
+                    timeout_add(1000, self.deferred_alarm)
                     self.alarm_cid = cid
 
             # Check if the crossfade needs scheduling.
@@ -2534,7 +2535,7 @@ class IDJC_Media_Player:
         if response_id != gtk.RESPONSE_ACCEPT:
             return
         gen = self.filter_allowed_controls(self.get_elements_from(chosenfiles))
-        glib.idle_add(self.file_response_idle, iter(gen)) 
+        idle_add(self.file_response_idle, iter(gen)) 
 
     @threadslock
     def file_response_idle(self, iterator):
@@ -2788,13 +2789,13 @@ class IDJC_Media_Player:
             if callback_data == "ProgressPress":
                 self.progress_press = True
                 if self.timeout_source_id:
-                    gobject.source_remove(self.timeout_source_id)
+                    source_remove(self.timeout_source_id)
             elif callback_data == "ProgressRelease":
                 self.progress_press = False
                 if self.player_is_playing:
                     self.progress_current_figure = self.progressadj.get_value()
                     self.handle_motion_as_drop = True
-                    gobject.idle_add(self.player_progress_value_changed_emitter)
+                    idle_add(self.player_progress_value_changed_emitter)
         return False
 
     @threadslock
@@ -3099,7 +3100,7 @@ class IDJC_Media_Player:
                 try:
                     path, pos = treeview.get_dest_row_at_pos(x, y)
                 except (ValueError, TypeError):
-                    glib.idle_add(self.file_response_idle, elements)
+                    idle_add(self.file_response_idle, elements)
                 else:
                     for element in elements:
                         model = treeview.get_model()
@@ -3110,7 +3111,7 @@ class IDJC_Media_Player:
                         else:
                             iter_ = model.insert_after(iter_, element)
                             
-                        glib.idle_add(self.drag_data_received_data_idle,
+                        idle_add(self.drag_data_received_data_idle,
                                                         model, iter_, elements)
                         break
         else:
@@ -3138,7 +3139,7 @@ class IDJC_Media_Player:
         else:
             for element in elements:
                 iter_ = model.insert_after(iter_, element)
-                glib.idle_add(self.drag_data_received_data_idle,
+                idle_add(self.drag_data_received_data_idle,
                                                         model, iter_, elements)
                 break
             else:
