@@ -180,7 +180,9 @@ class DBAccessor(threading.Thread):
                                 self._handle = sql.Connection(
                                     host=self.hostname, port=self.port,
                                     user=self.user, passwd=self.password,
-                                    db=self.database, connect_timeout=6)
+                                    db=self.database, connect_timeout=6,
+                                    charset='utf8',
+                                    compress=True)
                                 self._cursor = self._handle.cursor()
                             except sql.Error as e:
                                 notify(_("Connection failed (try %d)") %
@@ -188,16 +190,16 @@ class DBAccessor(threading.Thread):
                                 print e
                                 time.sleep(0.5)
                             else:
+                                # This causes problems if other
+                                # processes try to access the database,
+                                # so set autocommit to 1
                                 try:
-                                    self._cursor.execute('set names utf8')
-                                    self._cursor.execute(
-                                                    'set character set utf8')
-                                    self._cursor.execute(
-                                            'set character_set_connection=utf8')
+                                    self._handle.autocommit(True)
                                 except sql.MySQLError:
-                                    notify(_('Connected: utf-8 mode failed'))
+                                    notify(_('Connected: autocommit mode failed'))
                                 else:
-                                    notify(_('Connected'))
+                                    notify(_('Connected: autocommit mode set'))
+                            notify(_('Connected'))
                         else:
                             if not self.keepalive:
                                 return
@@ -695,9 +697,9 @@ class ViewerCommon(PageCommon):
         if self._db_type == AMPACHE:
             query = query.replace("__played_by_me__", "'1' as played_by_me")
         else:
-            query = query.replace("__played_by_me__", """IF(ISNULL(agent), NULL,
+            query = query.replace("__played_by_me__", """SUBSTR(MAX(CONCAT(date, IF(ISNULL(agent), NULL,
                         IF(STRCMP(LEFT(agent,5), "IDJC:"), 2,
-                        IF(STRCMP(agent, "IDJC:1"), 0, 1))) as played_by_me""")
+                        IF(STRCMP(agent, "IDJC:1"), 0, 1))))), 11) AS played_by_me""")
         return query.replace("__catalogs__", self.catalogs.sql())
 
     def _cell_show_unknown(self, column, renderer, model, iter, data):
@@ -706,9 +708,12 @@ class ViewerCommon(PageCommon):
         weight = pango.WEIGHT_NORMAL
         if not played:
             col = 'black'
+            renderer.props.background_set = False
         else:
             value, percent, weight = self._get_played_percent(cat, max_lastplay_date)
-            col = ViewerCommon._set_color(played_by_me, percent)
+            col, bg_col = ViewerCommon._set_color(played_by_me, percent)
+            renderer.props.background_set = True
+            renderer.props.background = bg_col
         renderer.props.text = text
         renderer.props.foreground = col
         renderer.props.weight = weight
@@ -718,11 +723,14 @@ class ViewerCommon(PageCommon):
         if text is None: text = _('<unknown>')
         col = "black"
         weight = pango.WEIGHT_NORMAL
+        renderer.props.background_set = False
         if model.iter_depth(iter) == 0:
             col = "red"
         elif played:
             value, percent, weight = self._get_played_percent(cat, max_lastplay_date)
-            col = ViewerCommon._set_color(played_by_me, percent)
+            col, bg_col = ViewerCommon._set_color(played_by_me, percent)
+            renderer.props.background_set = True
+            renderer.props.background = bg_col
         renderer.props.text = text
         renderer.props.foreground = col
         renderer.props.weight = weight
@@ -821,10 +829,16 @@ class ViewerCommon(PageCommon):
 
     @staticmethod
     def _set_color(text, percent=1.0):
+        #print "text: ", text
+        if percent == 1.0:
+            bg_col = "white"
+        elif int(text) == 1:
+            bg_col = "Powder Blue"
+        else:
+            bg_col = "Light Pink"
         return (gtk.gdk.color_from_hsv(0.0, 1.0, percent),
                 gtk.gdk.color_from_hsv(0.6666, 1.0, percent),
-                gtk.gdk.color_from_hsv(0.3333, 1.0, percent))[int(text)]
-
+                gtk.gdk.color_from_hsv(0.3333, 1.0, percent))[int(text)], bg_col
 
 class ExpandAllButton(gtk.Button):
     def __init__(self, expanded, tooltip=None):
@@ -1002,7 +1016,7 @@ class TreePage(ViewerCommon):
                     time as length,
                     catalog.id as catalog_id,
                     MAX(date) as max_date_played,
-                    user.fullname as played_by,
+                    SUBSTR(MAX(CONCAT(date, user.fullname)), 11) AS played_by,
                     played,
                     __played_by_me__
                     FROM song
@@ -1342,7 +1356,7 @@ class FlatPage(ViewerCommon):
                     album.disk as disk,
                     catalog.id as catalog_id,
                     MAX(date) as max_date_played,
-                    user.fullname as played_by,
+                    SUBSTR(MAX(CONCAT(date, user.fullname)), 11) AS played_by,
                     played,
                     __played_by_me__
                     FROM song
@@ -1368,7 +1382,7 @@ class FlatPage(ViewerCommon):
                     album.disk as disk,
                     catalog.id as catalog_id,
                     MAX(date) as max_date_played,
-                    user.fullname as played_by,
+                    SUBSTR(MAX(CONCAT(date, user.fullname)), 11) AS played_by,
                     played,
                     __played_by_me__
                     FROM song

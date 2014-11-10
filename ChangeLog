@@ -1,5 +1,7 @@
 * Changes in version 0.8.15 *
 
+Improved song database connectivity. Fixes and enhancements to last DJ played. Patch: B Millham.
+
 Added wrappers to all glib timeout_add, idle_add, and source_remove calls.
 
 Documentation update.
