@@ -697,7 +697,7 @@ class ViewerCommon(PageCommon):
         if self._db_type == AMPACHE:
             query = query.replace("__played_by_me__", "'1' as played_by_me")
         else:
-            query = query.replace("__played_by_me__", """SUBSTR(MAX(CONCAT(date, IF(ISNULL(agent), NULL,
+            query = query.replace("__played_by_me__", """SUBSTR(MAX(CONCAT(object_count.date, IF(ISNULL(agent), NULL,
                         IF(STRCMP(LEFT(agent,5), "IDJC:"), 2,
                         IF(STRCMP(agent, "IDJC:1"), 0, 1))))), 11) AS played_by_me""")
         return query.replace("__catalogs__", self.catalogs.sql())
@@ -1015,8 +1015,8 @@ class TreePage(ViewerCommon):
                     bitrate,
                     time as length,
                     catalog.id as catalog_id,
-                    MAX(date) as max_date_played,
-                    SUBSTR(MAX(CONCAT(date, user.fullname)), 11) AS played_by,
+                    MAX(object_count.date) as max_date_played,
+                    SUBSTR(MAX(CONCAT(object_count.date, user.fullname)), 11) AS played_by,
                     played,
                     __played_by_me__
                     FROM song
@@ -1355,8 +1355,8 @@ class FlatPage(ViewerCommon):
                     file,
                     album.disk as disk,
                     catalog.id as catalog_id,
-                    MAX(date) as max_date_played,
-                    SUBSTR(MAX(CONCAT(date, user.fullname)), 11) AS played_by,
+                    MAX(object_count.date) as max_date_played,
+                    SUBSTR(MAX(CONCAT(object_count.date, user.fullname)), 11) AS played_by,
                     played,
                     __played_by_me__
                     FROM song
@@ -1381,8 +1381,8 @@ class FlatPage(ViewerCommon):
                     file,
                     album.disk as disk,
                     catalog.id as catalog_id,
-                    MAX(date) as max_date_played,
-                    SUBSTR(MAX(CONCAT(date, user.fullname)), 11) AS played_by,
+                    MAX(object_count.date) as max_date_played,
+                    SUBSTR(MAX(CONCAT(object_count.date, user.fullname)), 11) AS played_by,
                     played,
                     __played_by_me__
                     FROM song
