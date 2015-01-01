@@ -35,6 +35,21 @@ PKG_CHECK_MODULES([LIBSAMPLERATE], [samplerate])
 PKG_CHECK_MODULES([LIBSNDFILE], [sndfile])
 PKG_CHECK_MODULES([GLIB], [glib-2.0])
 
+# Determine if git is installed and a repository is present in source root dir.
+AC_CHECK_PROG([GIT_PROG_EXISTS], [git], [yes], [no])
+if test ${GIT_PROG_EXISTS} = "yes" ; then
+    # Determine if a repository exists right here in the build directory.
+    AC_MSG_CHECKING([for git repository in source tree root])
+    if test $(git rev-parse --git-dir) = ".git" ; then
+        AC_MSG_RESULT([yes])
+        git_repo = 1
+    else
+        AC_MSG_RESULT([no])
+    fi
+fi
+AM_CONDITIONAL([GIT_VERSION_CONTROL], [test x$git_repo = x])
+
+
 AC_ARG_ENABLE([libav],
    AC_HELP_STRING([--disable-libav],[remove capability to decode m4a/wma/avi files]),[makelibav=$enableval],[makelibav="maybe"])
 
