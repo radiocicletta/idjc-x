@@ -729,7 +729,7 @@ class OpenerTab(gtk.VBox):
         self.pack_start(self.is_microphone, False)
         
         self.freewheel_cancel = gtk.CheckButton(
-                    'This button will automatically cancel JACK freewheel mode')
+                _('This button will automatically cancel JACK freewheel mode'))
         self.pack_start(self.freewheel_cancel, False)
         set_tip(self.freewheel_cancel, _('This should be set for all buttons'
                 ' that control input from a live sound source or device.'))

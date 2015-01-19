@@ -14,3 +14,4 @@ python/songdb.py
 python/playergui.py
 python/preferences.py
 python/sourceclientgui.py
+python/format.py

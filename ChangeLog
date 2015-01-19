@@ -1,5 +1,7 @@
 * Changes in version 0.8.15 *
 
+Internationalisation mostly of format.py which was missing from POTFILES.
+
 Git commit number appears in the 'About' page.
 
 Improved song database connectivity. Fixes and enhancements to last DJ played. Patch: B Millham.
