@@ -540,6 +540,7 @@ class AnnouncementDialog(gtk.Dialog):
         ivbox.pack_start(sw, True, True, 0)
         sw.show()
         self.tv = gtk.TextView()
+        self.tv.set_wrap_mode(gtk.WRAP_WORD_CHAR)
         if mode == "active":
             self.tv.unset_flags(gtk.CAN_FOCUS)
         sw.add(self.tv)
@@ -3721,9 +3722,7 @@ class IDJC_Media_Player:
                             ("text", _('No Fade'))),
         ">announcement":    (("cell-background", "dark blue"),
                             ("background-gdk", gray),
-                            ("foreground", "dark blue"),
-                            # TC: Playlist control.
-                            ("text", _('Announcement'))),
+                            ("foreground", "dark blue"),),
         ">normalspeed":     (("cell-background", "dark green"),
                             ("background-gdk", gray),
                             ("foreground", "dark green"),
@@ -3784,7 +3783,11 @@ class IDJC_Media_Player:
                 else:
                     for name, value in properties:
                         crprop(name, value)
-                    
+
+                if celltext == ">announcement":
+                    crprop("text", _('Announcement:') + " " + urllib.unquote(
+                                                    model.get_value(iter, 4)))
+
                 if celltext == ">transfer":
                     if self.playername == "left":
                         # TC: Playlist control.

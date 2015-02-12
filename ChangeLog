@@ -1,5 +1,7 @@
 * Changes in version 0.8.15 *
 
+The announcement text now appears in the playlist allowing the DJ to pre-read the announcements.
+
 Updated copyright year to 2015
 
 Internationalisation mostly of format.py which was missing from POTFILES.
