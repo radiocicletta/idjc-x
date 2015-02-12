@@ -53,7 +53,7 @@ from .utils import SlotObject
 from .utils import LinkUUIDRegistry
 from .utils import PathStr
 from .gtkstuff import threadslock, FolderChooserButton
-from .gtkstuff import idle_add, timeout_add, source_remove
+from .gtkstuff import idle_add, timeout_add, source_remove, nullcm, gdklock
 from .prelims import *
 from .tooltips import set_tip
 
