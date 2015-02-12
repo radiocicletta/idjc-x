@@ -1569,17 +1569,18 @@ class mixprefs:
             ("<b>fr</b> nvignot (nicotux@users.sf.net)",
             "<b>it</b>  Raffaele Morelli (raffaele.morelli@gmail.com)"))
 
-        if FGlobs.git_head_commithash != "none":
-            label = gtk.Label(_('GIT'))
-            ivbox = gtk.VBox()
-            ivbox.set_spacing(10)
-            ivbox.set_border_width(10)
-            nb.append_page(ivbox, label)
-            ivbox.show()
-            for each in (FGlobs.git_head_commithash, FGlobs.git_head_commitdate,
-                                                    FGlobs.git_repo_status):
-                label = gtk.Label(each)
+        label = gtk.Label(_('Build Info'))
+        ivbox = gtk.VBox()
+        ivbox.set_spacing(10)
+        ivbox.set_border_width(10)
+        nb.append_page(ivbox, label)
+        ivbox.show()
+
+        with open(FGlobs.pkgdatadir / "buildinfo") as f:
+            for each in f:
+                label = gtk.Label(each.rstrip())
                 label.set_use_markup(True)
+                label.set_selectable(True)
                 ivbox.pack_start(label, False)
                 label.show()
 

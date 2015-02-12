@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
-"POT-Creation-Date: 2015-01-19 11:11+0000\n"
+"POT-Creation-Date: 2015-02-12 13:36+0000\n"
 "PO-Revision-Date: 2013-11-07 16:47+0000\n"
 "Last-Translator: \n"
 "Language-Team: English <team@example.com>\n"
@@ -566,12 +566,12 @@ msgstr "Tentative %d. Il n'y a aucune limite d'essais."
 msgid "_Retry Now"
 msgstr "_Réessayer immédiatement"
 
-#: python/__init__.py.in.in:106
+#: python/__init__.py.in.in:101
 #, python-format
 msgid "Copyright 2005-%s Stephen Fairchild and others."
 msgstr "Copyright 2005-%s Stephen Fairchild et autres."
 
-#: python/__init__.py.in.in:108
+#: python/__init__.py.in.in:103
 msgid "Released under the GNU General Public License V2.0+."
 msgstr "Distribué selon les termes de la Licence Publique Générale GNU, V2.0+"
 
@@ -3614,11 +3614,11 @@ msgstr "Collaborateurs"
 msgid "Translators"
 msgstr "Traducteurs"
 
-#: python/preferences.py:1573
-msgid "GIT"
+#: python/preferences.py:1572
+msgid "Build Info"
 msgstr ""
 
-#: python/preferences.py:1588
+#: python/preferences.py:1589
 msgid "About"
 msgstr "Concernant…"
 

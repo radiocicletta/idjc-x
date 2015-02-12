@@ -4,7 +4,7 @@
 AC_PREREQ(2.59)
 AC_INIT([idjc], [0.8.15_development], 
                 [http://idjc.sourceforge.net])
-AC_SUBST(COPYRIGHT_YEAR, [2014])
+AC_SUBST(COPYRIGHT_YEAR, [2015])
 AC_CANONICAL_SYSTEM
 AC_CONFIG_SRCDIR([config.h.in])
 AM_INIT_AUTOMAKE

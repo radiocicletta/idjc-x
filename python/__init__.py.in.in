@@ -79,11 +79,6 @@ class FGlobs(object):
     package_version = """@PACKAGE_VERSION@"""
     backend = PathStr("""${pkglibdir}""") / ("idjc" + """@DYLIB_EXT@""")
 
-    git_head_commithash = """${GIT_HEAD_COMMITHASH}"""
-    git_head_commitdate = """${GIT_HEAD_COMMITDATE}"""
-    git_repo_status = """${GIT_REPO_STATUS}"""
-    git_remote_origin = """${GIT_REMOTE_ORIGIN}"""
-
 
 _ = gettext.translation(FGlobs.package_name, FGlobs.localedir,
                                                         fallback=True).gettext

@@ -1,8 +1,10 @@
 * Changes in version 0.8.15 *
 
+Updated copyright year to 2015
+
 Internationalisation mostly of format.py which was missing from POTFILES.
 
-Git commit number appears in the 'About' page.
+Git commit hash and build date appears in the 'About' page.
 
 Improved song database connectivity. Fixes and enhancements to last DJ played. Patch: B Millham.
 
@@ -33,8 +35,6 @@ Fix for stream metadata character encoding: applied to extant metadata also.
 Can now read ReplayGain info from ID3 TXXX tags. Has priority over RVAD/RVA2 tags.
 
 Build system now handles problem with a too old libogg breaking Opus support. 
-
-Updated copyright year.
 
 Can now obtain listener stats from Shoutcast 2 servers.
 

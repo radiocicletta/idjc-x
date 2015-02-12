@@ -9,7 +9,8 @@ dist_noinst_DATA=idjc.desktop.in.in idjc.appdata.xml.in.in
 nodist_appmenu_DATA=${PACKAGE_NAME}.desktop
 appmenudir=${prefix}/share/applications
 nodist_appdata_DATA=${PACKAGE_NAME}.appdata.xml
-appdatadir=${prefix}/share/appdata
+appdatadir=${datadir}/appdata
+nodist_pkgdata_DATA=buildinfo
 
 ${PACKAGE_NAME}: idjc.in
 	@sed -e 's|$${prefix}|${prefix}|g' -e 's|$${pkglibdir}|${pkglibdir}|g' $? >$@
@@ -32,8 +33,20 @@ README.gz: README
 ChangeLog.gz: ChangeLog
 	@ gzip -c $? >$@
 
+buildinfo:
+if GIT_VERSION_CONTROL
+	echo Commit hash: $$(git log -n1 "--pretty=format:%H") > buildinfo
+	echo Commit date: $$(git log -n1 "--pretty=format:%aD") >> buildinfo
+	echo Repo status: $$(if test -z "$(git status --porcelain) 2>&1" ; then echo "clean" ; else echo "dirty" ; fi) >> buildinfo
+	echo Remote URL: $$(git config --get remote.origin.url) >> buildinfo
+	echo >> buildinfo
+else
+	rm buildinfo
+endif
+	echo Build date: $$(date -R) >> buildinfo
+
 clean-local:
-	rm -f ChangeLog.gz README.gz NEWS.gz AUTHORS.gz ${PACKAGE_NAME}.desktop ${PACKAGE_NAME}.appdata.xml ${PACKAGE_NAME}
+	rm -f buildinfo ChangeLog.gz README.gz NEWS.gz AUTHORS.gz ${PACKAGE_NAME}.desktop ${PACKAGE_NAME}.appdata.xml ${PACKAGE_NAME}
 
 dtdist:
 	make dist
@@ -43,7 +56,7 @@ sfpublish:
 	make dist
 	curl --retry 3 --connect-timeout 10 -T ${PACKAGE_TARNAME}-${PACKAGE_VERSION}.tar.gz -n sftp://frs.sourceforge.net/home/frs/project/i/id/idjc/idjc/0.8/
 
-.PHONY: dtdist sfpublish ${PACKAGE_NAME} ${PACKAGE_NAME}.desktop
+.PHONY: buildinfo dtdist sfpublish ${PACKAGE_NAME} ${PACKAGE_NAME}.desktop
 
 ACLOCAL_AMFLAGS = -I m4
 
