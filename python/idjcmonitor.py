@@ -36,7 +36,7 @@ def pid_exists(pid):
     try:
         os.kill(pid, 0)
     except OSError, e:
-        return e.errno == errno.EPERM
+        return e.errno == os.errno.EPERM
     else:
         return True
 
@@ -55,13 +55,18 @@ class IDJCMonitor(gobject.GObject):
                                     (gobject.TYPE_STRING, gobject.TYPE_UINT)),
         'streamstate-changed' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
                 (gobject.TYPE_INT, gobject.TYPE_BOOLEAN, gobject.TYPE_STRING)),
-        
+        'recordstate-changed' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
+                (gobject.TYPE_INT, gobject.TYPE_BOOLEAN, gobject.TYPE_STRING)),
+        'channelstate-changed' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
+                (gobject.TYPE_UINT, gobject.TYPE_BOOLEAN)),
         'metadata-changed' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
                                                     (gobject.TYPE_STRING,) * 5),
         'effect-started': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
                            (gobject.TYPE_STRING,) * 2 + (gobject.TYPE_UINT,)),
         'effect-stopped': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
                            (gobject.TYPE_UINT,)),
+        'tracks-finishing': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
+                            ()),
         'frozen' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
                 (gobject.TYPE_STRING, gobject.TYPE_UINT, gobject.TYPE_BOOLEAN))
     }
@@ -77,11 +82,15 @@ class IDJCMonitor(gobject.GObject):
                             'the song name from metadata tags when available'
                             ' and from the filenmame when not',
                             "", gobject.PARAM_READABLE),
-        'music_filename' : (gobject.TYPE_STRING, 'music_filename',
+        'music-filename' : (gobject.TYPE_STRING, 'music_filename',
                             'the audio file pathname of the track',
                             "", gobject.PARAM_READABLE),
         'streaminfo' : (gobject.TYPE_PYOBJECT, 'streaminfo',
-                'information about the streams', gobject.PARAM_READABLE)
+                'information about the streams', gobject.PARAM_READABLE),
+        'recordinfo' : (gobject.TYPE_PYOBJECT, 'recordinfo',
+                'information about the recorders', gobject.PARAM_READABLE),
+        'channelinfo' : (gobject.TYPE_PYOBJECT, 'channelinfo',
+                'toggle state of the audio channels', gobject.PARAM_READABLE)
     }
     
     def __init__(self, profile):
@@ -174,19 +183,29 @@ class IDJCMonitor(gobject.GObject):
                                                 self._effect_stopped_handler)
             self.__main.connect_to_signal("quitting", self._quit_handler)
             self.__main.connect_to_signal("heartbeat", self._heartbeat_handler)
+            self.__main.connect_to_signal("channelstate_changed",
+                                                    self._channelstate_handler)
+            self.__main.connect_to_signal("tracks_finishing",
+                                                self._tracks_finishing_handler)
             self.__output.connect_to_signal("streamstate_changed",
                                                     self._streamstate_handler)
+            self.__output.connect_to_signal("recordstate_changed",
+                                                    self._recordstate_handler)
 
             # Start watchdog thread.
             self.__watchdog_id = gobject.timeout_add_seconds(3, self._watchdog)
 
             self.__streams = {n : (False, "unknown") for n in xrange(10)}
+            self.__recorders = {n : (False, "unknown") for n in xrange(4)}
+            self.__channels = [False] * 12
+            main_iface = dbus.Interface(self.__main, self.__base_interface)
             output_iface = dbus.Interface(self.__output, self.__base_interface)
             
             self.emit("launch", self.__profile, self.__pid)
             
             # Tell IDJC to initialize as empty its cache of sent data.
             # This yields a dump of server related info.
+            main_iface.new_plugin_started()
             output_iface.new_plugin_started()
         except dbus.exceptions.DBusException:
             self._start_probing()
@@ -205,6 +224,15 @@ class IDJCMonitor(gobject.GObject):
                 for id_, (conn, where) in self.__streams.iteritems():
                     if conn:
                         self._streamstate_handler(id_, 0, where)
+
+                for id_, (rec, where) in self.__recorders.iteritems():
+                    if rec:
+                        self._recordstate_handler(id_, 0, where)
+                        
+                for index, open_ in enumerate(self.__channels):
+                    if open_:
+                        self._channelstate_handler(index, 0)
+                
                 self._quit_handler()
                 return False
         elif self.__frozen:
@@ -232,6 +260,24 @@ class IDJCMonitor(gobject.GObject):
         self.__streams[numeric_id] = (connected, where)
         self.notify("streaminfo")
         self.emit("streamstate-changed", numeric_id, connected, where)
+
+    def _recordstate_handler(self, numeric_id, recording, where):
+        numeric_id = int(numeric_id)
+        recording = bool(recording)
+        where = where.encode("utf-8")
+        self.__recorders[numeric_id] = (recording, where)
+        self.notify("recordinfo")
+        self.emit("recordstate-changed", numeric_id, recording, where)
+
+    def _channelstate_handler(self, numeric_id, open_):
+        numeric_id = int(numeric_id)
+        open_ = bool(open_)
+        self.__channels[numeric_id] = open_
+        self.notify("channelinfo")
+        self.emit("channelstate-changed", numeric_id, open_)
+
+    def _tracks_finishing_handler(self):
+        self.emit("tracks-finishing")
 
     def _metadata_handler(self, artist, title, album, songname, music_filename):
 
@@ -269,6 +315,10 @@ class IDJCMonitor(gobject.GObject):
             return getattr(self, "_IDJCMonitor__" + name)
         if name == "streaminfo":
             return tuple(self.__streams[n] for n in xrange(10))
+        elif name == "recordinfo":
+            return tuple(self.__recorders[n] for n in xrange(4))
+        elif name == "channelinfo":
+            return tuple(self.__channels[n] for n in xrange(12))
         else:
             raise AttributeError("Unknown property %s in %s" % (
                                                             name, repr(self)))

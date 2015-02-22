@@ -378,6 +378,8 @@ class AGCControl(gtk.Frame):
     def cb_open(self, widget):
         active = widget.get_active()
         self.meter.set_led(active)
+        if gtk.main_level():
+            self.approot.channelstate_changed(self.index, active)
 
     def cb_mode(self, combobox):
         mode = combobox.get_active()

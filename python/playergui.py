@@ -2302,8 +2302,7 @@ class IDJC_Media_Player:
         # Calclulate whether to sound the DJ alarm (end of music notification)
         if self.playername in ("left", "right"):
             if rem == 10 and self.progressadj.upper > 11 and \
-                                self.alarm_cid != cid and \
-                                self.parent.prefs_window.djalarm.get_active():
+                                self.alarm_cid != cid:
                 # DJ Alarm is on and we are at the correct play position.
                 # The alarm has not sounded yet.
                 fader = "left" if self.parent.crossadj.value < 50.0 else "right"
@@ -2311,7 +2310,8 @@ class IDJC_Media_Player:
                 if self.playername == fader and (pl_mode in (3, 4) or
                                         (pl_mode == 0 and self.stop_inspect())):
                     self.parent.freewheel_button.set_active(False)
-                    timeout_add(1000, self.deferred_alarm)
+                    timeout_add(1000, self.deferred_alarm,
+                                self.parent.prefs_window.djalarm.get_active())
                     self.alarm_cid = cid
 
             # Check if the crossfade needs scheduling.
@@ -2337,9 +2337,12 @@ class IDJC_Media_Player:
         return True
 
     @threadslock
-    def deferred_alarm(self):
-        self.parent.alarm = True
-        self.parent.send_new_mixer_stats()
+    def deferred_alarm(self, make_sound):
+        if make_sound:
+            self.parent.alarm = True
+            self.parent.send_new_mixer_stats()
+        
+        self.parent.tracks_finishing()
         return False
 
     def stop_inspect(self):

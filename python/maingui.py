@@ -2035,6 +2035,10 @@ class MainWindow(dbus.service.Object):
 
             print "song title: %s\n" % self.songname
 
+    @dbus.service.method(dbus_interface=PGlobs.dbus_bus_basename)
+    def new_plugin_started(self):
+        self.channel_states = [-1, ] * 12
+
     @dbus.service.method(dbus_interface=PGlobs.dbus_bus_basename,
                                                             out_signature="s")
     def get_database_credentials(self):
@@ -2088,6 +2092,12 @@ class MainWindow(dbus.service.Object):
     def effect_stopped(self, player):
         """DBus signal for plugins to attach to when new effects play"""
         pass
+
+    @dbus.service.signal(dbus_interface=PGlobs.dbus_bus_basename,
+                                                            signature="ub")
+    def channelstate_changed(self, index, is_open):
+        """DBus signal indicating audio channel toggle state"""
+        self.channel_states[index] = is_open
 
     def songname_decode(self, data):
         i = 1
@@ -2615,6 +2625,12 @@ class MainWindow(dbus.service.Object):
 
         pass
 
+    @dbus.service.signal(dbus_interface=PGlobs.dbus_bus_basename, signature="")
+    def tracks_finishing(self):
+        """Called to notify DJ that music tracks are ending."""
+        
+        pass
+
     @dbus.service.method(dbus_interface=PGlobs.dbus_bus_basename, out_signature="u")
     def pid(self):
         """Reply with the process ID."""
@@ -2880,6 +2896,11 @@ class MainWindow(dbus.service.Object):
                 player.check_mixer_signal()
             elif player.pl_mode.get_active() == 0:
                 player.update_time_stats()
+
+        ch = self.mic_opener.mic_list
+        for i in xrange(PGlobs.num_micpairs * 2):
+            if self.channel_states[i] == -1:
+                ch[i].open.emit("toggled")
                 
         return True
 
@@ -3775,6 +3796,7 @@ class MainWindow(dbus.service.Object):
         self.jingles.interlude.silence = SlotObject(0.0)
         self.sample_rate = SlotObject(0)
         self.effects_playing = SlotObject(0)
+        self.channel_states = [-1, ] * 12
         
         self.feature_set = gtk.ToggleButton()
         self.feature_set.set_active(True)

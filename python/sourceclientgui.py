@@ -1823,14 +1823,16 @@ class RecordTab(Tab):
                         filename = datetime.datetime.today().strftime(self.parentobject.scg.parent.prefs_window.recorder_filename.get_text().strip())
                         table = (("$$", "$"), ("$r", "%02d" % (self.parentobject.numeric_id + 1)))
                         filename = string_multireplace(filename, table)
+                        folder = sd.file_chooser_button.get_current_folder()
                         self.parentobject.send("record_source=%d\n"
                             "record_filename=%s\n"
                             "record_folder=%s\ncommand=recorder_start\n" % (
-                            num_id, filename,
-                            sd.file_chooser_button.get_current_folder()))
+                            num_id, filename, folder))
                         sd.set_sensitive(False)
                         self.parentobject.time_indicator.set_sensitive(True)
+                        self.path = folder
                         self.recording = True
+                        self.parentobject.recordstate(True, self.path)
                         if self.parentobject.receive() == "failed":
                             self.stop_button.clicked()
                 else:
@@ -1848,6 +1850,7 @@ class RecordTab(Tab):
                         self.parentobject.time_indicator.set_sensitive(False)
                         if self.pause_button.get_active():
                             self.pause_button.set_active(False)
+                        self.parentobject.recordstate(False, self.path)
                     else:
                         widget.set_active(True)
             elif userdata == "stop":
@@ -1874,6 +1877,7 @@ class RecordTab(Tab):
             CategoryFrame.__init__(self)
             self.parentobject = parent
             self.stop_pressed = False
+            self.path = None
             self.recording = False
             hbox = gtk.HBox()
             hbox.set_border_width(3)
@@ -2012,6 +2016,9 @@ class RecordTab(Tab):
         Tab.show_indicator(self, colour)
         self.scg.parent.recording_panel.indicator[self.numeric_id
                                                         ].set_indicator(colour)
+       
+    def recordstate(self, state, path):
+        self.scg._handle_recordstate(self.numeric_id, state, path)
         
     def __init__(self, scg, numeric_id, indicator_lookup):
         Tab.__init__(self, scg, numeric_id, indicator_lookup)
@@ -2198,6 +2205,7 @@ class SourceClientGui(dbus.service.Object):
     def new_plugin_started(self):
         print "streamstate_cache purge"
         self._streamstate_cache = {}
+        self._recordstate_cache = {}
 
     def monitor(self):
         self.led_alternate = not self.led_alternate
@@ -2216,8 +2224,12 @@ class SourceClientGui(dbus.service.Object):
                     rectab.show_indicator(("clear", "red", "amber", "clear")[
                                                         int(recorder_state)])
                     rectab.time_indicator.set_value(int(recorded_seconds))
-                    if recorder_state != "0":
+                    rec_state = recorder_state != "0"
+                    if rec_state:
                         recording = True
+                        
+                    self._handle_recordstate(rectab.numeric_id, rec_state,
+                                            rectab.record_buttons.path)
         update_listeners = False
         l_count = 0
         for streamtab in self.streamtabframe.tabs:
@@ -2320,10 +2332,21 @@ class SourceClientGui(dbus.service.Object):
             self.streamstate_changed(numeric_id, connected,
                                     streamtab.server_connect_label.get_text())
 
+    def _handle_recordstate(self, numeric_id, state, pathname):
+        cache = self._recordstate_cache
+
+        if cache is not None and (numeric_id not in cache or cache[numeric_id] != state):
+            cache[numeric_id] = state
+            self.recordstate_changed(numeric_id, state, pathname or "")
+
     @dbus.service.signal(dbus_interface=PGlobs.dbus_bus_basename, signature="uus")
     def streamstate_changed(self, numeric_id, state, where):
         pass
-        
+
+    @dbus.service.signal(dbus_interface=PGlobs.dbus_bus_basename, signature="uus")
+    def recordstate_changed(self, numeric_id, state, where):
+        pass
+
     def stop_streaming_all(self):
         for streamtab in self.streamtabframe.tabs:
             streamtab.server_connect.set_active(False)
@@ -2818,7 +2841,7 @@ class SourceClientGui(dbus.service.Object):
         self.last_message_time = 0
         self.connection_string = None
         self.is_shoutcast = False
-        self._streamstate_cache = None
+        self._streamstate_cache = self._recordstate_cache = None
         self.artist = self.title = self.album = self.songname = ""
 
         self.dialog_group = dialog_group()
