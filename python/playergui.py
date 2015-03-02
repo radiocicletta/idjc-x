@@ -2666,8 +2666,11 @@ class IDJC_Media_Player:
                 pld = doc.createElementNS(
                     'http://idjc.sourceforge.net/ns/', 'idjc:pld')
                 extension.appendChild(pld)
-                pld.setAttribute('rsmeta', row.rsmeta)
-                pld.setAttribute('length', str(row.length))
+                
+                for field, value in zip(row._fields, row):
+                    if isinstance(value, (str, int, float)):
+                        pld.setAttribute(field, str(value))                
+
             else:
                 location = doc.createElement('location')
                 track.appendChild(location)
