@@ -1,5 +1,7 @@
 * Changes in version 0.8.15 *
 
+Added full support for ITU-R BS.1770 / EBU R128 tags.
+
 Fixed saving of announcement text in .xspf playlists.
 
 The announcement text now appears in the playlist allowing the DJ to pre-read the announcements.

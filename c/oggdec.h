@@ -53,6 +53,7 @@ struct oggdec_vars
     char  **title;
     char  **album;
     char  **replaygain;      /* specifically replaygain_track_gain */
+    char  **rgloudness;      /* specifically replaygain_reference_loudness */
     enum streamtype_t *streamtype;    /* indicate which type ie vorbis, flac */
     double *start_time;      /* the time when each stream starts */
     double *duration;        /* playback time */
@@ -63,7 +64,7 @@ struct oggdec_vars
     };
 
 int oggdecode_reg(struct xlplayer *xlplayer);
-int oggdecode_get_metainfo(char *pathname, char **artist, char **title, char **album, double *length, char **replaygain);
+int oggdecode_get_metainfo(char *pathname, char **artist, char **title, char **album, double *length, char **replaygain, char **rgloudness);
 int oggdec_get_next_packet(struct oggdec_vars *self);
 void oggdecode_dynamic_dispatcher(struct xlplayer *xlplayer);
 void oggdecode_playnext(struct xlplayer *xlplayer);

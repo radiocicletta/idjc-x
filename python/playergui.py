@@ -1058,6 +1058,51 @@ class IDJC_Media_Player:
                             _('Bad Tag'), glib.markup_escape_text(meta_name))
         title_retval = meta_name
 
+        def gain(handle=None, prefix="", gain=None, ref=None):
+            print handle, prefix, gain, ref
+            try:
+                if ref is None:
+                    ref = str(handle[prefix + "REPLAYGAIN_REFERENCE_LOUDNESS"][0])
+            except Exception:
+                ref = None
+            else:
+                try:
+                    ref = float(ref.rstrip("dbDBLUlu"))
+                except Exception:
+                    ref = None
+                else:
+                    ref = "R128" if -23.1 < ref < -22.9 else "RG"
+
+            if gain is None:
+                gain = str(handle[prefix + "REPLAYGAIN_TRACK_GAIN"][0]).rstrip().upper()
+            else:
+                gain = gain.upper()
+            if gain.endswith("DB"):
+                if ref is None or ref == "RG":
+                    gain = gain[:-2] + "RG"
+                else:
+                    gain = gain[:-2] + "R128"
+            elif gain.endswith("LU"):
+                if ref is None or ref == "R128":
+                    gain = gain[:-2] + "R128"
+                else:
+                    gain = gain[:-2] + "RG"
+            else:
+                if ref is None or ref == "RG":
+                    gain += " RG"
+                else:
+                    gain += " R128"
+            
+            try:
+                v1, v2 = gain.split()
+                if v2 not in ("RG", "R128"):
+                    raise Exception
+                float(v1)
+            except Exception:
+                return RGDEF
+                    
+            return gain
+                    
 
         # Obtain as much metadata from ubiquitous tags as possible.
         # Files can have ape and id3 tags. ID3 has priority in this case.
@@ -1068,7 +1113,7 @@ class IDJC_Media_Player:
             artist = title = ""
         else:
             try:
-                rg = str(audio["REPLAYGAIN_TRACK_GAIN"][0].rstrip(" dB")) + " RG"
+                rg = gain(audio)
             except:
                 rg = RGDEF
             artist = audio.get("ARTIST", [u""])
@@ -1081,10 +1126,10 @@ class IDJC_Media_Player:
             pass
         else:
             try:
-                rg = str(audio["TXXX_replaygain_track_gain"][0].rstrip(" dB")) + " RG"
+                rg = gain(audio, "TXXX_")
             except:
                 try:
-                    rg = str(audio["replaygain_track_gain"][0].rstrip(" dB")) + " RG"
+                    rg = gain(audio)
                 except:
                     pass
             try:
@@ -1126,6 +1171,10 @@ class IDJC_Media_Player:
         elif filext == ".ogg" or filext == ".oga" or filext == ".spx":
             self.parent.mixer_write("OGGP=%s\nACTN=ogginforequest\nend\n" %
                                                                     filename)
+            
+            gval = None
+            ref = None
+            
             while 1:
                 line = self.parent.mixer_read()
                 if line == "OIR:NOT VALID\n" or line == "":
@@ -1139,13 +1188,17 @@ class IDJC_Media_Player:
                 if line.startswith("OIR:LENGTH="):
                     length = float(line[11:].strip())
                 if line.startswith("OIR:REPLAYGAIN_TRACK_GAIN="):
-                    val = line[26:].rstrip(" dB\n")
-                    if not val:
-                        rg = RGDEF
-                    else:
-                        rg = val + " RG"
+                    gval = line[26:].rstrip()
+                if line.startswith("OIR:REPLAYGAIN_REFERENCE_LOUDNESS="):
+                    ref = line[34:].rstrip()
                 if line == "OIR:end\n":
                     break
+ 
+            if gval is None:
+                rg = RGDEF
+            else:
+                rg = gain(gain=gval, ref=ref)
+ 
         elif filext == ".aac":
             try:
                 id3 = ID3(filename)
@@ -1211,8 +1264,7 @@ class IDJC_Media_Player:
                         album = "/".join((unicode(y) for y in x))
 
                     try:
-                        rg = str(unicode(audio["replaygain_track_gain"][-1]
-                                                    ).rstrip(" dB")) + " RG"
+                        rg = gain(audio)
                     except:
                         pass
 
@@ -3668,14 +3720,19 @@ class IDJC_Media_Player:
         if model.get_value(iter, 0)[0] == ">":
             cell_renderer.set_property("text", " ")
         else:
-            if model.get_value(iter, 7) == RGDEF:
+            rg = model.get_value(iter, 7)
+            if rg == RGDEF:
                 # Red triangle.
                 cell_renderer.set_property("markup",
                                 '<span foreground="dark red">&#x25b5;</span>')
-            else:
+            elif rg.endswith("RG"):
                 # Small green bullet point.
                 cell_renderer.set_property("markup",
                                 '<span foreground="dark green">&#x2022;</span>')
+            elif rg.endswith("R128"):
+                # Small blue bullet point.
+                cell_renderer.set_property("markup",
+                                '<span foreground="dark blue">&#x2022;</span>')
 
     def playtimerowconfig(self, tv_column, cell_renderer, model, iter):
         if self.exiting:

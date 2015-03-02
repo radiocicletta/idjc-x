@@ -1076,7 +1076,7 @@ static struct mixer {
     int fadeout_f;
     int flush_left, flush_right, flush_jingles, flush_interlude;
     int new_left_pause, new_right_pause, new_inter_pause;
-    char *artist, *title, *album, *replaygain;
+    char *artist, *title, *album, *replaygain, *rgloudness;
     double length;
     int use_dsp;
     char midi_output[MIDI_QUEUE_SIZE];
@@ -1420,9 +1420,9 @@ int mixer_main()
     
     if (!strcmp(action, "ogginforequest"))
         {
-        if (oggdecode_get_metainfo(oggpathname, &s.artist, &s.title, &s.album, &s.length, &s.replaygain))
+        if (oggdecode_get_metainfo(oggpathname, &s.artist, &s.title, &s.album, &s.length, &s.replaygain, &s.rgloudness))
             {
-            fprintf(g.out, "OIR:ARTIST=%s\nOIR:TITLE=%s\nOIR:ALBUM=%s\nOIR:LENGTH=%f\nOIR:REPLAYGAIN_TRACK_GAIN=%s\nOIR:end\n", s.artist, s.title, s.album, s.length, s.replaygain);
+            fprintf(g.out, "OIR:ARTIST=%s\nOIR:TITLE=%s\nOIR:ALBUM=%s\nOIR:LENGTH=%f\nOIR:REPLAYGAIN_TRACK_GAIN=%s\nOIR:REPLAYGAIN_REFERENCE_LOUDNESS=%s\nOIR:end\n", s.artist, s.title, s.album, s.length, s.replaygain, s.rgloudness);
             fflush(g.out);
             }
         else

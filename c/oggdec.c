@@ -152,6 +152,8 @@ static unsigned vorbis_get_samplerate(struct oggdec_vars *self)  /* attempt to g
             }
       
         obtain_tag_info("replaygain_track_gain", &self->replaygain[self->ix], FALSE);
+        obtain_tag_info("replaygain_reference_loudness", &self->rgloudness[self->ix], FALSE);
+
         }
     else
         {
@@ -349,6 +351,7 @@ static void oggflac_metadata_callback(const FLAC__StreamDecoder *decoder, const 
                 copy_tag("album=", &self->album[self->ix], TRUE);
                 }
             copy_tag("replaygain_track_gain=", &self->replaygain[self->ix], FALSE);
+            copy_tag("replaygain_reference_loudness=", &self->rgloudness[self->ix], FALSE);
             }
         else
             fprintf(stderr, "oggflac_metadata_callback: unhandled FLAC metadata type\n");
@@ -744,6 +747,8 @@ static off_t oggscan_eos(struct oggdec_vars *self, off_t offset, off_t offset_en
             self->album[self->n_streams - 1] = strdup("");
             self->replaygain = realloc(self->replaygain, self->n_streams * sizeof (char *));
             self->replaygain[self->n_streams - 1] = strdup("");
+            self->rgloudness = realloc(self->rgloudness, self->n_streams * sizeof (char *));
+            self->rgloudness[self->n_streams - 1] = strdup("");
             self->streamtype = realloc(self->streamtype, self->n_streams * sizeof (enum streamtype_t));
             self->start_time = realloc(self->start_time, self->n_streams * sizeof (double));
             self->duration = realloc(self->duration, self->n_streams * sizeof (double));
@@ -1210,7 +1215,7 @@ int oggdecode_reg(struct xlplayer *xlplayer)
         }
     }
 
-int oggdecode_get_metainfo(char *pathname, char **artist, char **title, char **album, double *length, char **replaygain)
+int oggdecode_get_metainfo(char *pathname, char **artist, char **title, char **album, double *length, char **replaygain, char **rgloudness)
     {
     struct oggdec_vars *self;
     int has_pbtime;
@@ -1231,7 +1236,8 @@ int oggdecode_get_metainfo(char *pathname, char **artist, char **title, char **a
             *title  = realloc(*title, 1);
             *album  = realloc(*album, 1);
             *replaygain = realloc(*replaygain, 1);
-            *artist[0] = *title[0] = *album[0] = *replaygain[0] = '\0';
+            *rgloudness = realloc(*rgloudness, 1);
+            *artist[0] = *title[0] = *album[0] = *replaygain[0] = *rgloudness[0] = '\0';
             }
         else
             {
@@ -1281,6 +1287,18 @@ int oggdecode_get_metainfo(char *pathname, char **artist, char **title, char **a
                 {
                 *replaygain = realloc(*replaygain, 1);
                 *replaygain[0] = '\0';
+                }
+
+            if (self->rgloudness[0])
+                {
+                if (*rgloudness)
+                    free(*rgloudness);
+                *rgloudness = strdup(self->rgloudness[0]);
+                }
+            else
+                {
+                *rgloudness = realloc(*rgloudness, 1);
+                *rgloudness[0] = '\0';
                 }
             }
         }
