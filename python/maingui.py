@@ -2038,6 +2038,11 @@ class MainWindow(dbus.service.Object):
     @dbus.service.method(dbus_interface=PGlobs.dbus_bus_basename)
     def new_plugin_started(self):
         self.channel_states = [-1, ] * 12
+        self.dbus_voip_mode = -1
+
+    @dbus.service.signal(dbus_interface=PGlobs.dbus_bus_basename, signature="u")
+    def voip_mode_changed(self, mode):
+        pass
 
     @dbus.service.method(dbus_interface=PGlobs.dbus_bus_basename,
                                                             out_signature="s")
@@ -2901,7 +2906,11 @@ class MainWindow(dbus.service.Object):
         for i in xrange(PGlobs.num_micpairs * 2):
             if self.channel_states[i] == -1:
                 ch[i].open.emit("toggled")
-                
+
+        if self.dbus_voip_mode != self.mixermode:
+            self.dbus_voip_mode = self.mixermode
+            self.voip_mode_changed(self.mixermode)
+
         return True
 
 
@@ -3797,6 +3806,7 @@ class MainWindow(dbus.service.Object):
         self.sample_rate = SlotObject(0)
         self.effects_playing = SlotObject(0)
         self.channel_states = [-1, ] * 12
+        self.dbus_voip_mode = -1
         
         self.feature_set = gtk.ToggleButton()
         self.feature_set.set_active(True)

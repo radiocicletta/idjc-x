@@ -1,5 +1,7 @@
 * Changes in version 0.8.15 *
 
+Support for more signals by the IDJCMonitor class.
+
 Support for latest version of python-irc.
 
 Added full support for ITU-R BS.1770 / EBU R128 tags.

@@ -59,6 +59,8 @@ class IDJCMonitor(gobject.GObject):
                 (gobject.TYPE_INT, gobject.TYPE_BOOLEAN, gobject.TYPE_STRING)),
         'channelstate-changed' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
                 (gobject.TYPE_UINT, gobject.TYPE_BOOLEAN)),
+        'voip-mode-changed' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
+                                 (gobject.TYPE_UINT,)),
         'metadata-changed' : (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
                                                     (gobject.TYPE_STRING,) * 5),
         'effect-started': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
@@ -90,7 +92,9 @@ class IDJCMonitor(gobject.GObject):
         'recordinfo' : (gobject.TYPE_PYOBJECT, 'recordinfo',
                 'information about the recorders', gobject.PARAM_READABLE),
         'channelinfo' : (gobject.TYPE_PYOBJECT, 'channelinfo',
-                'toggle state of the audio channels', gobject.PARAM_READABLE)
+                'toggle state of the audio channels', gobject.PARAM_READABLE),
+        'voip-mode' : (gobject.TYPE_UINT, 'voip-mode', 'voice over ip mixer mode',
+                                                0, 2, 0, gobject.PARAM_READABLE)
     }
     
     def __init__(self, profile):
@@ -185,6 +189,8 @@ class IDJCMonitor(gobject.GObject):
             self.__main.connect_to_signal("heartbeat", self._heartbeat_handler)
             self.__main.connect_to_signal("channelstate_changed",
                                                     self._channelstate_handler)
+            self.__main.connect_to_signal("voip_mode_changed",
+                                                    self._voip_mode_handler)
             self.__main.connect_to_signal("tracks_finishing",
                                                 self._tracks_finishing_handler)
             self.__output.connect_to_signal("streamstate_changed",
@@ -198,6 +204,7 @@ class IDJCMonitor(gobject.GObject):
             self.__streams = {n : (False, "unknown") for n in xrange(10)}
             self.__recorders = {n : (False, "unknown") for n in xrange(4)}
             self.__channels = [False] * 12
+            self.__voip_mode = 0
             main_iface = dbus.Interface(self.__main, self.__base_interface)
             output_iface = dbus.Interface(self.__output, self.__base_interface)
             
@@ -276,6 +283,12 @@ class IDJCMonitor(gobject.GObject):
         self.notify("channelinfo")
         self.emit("channelstate-changed", numeric_id, open_)
 
+    def _voip_mode_handler(self, mode):
+        mode = int(mode)
+        self.__voip_mode = mode
+        self.notify("voip-mode")
+        self.emit("voip-mode-changed", mode)
+
     def _tracks_finishing_handler(self):
         self.emit("tracks-finishing")
 
@@ -319,6 +332,8 @@ class IDJCMonitor(gobject.GObject):
             return tuple(self.__recorders[n] for n in xrange(4))
         elif name == "channelinfo":
             return tuple(self.__channels[n] for n in xrange(12))
+        elif name == "voip-mode":
+            return self.__voip_mode
         else:
             raise AttributeError("Unknown property %s in %s" % (
                                                             name, repr(self)))
