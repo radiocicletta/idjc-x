@@ -1059,7 +1059,6 @@ class IDJC_Media_Player:
         title_retval = meta_name
 
         def gain(handle=None, prefix="", gain=None, ref=None):
-            print handle, prefix, gain, ref
             try:
                 if ref is None:
                     ref = str(handle[prefix + "REPLAYGAIN_REFERENCE_LOUDNESS"][0])
@@ -3716,23 +3715,24 @@ class IDJC_Media_Player:
     def rgrowconfig(self, tv_column, cell_renderer, model, iter):
         if self.exiting:
             return
+            
         self.rowconfig(tv_column, cell_renderer, model, iter)
-        if model.get_value(iter, 0)[0] == ">":
-            cell_renderer.set_property("text", " ")
-        else:
+        cell_renderer.set_property("markup", " ")
+        if model.get_value(iter, 0)[0] != ">":
             rg = model.get_value(iter, 7)
-            if rg == RGDEF:
-                # Red triangle.
-                cell_renderer.set_property("markup",
-                                '<span foreground="dark red">&#x25b5;</span>')
-            elif rg.endswith("RG"):
-                # Small green bullet point.
-                cell_renderer.set_property("markup",
-                                '<span foreground="dark green">&#x2022;</span>')
-            elif rg.endswith("R128"):
-                # Small blue bullet point.
-                cell_renderer.set_property("markup",
-                                '<span foreground="dark blue">&#x2022;</span>')
+            if rg is not None:
+                if rg == RGDEF:
+                    # Red triangle.
+                    cell_renderer.set_property("markup",
+                                    '<span foreground="dark red">&#x25b5;</span>')
+                elif rg.endswith(" RG"):
+                    # Small green bullet point.
+                    cell_renderer.set_property("markup",
+                                    '<span foreground="dark green">&#x2022;</span>')
+                elif rg.endswith(" R128"):
+                    # Small blue bullet point.
+                    cell_renderer.set_property("markup",
+                                    '<span foreground="dark blue">&#x2022;</span>')
 
     def playtimerowconfig(self, tv_column, cell_renderer, model, iter):
         if self.exiting:

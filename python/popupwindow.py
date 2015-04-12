@@ -113,9 +113,10 @@ class PopupWindow:
             self.total_timer_count = 0
             self.message("timer started")
         if data == "leave":
-            source_remove(self.timeout_id)
-            self.inside_widget = False
-            self.message("timer removed")
+            if self.inside_widget:
+                source_remove(self.timeout_id)
+                self.inside_widget = False
+                self.message("timer removed")
         if data == "button" or data == "scroll" or self.inhibit_callback() \
                                                         and self.inside_widget:
             source_remove(self.timeout_id)
