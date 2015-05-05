@@ -1236,8 +1236,12 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
         self._keepalive = True
         self._have_welcome = False
         self._stream_active = stream_active
-        self.client = client.Reactor()
-        self.server = self.client.server()
+        try:
+            self.reactor = client.Reactor()
+        except AttributeError:
+            self.reactor = client.IRC()  # Old API compatibility
+            
+        self.server = self.reactor.server()
         self.start()
         self._hooks.append((model, model.connect("row-inserted",
                                                         self._on_row_inserted)))
@@ -1385,9 +1389,9 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
             while len(self._queue):
                 self._queue.pop(0)()
             
-            self.client.process_once(0.2)
+            self.reactor.process_once(0.2)
         
-        self.client.process_once()
+        self.reactor.process_once()
 
     def cleanup(self):
         for each in self._message_handlers:
