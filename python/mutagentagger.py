@@ -137,7 +137,7 @@ class WMATagger(MutagenTagger):
                             tag[key] = [
                                     ASFUnicodeAttribute(val.decode("utf-8"))]
                         except KeyError:
-                            print "Unacceptable key", key
+                            print("Unacceptable key", key)
         tag.save()
 
     
@@ -152,21 +152,21 @@ class WMATagger(MutagenTagger):
             except KeyError:
                 pass
             else:
-                each[1].set_text("/".join(unicode(y) for y in data))
+                each[1].set_text("/".join(str(y) for y in data))
 
         additional = []
 
         for key in self.secondaries:
             values = tag.get(key, [ASFUnicodeAttribute("")])
             for val in values:
-                additional.append(key.encode("utf-8") + "=" + unicode(
+                additional.append(key.encode("utf-8") + "=" + str(
                                                         val).encode("utf-8"))
 
         for key in self.text_set:
             if key not in self.primary_data and key not in self.secondaries:
                 values = tag[key]
                 for val in values:
-                    additional.append(key.encode("utf-8") + "=" + unicode(
+                    additional.append(key.encode("utf-8") + "=" + str(
                                                         val).encode("utf-8"))
         
         self.tag_frame.tb.set_text("\n".join(additional))
@@ -179,7 +179,7 @@ class WMATagger(MutagenTagger):
             if not isinstance(self.tag, mutagen.asf.ASF):
                 raise mutagen.asf.error
         except mutagen.asf.error:
-            print "Not a real wma/asf file apparently."
+            print("Not a real wma/asf file apparently.")
             self.tag = None
             return
             
@@ -206,9 +206,9 @@ class WMATagger(MutagenTagger):
 
         self.text_set = []
 
-        for key, val in self.tag.iteritems():
+        for key, val in self.tag.items():
             if key not in self.primary_line and all(isinstance(v, (
-                                ASFUnicodeAttribute, unicode)) for v in val):
+                                ASFUnicodeAttribute, str)) for v in val):
                 self.text_set.append(key)
 
 
@@ -227,7 +227,7 @@ class ID3Tagger(MutagenTagger):
         tag = self.tag
         
         # Remove all text tags.
-        for fid in tag.iterkeys():
+        for fid in tag.keys():
             if fid[0] == "T":
                 del tag[fid]
     
@@ -262,7 +262,7 @@ class ID3Tagger(MutagenTagger):
  
             if frame is id3.TXXX:
                 try:
-                    key, val = val.split(u"=", 1)
+                    key, val = val.split("=", 1)
                 
                 except ValueError:
                     continue
@@ -303,7 +303,7 @@ class ID3Tagger(MutagenTagger):
             
             done.append(fid)
                 
-        for fid, frame in self.tag.iteritems():
+        for fid, frame in self.tag.items():
             if fid[0] == "T" and fid not in done:
                 sep = "=" if fid.startswith("TXXX:") else ":"
                 for text in frame.text:
@@ -320,14 +320,14 @@ class ID3Tagger(MutagenTagger):
                 if not isinstance(self.tag, MP3):
                     raise mutagen.mp3.error
             except mutagen.mp3.error:
-                print "Not a real mp3 file apparently."
+                print("Not a real mp3 file apparently.")
                 self.tag = None
                 return
             try:
                 self.tag.add_tags()
-                print "Added ID3 tags to", pathname
+                print("Added ID3 tags to", pathname)
             except mutagen.id3.error:
-                print "Existing ID3 tags found."
+                print("Existing ID3 tags found.")
         else:
             try:
                 # Obtain ID3 tags from a non mp3 file.
@@ -438,7 +438,7 @@ class MP4Tagger(MutagenTagger):
             if not isinstance(self.tag, mutagen.mp4.MP4):
                 raise mutagen.mp4.error
         except mutagen.mp4.error:
-            print "Not a real mp4 file apparently."
+            print("Not a real mp4 file apparently.")
             self.tag = None
             return
             
@@ -472,7 +472,7 @@ class NativeTagger(MutagenTagger):
         
         tag = self.tag
         
-        for key in tag.iterkeys():
+        for key in tag.keys():
             if key not in self.blacklist:
                 del tag[key]
                 
@@ -494,7 +494,7 @@ class NativeTagger(MutagenTagger):
                         try:
                             tag[key] = [val.decode("utf-8")]
                         except KeyError:
-                            print "Unacceptable key", key
+                            print("Unacceptable key", key)
     
         tag.save() 
 
@@ -516,7 +516,7 @@ class NativeTagger(MutagenTagger):
                 for val in values:
                     lines.append(key + "=" + val.encode("utf-8"))
 
-        for key, values in tag.iteritems():
+        for key, values in tag.items():
             if key not in primaries and key not in self.blacklist:
                 for val in values:
                     lines.append(key + "=" + val.encode("utf-8"))
@@ -549,7 +549,7 @@ class ApeTagger(MutagenTagger):
         
         tag = self.tag
         
-        for key, values in tag.iteritems():
+        for key, values in tag.items():
             if isinstance(values, APETextValue):
                 del tag[key]
                 
@@ -571,7 +571,7 @@ class ApeTagger(MutagenTagger):
                         try:
                             tag[key] = APETextValue(val.decode("utf-8"), 0)
                         except KeyError:
-                            print "Unacceptable key", key
+                            print("Unacceptable key", key)
     
         tag.save() 
 
@@ -593,7 +593,7 @@ class ApeTagger(MutagenTagger):
                 for val in values:
                     lines.append(key + "=" + val.encode("utf-8"))
 
-        for key, values in tag.iteritems():
+        for key, values in tag.items():
             if key not in primaries and isinstance(values, APETextValue):
                 for val in values:
                     lines.append(key + "=" + val.encode("utf-8"))
@@ -610,22 +610,22 @@ class ApeTagger(MutagenTagger):
             try:
                 self.tag = APEv2(pathname)
             except:
-                print "ape tag not found"
+                print("ape tag not found")
                 self.tag = None
                 return
             else:
-                print "ape tag found on non-native format"
+                print("ape tag found on non-native format")
         except:
-            print "failed to create tagger for native format"
+            print("failed to create tagger for native format")
             self.tag = None
             return
         else:
             try:
                 self.tag.add_tags()
             except:
-                print "ape tag found on native format"
+                print("ape tag found on native format")
             else:
-                print "no existing ape tags found"
+                print("no existing ape tags found")
             
         self.tag_frame = FreeTagFrame()
         self.add(self.tag_frame)
@@ -664,7 +664,7 @@ class MutagenGUI:
         extension = os.path.splitext(pathname)[1][1:].lower()
         if supported.count(extension) != 1:
             if extension:
-                print "File type", extension, "is not supported for tagging"
+                print("File type", extension, "is not supported for tagging")
             return False
         else:
             return extension
@@ -672,12 +672,12 @@ class MutagenGUI:
     
     def __init__(self, pathname, encoding, idjcroot = None):
         if not pathname:
-            print "Tagger not supplied any pathname."
+            print("Tagger not supplied any pathname.")
             return
         
         extension = self.is_supported(pathname)
         if extension == False:
-            print "Tagger file extension", extension, "not supported."
+            print("Tagger file extension", extension, "not supported.")
             return
         
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
@@ -697,17 +697,17 @@ class MutagenGUI:
         label = gtk.Label()
         if idjcroot:
             if encoding is not None:
-                label.set_markup(u"<b>" + _('Filename:').decode("utf-8") + \
-                u" " + glib.markup_escape_text(unicode(os.path.split(
-                pathname)[1], encoding).encode("utf-8", "replace")) + u"</b>")
+                label.set_markup("<b>" + _('Filename:').decode("utf-8") + \
+                " " + glib.markup_escape_text(str(os.path.split(
+                pathname)[1], encoding).encode("utf-8", "replace")) + "</b>")
             else:
-                label.set_markup(u"<b>" + _('Filename:').decode("utf-8") + \
-                u" " + glib.markup_escape_text(os.path.split(
-                pathname)[1]).encode("utf-8", "replace") + u"</b>")
+                label.set_markup("<b>" + _('Filename:').decode("utf-8") + \
+                " " + glib.markup_escape_text(os.path.split(
+                pathname)[1]).encode("utf-8", "replace") + "</b>")
         else:
-            label.set_markup(u"<b>" + _('Filename:').decode("utf-8") + u" " + \
-            glib.markup_escape_text(unicode(os.path.split(
-            pathname)[1], "latin1").encode("utf-8", "replace")) + u"</b>")
+            label.set_markup("<b>" + _('Filename:').decode("utf-8") + " " + \
+            glib.markup_escape_text(str(os.path.split(
+            pathname)[1], "latin1").encode("utf-8", "replace")) + "</b>")
         vbox.pack_start(label, False, False, 6)
         label.show()
         
@@ -785,5 +785,5 @@ class MutagenGUI:
                                             gtk.Window.destroy, self.window)
             self.window.show()
         except IOError as e:
-            print e
+            print(e)
             self.window.destroy()

@@ -28,7 +28,7 @@ import json
 from functools import partial, wraps
 from collections import deque, defaultdict
 from contextlib import contextmanager
-from urllib import quote
+from urllib.parse import quote
 
 import glib
 import gobject
@@ -52,7 +52,7 @@ __all__ = ['MediaPane', 'have_songdb']
 AMPACHE = "Ampache"
 AMPACHE_3_7 = "Ampache 3.7"
 PROKYON_3 = "Prokyon 3"
-FUZZY, CLEAN, WHERE, DIRTY = xrange(4)
+FUZZY, CLEAN, WHERE, DIRTY = range(4)
 
 t = gettext.translation(FGlobs.package_name, FGlobs.localedir, fallback=True)
 _ = t.gettext
@@ -187,7 +187,7 @@ class DBAccessor(threading.Thread):
                             except sql.Error as e:
                                 notify(_("Connection failed (try %d)") %
                                                                     trycount)
-                                print e
+                                print(e)
                                 time.sleep(0.5)
                             else:
                                 # This causes problems if other
@@ -312,7 +312,7 @@ class Settings(gtk.Table):
         gtk.Table.__init__(self, 5, 4)
         self.set_border_width(10)
         self.set_row_spacings(1)
-        for col, spc in zip(xrange(3), (3, 10, 3)):
+        for col, spc in zip(range(3), (3, 10, 3)):
             self.set_col_spacing(col, spc)
 
         self._controls = []
@@ -505,7 +505,7 @@ class PrefsControls(gtk.Frame):
     def _notify(self, message):
         """Display status messages beneath the prefs settings."""
         
-        print "Song title database:", message
+        print("Song title database:", message)
         cid = self._statusbar.get_context_id("all output")
         self._statusbar.pop(cid)
         self._statusbar.push(cid, message)
@@ -551,7 +551,7 @@ class PageCommon(gtk.VBox):
                 if width != "0":
                     col.set_fixed_width(int(width))
         else:
-            print "can't restore column widths"
+            print("can't restore column widths")
 
     def activate(self, accessor, db_type, usesettings):
         self._acc = accessor
@@ -613,7 +613,7 @@ class PageCommon(gtk.VBox):
         try:
             self._old_cursor.close()
         except sql.Error as e:
-            print str(e)
+            print(str(e))
         except AttributeError:
             pass
 
@@ -1032,7 +1032,7 @@ class TreePage(ViewerCommon):
                     
             query = self._query_cook_common(query)
         else:
-            print "unsupported database type:", self._db_type
+            print("unsupported database type:", self._db_type)
             return
             
         self._pulse_id.append(timeout_add(1000, self._progress_pulse))
@@ -1079,7 +1079,7 @@ class TreePage(ViewerCommon):
         if isinstance(exception, sql.InterfaceError):
             raise exception  # Recover.
         
-        print exception
+        print(exception)
         
         notify(_('Tree fetch failed'))
         idle_add(threadslock(self.loading_label.set_text), _('Fetch Failed!'))
@@ -1183,7 +1183,7 @@ class TreePage(ViewerCommon):
         BLANK_ROW = self.BLANK_ROW
         if letter is None: letter = {}
         
-        for each in xrange(do_max):
+        for each in range(do_max):
             if acc.keepalive == False:
                 return False
                 
@@ -1405,7 +1405,7 @@ class FlatPage(ViewerCommon):
         try:
             table = self._queries_table[self._db_type]
         except KeyError:
-            print "unsupported database type"
+            print("unsupported database type")
             return
 
         user_text = self.fuzzy_entry.get_text().strip()
@@ -1430,7 +1430,7 @@ class FlatPage(ViewerCommon):
         elif access_mode == DIRTY:  # Accepting of SQL code in user data.
             query = (query % ((user_text,) * qty),)
         else:
-            print "unknown database access mode", access_mode
+            print("unknown database access mode", access_mode)
             return
 
         self._acc.request(query, self._handler, self._failhandler)
@@ -1487,7 +1487,7 @@ class FlatPage(ViewerCommon):
         next_row = cursor.fetchone
         append = self.list_store.append
 
-        for i in xrange(100):
+        for i in range(100):
             if acc.keepalive == False:
                 return False
 
@@ -1569,7 +1569,7 @@ class CatalogsInterface(gobject.GObject):
         return os.path.isfile(path), path
     
     def sql(self):
-        ids = tuple(x for x in self._dict.iterkeys())
+        ids = tuple(x for x in self._dict.keys())
         if not ids:
             return "FALSE"
 
@@ -1592,9 +1592,9 @@ class CatalogsInterface(gobject.GObject):
     @staticmethod
     def _stripped_copy(_dict):
         copy = {}
-        for key1, val1 in _dict.iteritems():
+        for key1, val1 in _dict.items():
             copy[key1] = {}
-            for key2, val2 in val1.iteritems():
+            for key2, val2 in val1.items():
                 if key2 not in ("peel", "prepend", "lpscale"):
                     copy[key1][key2] = val2
 
@@ -1852,7 +1852,7 @@ class MediaPane(gtk.VBox):
         try:
             target = getattr(self, "_%s_page" % keyval)
         except AttributeError as e:
-            print e
+            print(e)
             return ""
         else:
             return target.get_col_widths()
@@ -1864,7 +1864,7 @@ class MediaPane(gtk.VBox):
             try:
                 target = getattr(self, "_%s_page" % keyval)
             except AttributeError as e:
-                print e
+                print(e)
                 return
             else:
                 target.set_col_widths(data)
@@ -1878,7 +1878,7 @@ class MediaPane(gtk.VBox):
             self._acc1.request(('SHOW tables',), self._stage_1, self._fail_1)
         else:
             try:
-                for i in xrange(1, 4):
+                for i in range(1, 4):
                     getattr(self, "_acc%d" % i).close()
             except AttributeError:
                 pass
@@ -1916,7 +1916,7 @@ class MediaPane(gtk.VBox):
 
         if code != 1061:
             notify(_('Failed to create FULLTEXT index'))
-            print exception
+            print(exception)
             raise
 
         notify(_('Found existing FULLTEXT index'))

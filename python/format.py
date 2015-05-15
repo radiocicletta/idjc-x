@@ -33,9 +33,7 @@ _ = gettext.translation(FGlobs.package_name, FGlobs.localedir,
                                                         fallback=True).gettext
 
 
-class TestEncoder(object):
-    __metaclass__ = ABCMeta
-
+class TestEncoder(object, metaclass=ABCMeta):
     @abstractproperty
     def default_bitrate_stereo(self):
         """A guaranteed good bitrate when encoding 2 channels."""
@@ -857,11 +855,11 @@ class FormatCodecVorbisVariability(FormatDropdown):
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Variability'), "variability", (
             dict(display_text=_("Constant"), value="0", chain="FormatMetadataUTF8"),
-            dict(display_text=_(u"\u00B110%"), value="10", chain="FormatMetadataUTF8"),
-            dict(display_text=_(u"\u00B120%"), value="20", chain="FormatMetadataUTF8"),
-            dict(display_text=_(u"\u00B130%"), value="30", chain="FormatMetadataUTF8"),
-            dict(display_text=_(u"\u00B140%"), value="40", chain="FormatMetadataUTF8"),
-            dict(display_text=_(u"\u00B150%"), value="50", chain="FormatMetadataUTF8")), 0,
+            dict(display_text=_("\u00B110%"), value="10", chain="FormatMetadataUTF8"),
+            dict(display_text=_("\u00B120%"), value="20", chain="FormatMetadataUTF8"),
+            dict(display_text=_("\u00B130%"), value="30", chain="FormatMetadataUTF8"),
+            dict(display_text=_("\u00B140%"), value="40", chain="FormatMetadataUTF8"),
+            dict(display_text=_("\u00B150%"), value="50", chain="FormatMetadataUTF8")), 0,
             _('This control is for enabling variable bitrate on Vorbis streams.'))
 
 
@@ -1374,7 +1372,7 @@ class FormatControl(gtk.VBox):
             try:
                 self._current.value = dict_[self._current.ident]
             except KeyError:
-                print "key error", self._current.ident
+                print("key error", self._current.ident)
                 break
             else:
                 if self._current.applied or self._current.ident == unapplied or oldcurr == self._current:
@@ -1419,7 +1417,7 @@ class FormatControl(gtk.VBox):
     def _start_encoder(self):
         if self._current.applied:
             kvps = [] 
-            for pairs in format_collate(self._current).iteritems():
+            for pairs in format_collate(self._current).items():
                 kvps.append("=".join(pairs))
             kvps.append("encode_source=jack\ncommand=encoder_start\n")
             kvps = "\n".join(kvps)
@@ -1431,7 +1429,7 @@ class FormatControl(gtk.VBox):
                 self._back_button.set_sensitive(False)
             return ret
         else:
-            print "encoder settings are not finalised"
+            print("encoder settings are not finalised")
             return False
 
     def _stop_encoder(self):

@@ -35,7 +35,7 @@ def pid_exists(pid):
         return False
     try:
         os.kill(pid, 0)
-    except OSError, e:
+    except OSError as e:
         return e.errno == os.errno.EPERM
     else:
         return True
@@ -201,8 +201,8 @@ class IDJCMonitor(gobject.GObject):
             # Start watchdog thread.
             self.__watchdog_id = gobject.timeout_add_seconds(3, self._watchdog)
 
-            self.__streams = {n : (False, "unknown") for n in xrange(10)}
-            self.__recorders = {n : (False, "unknown") for n in xrange(4)}
+            self.__streams = {n : (False, "unknown") for n in range(10)}
+            self.__recorders = {n : (False, "unknown") for n in range(4)}
             self.__channels = [False] * 12
             self.__voip_mode = 0
             main_iface = dbus.Interface(self.__main, self.__base_interface)
@@ -228,11 +228,11 @@ class IDJCMonitor(gobject.GObject):
                     self.emit("frozen", self.__profile, self.__pid, True)
                 return True
             else:
-                for id_, (conn, where) in self.__streams.iteritems():
+                for id_, (conn, where) in self.__streams.items():
                     if conn:
                         self._streamstate_handler(id_, 0, where)
 
-                for id_, (rec, where) in self.__recorders.iteritems():
+                for id_, (rec, where) in self.__recorders.items():
                     if rec:
                         self._recordstate_handler(id_, 0, where)
                         
@@ -327,11 +327,11 @@ class IDJCMonitor(gobject.GObject):
                     "effect_pathname"):
             return getattr(self, "_IDJCMonitor__" + name)
         if name == "streaminfo":
-            return tuple(self.__streams[n] for n in xrange(10))
+            return tuple(self.__streams[n] for n in range(10))
         elif name == "recordinfo":
-            return tuple(self.__recorders[n] for n in xrange(4))
+            return tuple(self.__recorders[n] for n in range(4))
         elif name == "channelinfo":
-            return tuple(self.__channels[n] for n in xrange(12))
+            return tuple(self.__channels[n] for n in range(12))
         elif name == "voip-mode":
             return self.__voip_mode
         else:

@@ -200,7 +200,7 @@ def threadslock(inner):
                 return inner(*args, **kwargs)
             else:
                 # Cancel timeouts and idle functions.
-                print "callback cancelled"
+                print("callback cancelled")
                 return False
         finally:
             gtk.gdk.threads_leave()
@@ -342,14 +342,12 @@ class HistoryEntry(gtk.ComboBoxEntry):
             self.set_text(text)
 
 
-class NamedTreeRowReference(object):
+class NamedTreeRowReference(object, metaclass=ABCMeta):
     """Provides named attribute access to gtk.TreeRowReference objects.
     
     This is a virtual base class.
     Virtual method 'get_index_for_name()' must be provided in a subclass.
     """
-
-    __metaclass__ = ABCMeta
 
     def __init__(self, tree_row_ref):
         object.__setattr__(self, "_tree_row_ref", tree_row_ref)        
@@ -430,7 +428,7 @@ class WindowSizeTracker(object):
         
         try:
             self._x, self._y, self._max = json.loads(s)
-        except StandardError:
+        except Exception:
             pass
 
     def apply(self):

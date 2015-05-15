@@ -150,16 +150,11 @@ class PathStrMeta(type):
 
 
 
-class PathStr(str):
+class PathStr(str, metaclass=PathStrMeta):
     """A data type to perform path joins using the / operator.
 
     In this case the higher precedence of / is unfortunate.
     """
-
-    # pylint: disable=R0904
-
-
-    __metaclass__ = PathStrMeta
 
 
     def __div__(self, other):
@@ -243,11 +238,8 @@ def string_multireplace(part, table):
 
 
 
-class LinkUUIDRegistry(dict):
+class LinkUUIDRegistry(dict, metaclass=Singleton):
     """Manage substitute hard links for data files."""
-
-
-    __metaclass__ = Singleton
 
     
     link_re = re.compile(
@@ -259,27 +251,27 @@ class LinkUUIDRegistry(dict):
         if os.path.exists(pathname):
             self[uuid_] = pathname
         else:
-            print "LinkUUIDRegistry: pathname does not exist", pathname
+            print("LinkUUIDRegistry: pathname does not exist", pathname)
 
 
     def remove(self, uuid_):
         try:
             del self[uuid_]
         except KeyError:
-            print "LinkUUIDRegisty: remove -- UUID does not exist: {%s}" % uuid_
+            print("LinkUUIDRegisty: remove -- UUID does not exist: {%s}" % uuid_)
 
 
     def _purge(self, where):
         """Clean orphaned hard links from the links directory."""
 
-        basedir, dirs, files = os.walk(where).next()
+        basedir, dirs, files = next(os.walk(where))
         for filename in files:
             match = self.link_re.match(filename)
             try:
                 if match is None or str(uuid.UUID(match.group(0))) not in self:
                     os.unlink(os.path.join(basedir, filename))
             except EnvironmentError as e:
-                print "LinkUUIDRegistry: link purge failed: %s" % e
+                print("LinkUUIDRegistry: link purge failed: %s" % e)
 
 
     def _save(self, where, copy):
@@ -294,10 +286,10 @@ class LinkUUIDRegistry(dict):
             try:
                 os.mkdir(where)
             except EnvironmentError as e:
-                print "LinkUUIDRegistry: link directory creation failed:", e
+                print("LinkUUIDRegistry: link directory creation failed:", e)
                 return
 
-        for uuid_, source in self.iteritems():
+        for uuid_, source in self.items():
             ext = os.path.splitext(source)[1]
             if copy:
                 cmd = shutil.copyfile
@@ -308,7 +300,7 @@ class LinkUUIDRegistry(dict):
                 cmd(source, os.path.join(where, "{%s}%s" % (uuid_, ext)))
             except EnvironmentError as e:
                 if e.errno != 17:
-                    print "LinkUUIDRegistry: link failed:", e
+                    print("LinkUUIDRegistry: link failed:", e)
             except shutil.Error:
                 pass
 

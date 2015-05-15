@@ -27,6 +27,6 @@ sys.path.insert(0, """@idjcpythondir@""")
 try:
     import idjc
 except ImportError:
-    print "failed to import the idjc package"
+    print("failed to import the idjc package")
 else:
     exit(idjc.main())

@@ -255,7 +255,7 @@ class Binding(tuple):
 
         # Parse from string. Can also parse an input string alone
         #
-        elif isinstance(binding, (str, unicode)):
+        elif isinstance(binding, str):
             input_part, _, action_part= binding.partition(':')
             binding= list(cls._default)
             s= input_part[:1]
@@ -414,7 +414,7 @@ class Binding(tuple):
 
     # Note names. Convert to/from MIDI note/octave format.
     #
-    NOTES= u'C,C#,D,D#,E,F,F#,G,G#,A,A#,B'.replace(u'#', u'\u266F').split(',')
+    NOTES= 'C,C#,D,D#,E,F,F#,G,G#,A,A#,B'.replace('#', '\u266F').split(',')
 
     @staticmethod
     def note_to_str(n):
@@ -422,8 +422,8 @@ class Binding(tuple):
 
     @staticmethod
     def str_to_note(s):
-        m= re.match(u'^([A-G](?:\u266F?))(-1|\d)$', s.replace(' ', '').replace(
-                                                    u'#', u'\u266F').upper())
+        m= re.match('^([A-G](?:\u266F?))(-1|\d)$', s.replace(' ', '').replace(
+                                                    '#', '\u266F').upper())
         if m is None:
             raise ValueError('Invalid note')
         n= Binding.NOTES.index(m.group(1))
@@ -439,13 +439,13 @@ class Binding(tuple):
     # a simple 0..127 range, for easy use in a SpinButton.
     #
     MODIFIERS= (
-        (gtk.gdk.SHIFT_MASK, u'\u21D1'),
-        (gtk.gdk.CONTROL_MASK, u'^'),
-        (gtk.gdk.MOD1_MASK, u'\u2020'), # alt/option
-        (gtk.gdk.MOD5_MASK, u'\u2021'), # altgr/option
-        (gtk.gdk.META_MASK, u'\u25C6'),
-        (gtk.gdk.SUPER_MASK, u'\u2318'), # win/command
-        (gtk.gdk.HYPER_MASK, u'\u25CF'),
+        (gtk.gdk.SHIFT_MASK, '\u21D1'),
+        (gtk.gdk.CONTROL_MASK, '^'),
+        (gtk.gdk.MOD1_MASK, '\u2020'), # alt/option
+        (gtk.gdk.MOD5_MASK, '\u2021'), # altgr/option
+        (gtk.gdk.META_MASK, '\u25C6'),
+        (gtk.gdk.SUPER_MASK, '\u2318'), # win/command
+        (gtk.gdk.HYPER_MASK, '\u25CF'),
     )
     MODIFIERS_MASK= sum(m for m, c in MODIFIERS)
 
@@ -478,8 +478,8 @@ class Binding(tuple):
 def action_method(*modes):
     def wrap(fn):
         fn.action_modes= modes
-        Binding.METHODS.append(fn.func_name)
-        group= fn.func_name[0]
+        Binding.METHODS.append(fn.__name__)
+        group= fn.__name__[0]
         if group not in Binding.METHOD_GROUPS:
             Binding.METHOD_GROUPS.append(group)
         return fn
@@ -617,9 +617,9 @@ class Controls(dbus.service.Object):
                 if line!='' and not line.startswith('#'):
                     try:
                         self.bindings.append(Binding(line))
-                    except ValueError, e:
-                        print >>sys.stderr, 'Warning: controls prefs file ' \
-                                        'contained unreadable binding %r' % line
+                    except ValueError as e:
+                        print('Warning: controls prefs file ' \
+                                        'contained unreadable binding %r' % line, file=sys.stderr)
             fp.close()
             self.update_lookup()
 
@@ -886,7 +886,7 @@ class Controls(dbus.service.Object):
         player= self._get_player(n)
         if player is None: return
         if player not in (self.owner.player_left, self.owner.player_right):
-            print "player unsupported for this binding"
+            print("player unsupported for this binding")
             return
         other= self.owner.player_left if player is self.owner.player_right \
                                                 else self.owner.player_right
@@ -2175,7 +2175,7 @@ class BindingListModel(gtk.GenericTreeModel):
     def cb_highlights(self, tree, column0, model_sort):
         d= self.highlights
         if d:
-            for rowref, (count, is_new) in d.items():
+            for rowref, (count, is_new) in list(d.items()):
                 # Highlights counter is reduced.
                 if count < 1:
                     del d[rowref]

@@ -191,10 +191,7 @@ class ProfileSingleton(Singleton, type(gtk.Dialog)):
     
     
 
-class ProfileDialog(gtk.Dialog):
-    __metaclass__ = ProfileSingleton
-    
-    
+class ProfileDialog(gtk.Dialog, metaclass=ProfileSingleton):
     __gproperties__ = {  "selection-active" : (gobject.TYPE_BOOLEAN, 
                                 "selection active", 
                                 "selected profile is active",
@@ -535,7 +532,7 @@ class ProfileDialog(gtk.Dialog):
         try:
             self.set_icon_from_file(iconpathname)
         except glib.GError:
-            print "Profile icon image file not found:", iconpathname
+            print("Profile icon image file not found:", iconpathname)
         else:
             gtk.window_set_default_icon_from_file(iconpathname)
 

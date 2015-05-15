@@ -20,7 +20,7 @@ import os
 import sys
 import fcntl
 import subprocess
-import ConfigParser
+import configparser
 import operator
 import socket
 import pickle
@@ -84,7 +84,7 @@ class FreewheelButton(gtk.Button):
         label = gtk.Label()
         label.set_padding(2, 0)
         label.set_alignment(1.0, 0.5)
-        label.set_markup(u"<span size='15000'>\u2699</span>")
+        label.set_markup("<span size='15000'>\u2699</span>")
         hbox.pack_start(label, False)
         label.show()
         self.add(hbox)
@@ -182,12 +182,12 @@ class MainMenu(gtk.MenuBar, MenuMixin):
             
         self.submenu(self.viewmenu_i, "view")
         mkitems = self.build(self.viewmenu)
-        mkitems(zip("output prefs profiles".split(" "),
-                (_('Output'), _('Preferences'), _('Profiles'))))
+        mkitems(list(zip("output prefs profiles".split(" "),
+                (_('Output'), _('Preferences'), _('Profiles')))))
         self.sep(self.viewmenu)
-        mkitems(zip("songdb chmeters strmeters players backgroundtracks buttonbar".split(" "),
+        mkitems(list(zip("songdb chmeters strmeters players backgroundtracks buttonbar".split(" "),
                 (_('Music Database'), _('Channel Meters'), _('Output Meters'),
-                 _('Tabbed Area'), _('Background Tracks'), _('Button Bar'))), gtk.CheckMenuItem)
+                 _('Tabbed Area'), _('Background Tracks'), _('Button Bar')))), gtk.CheckMenuItem)
 
         if not songdb.have_songdb:
             self.songdbmenu_i.hide()
@@ -219,10 +219,10 @@ class JackMenu(MenuMixin):
         # member really exists, was created by setattr
 
         mkitems = self.build(menu.jackmenu)
-        mkitems(zip(
+        mkitems(list(zip(
                     "channels players voip dsp mix output other".split(), (
                     _('Channels'), _('Players'),
-                    _('VoIP'), _('DSP'), _('Mix'), _('Output'), _('Misc'))))
+                    _('VoIP'), _('DSP'), _('Mix'), _('Output'), _('Misc')))))
         self.submenu(self.channelsmenu_i, "channels")
         self.submenu(self.playersmenu_i, "players")
         self.submenu(self.voipmenu_i, "voip")
@@ -308,7 +308,7 @@ class JackMenu(MenuMixin):
         elif "midi" in port:
             filter_ = "midioutputs"
         else:
-            print "JackMenu.port_connections: unknown port type"
+            print("JackMenu.port_connections: unknown port type")
             return
             
         self.write("portread", "JFIL=%s\nJPRT=%s\nend\n" % (filter_, port))
@@ -395,9 +395,9 @@ class JackMenu(MenuMixin):
             with open(where or self.pathname, "w") as f:
                 f.write(json.dumps(data).replace(client_id, "\"{client_id}:"))
         except Exception as e:
-            print "problem writing", self.pathname
+            print("problem writing", self.pathname)
         else:
-            print "jack connections saved"
+            print("jack connections saved")
 
 
     def load(self, where=None , startup=False):
@@ -407,7 +407,7 @@ class JackMenu(MenuMixin):
                 cons = f.read()
         except Exception:
             if where:
-                print "problem reading JACK connections files,", where
+                print("problem reading JACK connections files,", where)
             if args.no_default_jack_connections:
                 cons = []
             else:
@@ -446,7 +446,7 @@ class JackMenu(MenuMixin):
         try:
             cons = json.loads(cons.format(client_id=os.environ["client_id"]))
         except ValueError:
-            print "jack port connections file is empty"
+            print("jack port connections file is empty")
         else:
             self._port_data = cons
             if not startup or not args.no_jack_connections:
@@ -639,7 +639,7 @@ class MicButton(gtk.ToggleButton):
         self._ident_label.set_text("(%d)%s" % (opener_tab.ident, to_close))
         
         def labeltext():
-            for blk in itertools.izip_longest(*(iter(mic_agc_list),) * 4):
+            for blk in itertools.zip_longest(*(iter(mic_agc_list),) * 4):
                 yield ",".join(x.ui_name for x in blk if x is not None)
         
         for text, label in zip(labeltext(),
@@ -922,7 +922,7 @@ class OpenerSettings(gtk.Frame):
             for attrname in ("activedict", "valuesdict", "textdict"):
                 dest = getattr(self, attrname)
                 src = getattr(tab, attrname)
-                for key, val in src.iteritems():
+                for key, val in src.items():
                     dest[key + "_%d" % tab.ident] = val
 
     
@@ -958,7 +958,7 @@ class MicOpener(gtk.HBox):
             cmd = button.opener_tab.shell_on_close.get_text().strip()
 
         if cmd and not button.block_shell_command:
-            print "button %d shell command: %s" % (button.opener_tab.ident, cmd)
+            print("button %d shell command: %s" % (button.opener_tab.ident, cmd))
             subprocess.Popen(cmd, shell=True, close_fds=True)
 
         for mic in mics:
@@ -986,8 +986,8 @@ class MicOpener(gtk.HBox):
         self.ix2button = {}
         joiner = ' <span foreground="red">&#64262;</span> '
 
-        mic_group_list = [[] for x in xrange(PGlobs.num_micpairs * 2)]
-        aux_group_list = [[] for x in xrange(PGlobs.num_micpairs * 2)]
+        mic_group_list = [[] for x in range(PGlobs.num_micpairs * 2)]
+        aux_group_list = [[] for x in range(PGlobs.num_micpairs * 2)]
         ot = self.opener_settings.notebook.get_children()
         mic_qty = aux_qty = 0
         
@@ -1109,7 +1109,7 @@ class MicOpener(gtk.HBox):
             try:
                 cb = b.opener_tab.open_triggers[type_]
             except KeyError:
-                print "unknown auto open type:", type_
+                print("unknown auto open type:", type_)
             else:
                 if cb.get_active():
                     b.set_active(True)
@@ -1139,9 +1139,9 @@ class MicOpener(gtk.HBox):
                 return m.open
             elif mode == 3:
                 return m.partner.open
-            print "channel %d is not active" % (ix + 1)
+            print("channel %d is not active" % (ix + 1))
         except IndexError:
-            print "channel %d does not exist" % (ix + 1)
+            print("channel %d does not exist" % (ix + 1))
         return None
 
     def close_all(self):
@@ -1859,12 +1859,12 @@ class idjc_shutdown_dialog:
     
     def respond(self, dialog, response, actionyes, actionno):
         if response == gtk.RESPONSE_OK:
-            print "Dialog quit"
+            print("Dialog quit")
             if actionyes is not None:
                 actionyes()
         if response == gtk.RESPONSE_DELETE_EVENT or \
                                                 response == gtk.RESPONSE_CANCEL:
-            print "Dialog keep running"
+            print("Dialog keep running")
             if actionno is not None:
                 actionno()
         dialog.destroy()
@@ -2032,7 +2032,7 @@ class MainWindow(dbus.service.Object):
             else:
                 self.window.set_title(self.appname + pm.title_extra)
 
-            print "song title: %s\n" % self.songname
+            print("song title: %s\n" % self.songname)
 
     @dbus.service.method(dbus_interface=PGlobs.dbus_bus_basename)
     def new_plugin_started(self):
@@ -2068,7 +2068,7 @@ class MainWindow(dbus.service.Object):
                 with open(pm.basedir / "history.log", "a") as f:
                     f.write(time.strftime("%x %X :: ") + tstext + "\n")
             except IOError:
-                print "failed to write log entry to history.log"
+                print("failed to write log entry to history.log")
 
         if self._old_metadata_2 == args:
             return
@@ -2083,7 +2083,7 @@ class MainWindow(dbus.service.Object):
                                                                 music_filename):
         """DBus signal for plugins to attach to for metadata updates."""
     
-        print "track_metadata_changed called and signal emitted"
+        print("track_metadata_changed called and signal emitted")
 
     @dbus.service.signal(dbus_interface=PGlobs.dbus_bus_basename,
                                                             signature="ssu")
@@ -2107,7 +2107,7 @@ class MainWindow(dbus.service.Object):
         i = 1
         while 1:
             if data[i - 1] != "d":
-                print "songname_decode: WARNING, read past end boundary"
+                print("songname_decode: WARNING, read past end boundary")
                 yield None
                 continue
             colon_index = data.index(":", i)
@@ -2119,12 +2119,12 @@ class MainWindow(dbus.service.Object):
 
     def update_songname(self, player, data):
         gen = self.songname_decode(data)
-        infotype = int(gen.next())
-        artist = gen.next()
-        title = gen.next()
-        album = gen.next()
-        player_context = int(gen.next())
-        time_lag = int(gen.next())
+        infotype = int(next(gen))
+        artist = next(gen)
+        title = next(gen)
+        album = next(gen)
+        player_context = int(next(gen))
+        time_lag = int(next(gen))
 
         if infotype in (1, 2):
             artist = artist.decode("utf-8")
@@ -2144,20 +2144,20 @@ class MainWindow(dbus.service.Object):
                 return "%s - %s - %s%s%s" % (artist, title, o, album, c)
             
             if not album and not artist:
-                sep = title.count(u" - ")
+                sep = title.count(" - ")
                 if sep == 2:
-                    artist, title, album = title.split(u" - ")
+                    artist, title, album = title.split(" - ")
                 elif sep == 1:
-                    artist, title = title.split(u" - ")
+                    artist, title = title.split(" - ")
 
                 if artist and title and album:
                     song = fmt(artist, title, album)
                 elif artist and title:
-                    song = u" - ".join((artist, title))
+                    song = " - ".join((artist, title))
                 else:
                     song = title
             elif not album:
-                song = u" - ".join((artist, title))
+                song = " - ".join((artist, title))
             else:
                 song = fmt(artist, title, album)
 
@@ -2183,8 +2183,8 @@ class MainWindow(dbus.service.Object):
                         (song, artist, title, album, player, player_context))
 
     @threadslock
-    def new_songname_timeout(self,
-                        (song, artist, title, album, player, player_context)):
+    def new_songname_timeout(self, xxx_todo_changeme):
+        (song, artist, title, album, player, player_context) = xxx_todo_changeme
         if player.player_cid == (player_context | 1) and player.cuesheet is None:
             player.songname = song
             player.artist = artist
@@ -2192,8 +2192,8 @@ class MainWindow(dbus.service.Object):
             player.album = album
             self.send_new_mixer_stats()
         else:
-            print "context mismatch, player context id =", player.player_cid,\
-                        "metadata update carries context id =", player_context
+            print("context mismatch, player context id =", player.player_cid,\
+                        "metadata update carries context id =", player_context)
         return False
         
     def ui_detail_leveller(self, level):
@@ -2214,7 +2214,7 @@ class MainWindow(dbus.service.Object):
         return inner
 
     def callback(self, widget, data):
-        print "%s was pressed" % data
+        print("%s was pressed" % data)
         if data == "Show about":
             self.prefs_window.notebook.set_current_page(4)
             self.prefs_window.window.present()
@@ -2286,9 +2286,9 @@ class MainWindow(dbus.service.Object):
 
     # handles selection of metadata source
     def cb_metadata_source(self, widget):
-        print "Metadata source was changed. Before: %d" % self.metadata_src
+        print("Metadata source was changed. Before: %d" % self.metadata_src)
         self.metadata_src = widget.get_active()
-        print "Metadata source was changed. Now: %d" % self.metadata_src
+        print("Metadata source was changed. Now: %d" % self.metadata_src)
         
         for each in (self.player_left, self.player_right,
                                                     self.jingles.interlude):
@@ -2299,7 +2299,7 @@ class MainWindow(dbus.service.Object):
         return True;
 
     def cb_toggle(self, widget, data):
-        print "%s was toggled %s" % (data, ("OFF","ON")[widget.get_active()])
+        print("%s was toggled %s" % (data, ("OFF","ON")[widget.get_active()]))
         if data == "stream-mon":
             self.send_new_mixer_stats()
         if data == "Greenphone":
@@ -2366,7 +2366,7 @@ class MainWindow(dbus.service.Object):
     
 
     def cb_crosspattern(self, widget):
-        print "crossfader pattern changed"
+        print("crossfader pattern changed")
         self.send_new_mixer_stats()
     
 
@@ -2375,7 +2375,7 @@ class MainWindow(dbus.service.Object):
 
 
     def save_session(self, trigger, where=None):
-        print "save_session called"
+        print("save_session called")
 
         if where is None:
             session_filename = pm.basedir / self.session_filename
@@ -2386,15 +2386,15 @@ class MainWindow(dbus.service.Object):
         if trigger in ("atexit", "periodic") and pm.profile is None \
                                                 and pm.session_type != "L0":
             if trigger == "periodic":
-                print "periodic save cancelled"
+                print("periodic save cancelled")
             else:
-                print "save at exit blocked"
+                print("save at exit blocked")
             # Cancel the periodic timeout with this return value.
             return False
 
         self.prefs_window.save_resource_template()
         if trigger == "template":
-            print "saving template only"
+            print("saving template only")
             return True
 
         try:
@@ -2440,14 +2440,14 @@ class MainWindow(dbus.service.Object):
                 fh = open(session_filename + "_files_played", "w")
                 cutoff = time.time() - 2592000 # 2592000 = 30 days.
                 recent = {}
-                for key, value in self.files_played.iteritems():
+                for key, value in self.files_played.items():
                     if value > cutoff:
                         recent[key] = value
                 pickle.Pickler(fh).dump(recent)
                 fh.close()
             
         except Exception as e:
-            print "Error writing out main session data", e
+            print("Error writing out main session data", e)
 
         try:
             fh = open(session_filename + "_tracks", "w")
@@ -2456,7 +2456,7 @@ class MainWindow(dbus.service.Object):
             fh.write(text)
             fh.close()
         except Exception as e:
-            print "Error writing out tracks played data", e
+            print("Error writing out tracks played data", e)
 
         self.prefs_window.save_player_prefs(where)
         self.controls.save_prefs(where)
@@ -2495,7 +2495,7 @@ class MainWindow(dbus.service.Object):
         try:
             fh = open(pm.basedir / self.session_filename, "r")
         except Exception as e:
-            print e
+            print(e)
             return
         while 1:
             try:
@@ -2555,19 +2555,19 @@ class MainWindow(dbus.service.Object):
         try:
             stat = os.stat(mst)
         except OSError as e:
-            print e
+            print(e)
             return
         if stat.st_ctime + 21600 > time.time():
             try:
                 fh = open(mst, "r")
             except Exception as e:
-                print e
+                print(e)
                 return
             text = fh.read()
             fh.close()
             self.history_buffer.set_text(text)
         else:
-            print "disregarding out of date track history text"
+            print("disregarding out of date track history text")
 
     def destroy_hard(self, widget=None, data=None):
         if self.session_loaded:
@@ -2671,17 +2671,17 @@ class MainWindow(dbus.service.Object):
             self._mixer_ctrl.flush()
         except (IOError, ValueError, AttributeError) as e:
             if message == "bootstrap":
-                print "launching backend"
+                print("launching backend")
             else:
-                print str(e)
+                print(str(e))
             for i in range(1, 4 if self.session_loaded else 2):
-                print "backend launch attempt", i
+                print("backend launch attempt", i)
 
 
                 read = ctypes.c_int()
                 write = ctypes.c_int()
                 if not self.backend.init_backend(ctypes.byref(read), ctypes.byref(write)):
-                    print "call to init_backend failed"
+                    print("call to init_backend failed")
                     continue
                 
                 try:
@@ -2691,15 +2691,15 @@ class MainWindow(dbus.service.Object):
                     "failed to open streams to backend"
                     continue
                     
-                print "awaiting reply"
+                print("awaiting reply")
                     
                 for j in range(10):
                     reply = self.mixer_read()
-                    print "got", reply
+                    print("got", reply)
                     if reply == "idjc backend ready\n":
                         break
                 else:
-                    print "bad response from newly started backend"
+                    print("bad response from newly started backend")
                     continue
 
                 if FGlobs.have_libmpg123:
@@ -2721,7 +2721,7 @@ class MainWindow(dbus.service.Object):
                     self.mixer_write(message, target)
                 break
             else:
-                print "giving up"
+                print("giving up")
                 self.destroy_hard()
 
 
@@ -2731,11 +2731,11 @@ class MainWindow(dbus.service.Object):
         try:
             line = self._mixer_rply.readline()
         except IOError as e:
-            print str(e)
+            print(str(e))
             line = self.mixer_read(iters + 1)
         if line == "Segmentation Fault\n":
             line = ""
-            print "Mixer reports a segmentation fault"
+            print("Mixer reports a segmentation fault")
             self._mixer_rply.close()
             self._mixer_ctrl.close()
         return line
@@ -2770,7 +2770,7 @@ class MainWindow(dbus.service.Object):
                     break
 
                 if not line.count("="):
-                    print line
+                    print(line)
                     continue
 
                 key, value = line.split("=", 1)
@@ -2851,7 +2851,7 @@ class MainWindow(dbus.service.Object):
             os.mkdir(subdir)
         except EnvironmentError as e:
             if e.errno != 17:
-                print e
+                print(e)
 
         command = command.rstrip("_JACK")
         if command in ("save", "saveandexit"):
@@ -2879,7 +2879,7 @@ class MainWindow(dbus.service.Object):
         if args.players is not None:
             commandline += " -P " + " ".join(args.players)
 
-        print "## Restored session commandline will be:", commandline
+        print("## Restored session commandline will be:", commandline)
 
         # Reply to backend confirms save has took place.
         self.mixer_write("ACTN=session_reply\nsession_event=%s\n"
@@ -2902,7 +2902,7 @@ class MainWindow(dbus.service.Object):
                 player.update_time_stats()
 
         ch = self.mic_opener.mic_list
-        for i in xrange(PGlobs.num_micpairs * 2):
+        for i in range(PGlobs.num_micpairs * 2):
             if self.channel_states[i] == -1:
                 ch[i].open.emit("toggled")
 
@@ -2957,7 +2957,7 @@ class MainWindow(dbus.service.Object):
 
     class initfailed:
         def __init__(self, errormessage = "something bad happened"):
-            print errormessage
+            print(errormessage)
 
 
     class initcleanexit:
@@ -2984,16 +2984,16 @@ class MainWindow(dbus.service.Object):
         socket.setdefaulttimeout(15)
         
         # Resources to reserve.
-        config = ConfigParser.RawConfigParser()
+        config = configparser.RawConfigParser()
         config.read(pm.basedir / 'config')
         try:
             PGlobs.num_micpairs = config.getint(
                                         'resource_count', 'num_micpairs') // 2
-        except ConfigParser.Error:
+        except configparser.Error:
             pass
         try:
             count = config.getint('resource_count', 'num_streamers')
-        except ConfigParser.Error:
+        except configparser.Error:
             pass
         else:
             PGlobs.num_streamers = count
@@ -3001,12 +3001,12 @@ class MainWindow(dbus.service.Object):
         try:
             PGlobs.num_recorders = config.getint(
                                         'resource_count', 'num_recorders')
-        except ConfigParser.Error:
+        except configparser.Error:
             pass
         try:
             PGlobs.num_effects = config.getint(
                                         'resource_count', 'num_effects')
-        except ConfigParser.Error:
+        except configparser.Error:
             pass
        
         if pm.session_uuid is None:
@@ -3039,7 +3039,7 @@ class MainWindow(dbus.service.Object):
         os.environ["ui2be"] = pm.basedir / "ui2be"
         os.environ["be2ui"] = pm.basedir / "be2ui"
 
-        print "jack client ID:", client_id
+        print("jack client ID:", client_id)
 
         self.session_loaded = False
 
@@ -3745,7 +3745,7 @@ class MainWindow(dbus.service.Object):
         self.player_nb.set_page(0)
 
         # Variable initialisation
-        self.songname = u""
+        self.songname = ""
         self.newmetadata = False
         self.showing_left_file_requester = False
         self.showing_right_file_requester = False
@@ -3905,7 +3905,7 @@ class MainWindow(dbus.service.Object):
         self.jingles.interlude.listen.set_active(False)
 
         if self.prefs_window.restore_session_option.get_active():
-            print "Restoring previous session"
+            print("Restoring previous session")
             self.player_left.restore_session()
             self.player_right.restore_session()
             self.jingles.restore_session()

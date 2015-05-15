@@ -20,7 +20,7 @@ __all__ = [ 'IDJC_Media_Player', 'make_arrow_button', 'supported' ]
 import os
 import sys
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import subprocess
 import random
 import signal
@@ -82,7 +82,7 @@ warnings.filterwarnings("ignore", "IA__gtk_tree_view_scroll_to_cell: assertion"
 # Named tuple for a playlist row.
 class PlayerRow(namedtuple("PlayerRow",
 "rsmeta filename length meta encoding title artist replaygain cuesheet album uuid")):
-    def __nonzero__(self):
+    def __bool__(self):
         return self.rsmeta != "<s>valid</s>"
 
 # ReplayGain value to indicate default.
@@ -105,19 +105,19 @@ class FillStopper(gtk.Button):
         self.set_border_width(4)
         self._reg = {}
         self.connect("clicked", self._on_clicked)
-        
+
     def register(self, iterator):
         self._reg[iterator] = True
-        
+
     def unregister(self, iterator):
         try:
             del self._reg[iterator]
         except KeyError:
             pass
-            
+
         if not self._reg:
             self.hide()
-        
+
     def check(self, iterator):
         return iterator in self._reg
 
@@ -134,7 +134,7 @@ class IndexingIterator(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         try:
             val = self.iteree[self.index]
         except IndexError:
@@ -172,14 +172,14 @@ class CueSheetListStore(gtk.ListStore):
     def next_element(self, element):
         iterator = iter(self)
         try:
-            item = iterator.next()
+            item = next(iterator)
             while item != element:
-                item = iterator.next()
-            next_item = iterator.next()
+                item = next(iterator)
+            next_item = next(iterator)
             return next_item
         except StopIteration:
             return None
-           
+
     def non_playing(self):
         self.playing_index = None
         self.invalidate()
@@ -202,13 +202,13 @@ class CueSheetListStore(gtk.ListStore):
         return sectors / 75.0
 
     def invalidate(self):
-        for i in xrange(len(self)):
+        for i in range(len(self)):
             # There should be an invalidate row signal (oh well).
             row = gtk.ListStore.__getitem__(self, i)
             title = row[5]
             row[5] = title
 
-    def __nonzero__(self):
+    def __bool__(self):
         return len(self) != 0
 
     def __getitem__(self, i):
@@ -241,7 +241,7 @@ class CellRendererDuration(gtk.CellRendererText):
 
     __gproperties__ = { "duration" : (gobject.TYPE_UINT64, "duration",
         "playback time expressed in CD audio frames",
-        0, long(3e9), 0, gobject.PARAM_WRITABLE) }
+        0, int(3e9), 0, gobject.PARAM_WRITABLE) }
 
     def __init__(self):
         gtk.CellRendererText.__init__(self)
@@ -357,7 +357,7 @@ class CuesheetPlaylist(gtk.Frame):
         desc = desc or os.path.splitext(os.path.split(line.pathname)[1])[0]
         cell.props.text = desc
         if index == model.playing_index:
-            cell.props.weight = pango.WEIGHT_BOLD   
+            cell.props.weight = pango.WEIGHT_BOLD
         else:
             cell.props.weight = pango.WEIGHT_NORMAL
 
@@ -395,7 +395,7 @@ class ExternalPL(gtk.Frame):
     def _get_next(self):
         if self.active.get_active():
             try:
-                line = self.gen.next()
+                line = next(self.gen)
             except StopIteration:
                 self.gen = self.player.get_elements_from([self.pathname])
                 line = None
@@ -409,7 +409,7 @@ class ExternalPL(gtk.Frame):
             if self.pathname is not None:
                 self.gen = self.player.get_elements_from([self.pathname])
                 try:
-                    line = self.gen.next()
+                    line = next(self.gen)
                 except StopIteration:
                     widget.set_active(False)
                 else:
@@ -458,7 +458,7 @@ class ExternalPL(gtk.Frame):
         for each in supported.playlists:
             filefilter.add_pattern(each)
 
-        self.filechooser = gtk.FileChooserDialog(title = 
+        self.filechooser = gtk.FileChooserDialog(title =
         _('Choose a playlist file') + PM.title_extra, buttons = \
         (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT, gtk.STOCK_OPEN,
                                                         gtk.RESPONSE_ACCEPT))
@@ -495,7 +495,7 @@ class AnnouncementDialog(gtk.Dialog):
         self.model.set_value(self.iter, 3, "00" + m + s)
         b = self.tv.get_buffer()
         text = b.get_text(b.get_start_iter(), b.get_end_iter())
-        self.model.set_value(self.iter, 4, urllib.quote(text))
+        self.model.set_value(self.iter, 4, urllib.parse.quote(text))
         self.player.reselect_please = True
 
     def restore_mic_playnext(self, widget):
@@ -621,7 +621,7 @@ class AnnouncementDialog(gtk.Dialog):
         if mode == "delete_modify" or mode == "active":
             lr = model.get_value(iter, 3)
             text = model.get_value(iter, 4)
-            self.tv.get_buffer().set_text(urllib.unquote(text))
+            self.tv.get_buffer().set_text(urllib.parse.unquote(text))
         if mode == "delete_modify":
             self.minutes.set_value((int(lr[2:4])))
             self.seconds.set_value((int(lr[4:6])))
@@ -770,7 +770,7 @@ class CueSheet(object):
     # and parts fore and aft.
     _quoted = re.compile(r'(.*?)[ \t]"(.*)"[ \t](.*)').match
     _remquoted = re.compile(r'(.*?)[ \t](.*?)[ \t]"(.*)"').match
-    
+
     def _time_handler(self, time_str):
         """Returns the number of frames of audio (75ths of seconds)
 
@@ -835,15 +835,15 @@ class CueSheet(object):
                     right = [""]
                     quoted = ""
 
-            tokens = filter(lambda x: x, left + [quoted] + right)
+            tokens = [x for x in left + [quoted] + right if x]
             yield i + 1, tokens[0].upper(), tokens[1:]
 
     def _parse_REM(self):
         if self.operand[0] == "ALBUM":
-            print "Cue sheet track album:", self.operand[1]
+            print("Cue sheet track album:", self.operand[1])
             self.segment[self.tracknum]["ALBUM"].append(self.operand[1])
         else:
-            print "Unhandled REM type:", self.operand[0]
+            print("Unhandled REM type:", self.operand[0])
 
     def _parse_PERFORMER(self):
         self.segment[self.tracknum][self.command].append(self.operand[0])
@@ -948,7 +948,7 @@ class CueSheet(object):
         if self.index < 1:
             raise ValueError("track %02d lacks a 01 index" % self.tracknum)
 
-        for each in self.segment.itervalues():
+        for each in self.segment.values():
              del each.default_factory
         del self.segment.default_factory
 
@@ -967,9 +967,9 @@ class IDJC_Media_Player:
         try:
             with open(cue_pathname) as f:
                 segment_data = CueSheet().parse(f)
-        except (IOError, ValueError), e:
-            print "failed reading cue sheet", cue_pathname
-            print e
+        except (IOError, ValueError) as e:
+            print("failed reading cue sheet", cue_pathname)
+            print(e)
             return NOTVALID
 
         basepath = os.path.split(cue_pathname)[0]
@@ -977,7 +977,7 @@ class IDJC_Media_Player:
         totalframes = trackframes = cumulativeframes = 0
         global_cue_performer = global_cue_title = ""
 
-        for key, val in sorted(segment_data.iteritems()):
+        for key, val in sorted(segment_data.items()):
             track = key
             cue_performer = ", ".join(val.get("PERFORMER", []))
             cue_title = ", ".join(val.get("TITLE", []))
@@ -986,7 +986,7 @@ class IDJC_Media_Player:
                 global_cue_performer = cue_performer
                 global_cue_title = cue_title
             else:
-                for key2, val2 in sorted(val.iteritems()):
+                for key2, val2 in sorted(val.items()):
                     if isinstance(key2, int):
                         index = key2
                         filename, frames = val2
@@ -1045,7 +1045,7 @@ class IDJC_Media_Player:
 
         # TC: Cuesheet data element as shown in the playlist.
         element = PlayerRow(
-            '<span foreground="dark green">%s</span>' % _("(Cue sheet)") + 
+            '<span foreground="dark green">%s</span>' % _("(Cue sheet)") +
             glib.markup_escape_text(metadata), cue_pathname, totalframes //
             75 + 1, metadata, "utf-8", global_cue_title, global_cue_performer,
             RGDEF, cuesheet_liststore, "", "")
@@ -1053,19 +1053,19 @@ class IDJC_Media_Player:
         return element
 
     def get_media_metadata(self, filename, get_length=False):
-        artist = u""
-        title = u""
-        album = u""
+        artist = ""
+        title = ""
+        album = ""
         length = 0.0
-        artist_retval = u""
-        title_retval = u""
-        album_retval = u""
+        artist_retval = ""
+        title_retval = ""
+        album_retval = ""
         cuesheet = None
 
         # Strip away any file:// prefix
         if filename.count("file://", 0, 7):
             host, filename = filename[7:].split("/", 1)
-            filename = "/" + urllib.unquote(filename)
+            filename = "/" + urllib.parse.unquote(filename)
             if host not in ("", "localhost", "127.0.0.1", "::1"):
                 return NOTVALID._replace(filename=filename)
         elif filename.count("file:", 0, 5):
@@ -1118,7 +1118,7 @@ class IDJC_Media_Player:
                     gain += " RG"
                 else:
                     gain += " R128"
-            
+
             try:
                 v1, v2 = gain.split()
                 if v2 not in ("RG", "R128"):
@@ -1126,9 +1126,9 @@ class IDJC_Media_Player:
                 float(v1)
             except Exception:
                 return RGDEF
-                    
+
             return gain
-                    
+
 
         # Obtain as much metadata from ubiquitous tags as possible.
         # Files can have ape and id3 tags. ID3 has priority in this case.
@@ -1142,9 +1142,9 @@ class IDJC_Media_Player:
                 rg = gain(audio)
             except:
                 rg = RGDEF
-            artist = audio.get("ARTIST", [u""])
-            title = audio.get("TITLE", [u""])
-            album = audio.get("ALBUM", [u""])
+            artist = audio.get("ARTIST", [""])
+            title = audio.get("TITLE", [""])
+            album = audio.get("ALBUM", [""])
         # ID3 is tried second so it can supercede APE tag data.
         try:
             audio = EasyID3(filename)
@@ -1197,10 +1197,10 @@ class IDJC_Media_Player:
         elif filext == ".ogg" or filext == ".oga" or filext == ".spx":
             self.parent.mixer_write("OGGP=%s\nACTN=ogginforequest\nend\n" %
                                                                     filename)
-            
+
             gval = None
             ref = None
-            
+
             while 1:
                 line = self.parent.mixer_read()
                 if line == "OIR:NOT VALID\n" or line == "":
@@ -1219,19 +1219,19 @@ class IDJC_Media_Player:
                     ref = line[34:].rstrip()
                 if line == "OIR:end\n":
                     break
- 
+
             if gval is None:
                 rg = RGDEF
             else:
                 rg = gain(gain=gval, ref=ref)
- 
+
         elif filext == ".aac":
             try:
                 id3 = ID3(filename)
                 try:
                     length = float(id3["TLEN"].text[0]) / 1000.0
                 except (KeyError, ValueError, IndexError):
-                    print "unknown track length -- add a TLEN tag if you know it"
+                    print("unknown track length -- add a TLEN tag if you know it")
                     raise Exception
             except Exception:
                 length = 0.0
@@ -1275,21 +1275,21 @@ class IDJC_Media_Player:
                     x = list(audio.get("Artist", []))
                     x += list(audio.get("Author", []))
                     if x:
-                        artist = "/".join((unicode(y) for y in x))
+                        artist = "/".join((str(y) for y in x))
 
                     try:
                         x = list(audio["Title"])
                     except:
                         pass
                     else:
-                        title = "/".join((unicode(y) for y in x))
+                        title = "/".join((str(y) for y in x))
 
                     try:
                         x = list(audio["Album"])
                     except:
                         pass
                     else:
-                        album = "/".join((unicode(y) for y in x))
+                        album = "/".join((str(y) for y in x))
 
                     try:
                         rg = gain(audio)
@@ -1297,19 +1297,19 @@ class IDJC_Media_Player:
                         pass
 
                     try:
-                        rg = str(float(unicode(audio["r128_track_gain"][-1])) / 256.0) + " R128"
+                        rg = str(float(str(audio["r128_track_gain"][-1])) / 256.0) + " R128"
                     except:
                         pass
 
 
         if isinstance(artist, list):
-            artist = u"/".join(artist)
+            artist = "/".join(artist)
 
         if isinstance(title, list):
-            title = u"/".join(title)
+            title = "/".join(title)
 
         if isinstance(album, list):
-            album = u"/".join(album)
+            album = "/".join(album)
 
         if isinstance(artist, (str, APETextValue)):
             try:
@@ -1329,9 +1329,9 @@ class IDJC_Media_Player:
             except:
                 album = str(album).decode("latin1", "replace")
 
-        assert(isinstance(artist, unicode))
-        assert(isinstance(title, unicode))
-        assert(isinstance(album, unicode))
+        assert(isinstance(artist, str))
+        assert(isinstance(title, str))
+        assert(isinstance(album, str))
 
         if get_length:
             # Used if only requesting the length of the track
@@ -1347,11 +1347,11 @@ class IDJC_Media_Player:
 
         if artist and title and album:
             if "(" in album:
-                return player_row(artist + u" - " + title + u" - [%s]" % album)
+                return player_row(artist + " - " + title + " - [%s]" % album)
             else:
-                return player_row(artist + u" - " + title + u" - (%s)" % album)
+                return player_row(artist + " - " + title + " - (%s)" % album)
         elif artist and title:
-            return player_row(artist + u" - " + title)
+            return player_row(artist + " - " + title)
         else:
             return PlayerRow(rsmeta_name, filename, length, meta_name, encoding,
                 title_retval, artist, rg, cuesheet, album, uuid_)
@@ -1362,7 +1362,7 @@ class IDJC_Media_Player:
         for item in self.liststore:
             if item[1] == newdata[1]:
                 if item[0].startswith("<b>"):
-                    item[0] = u"<b>" + newdata[0] + u"</b>"
+                    item[0] = "<b>" + newdata[0] + "</b>"
                     active = item
                 else:
                     item[0] = newdata[0]
@@ -1391,7 +1391,7 @@ class IDJC_Media_Player:
     def save_session(self, where=None):
         if where is None:
             where = PM.basedir
-       
+
         fh = open(where / self.session_filename, "w")
         extlist = self.external_pl.filechooser.get_filename()
         if extlist is not None:
@@ -1412,13 +1412,13 @@ class IDJC_Media_Player:
 
         for row in self.liststore:
             # Allow modification without affecting the playlist.
-            entry = list(row)  
+            entry = list(row)
             link = link_uuid_reg.get_link_filename(row[10])
             if link is not None:
                 # Replace orig file abspath with alternate path to a hard link
                 # except when link is None as happens when a hard link fails.
                 entry[1] = PathStr("links") / link
-            
+
             fh.write("pe=")
             if entry[0].startswith("<b>"):  # Clean off bold tags.
                 entry[0] = entry[0][3:-4]
@@ -1491,7 +1491,7 @@ class IDJC_Media_Player:
                                                                 os.path.sep:
                         playlist_entry = playlist_entry._replace(
                                     filename=PM.basedir / playlist_entry[1])
-                        
+
                     if not playlist_entry or self.playlist_todo:
                         self.playlist_todo.append(playlist_entry.filename)
                     else:
@@ -1509,9 +1509,9 @@ class IDJC_Media_Player:
             except ValueError:
                 pass
         if self.playlist_todo:
-            print self.playername + (" player: the stored playlist data is not "
+            print(self.playername + (" player: the stored playlist data is not "
                                     "compatible with this version\nfiles placed"
-                                    " in a queue for rescanning")
+                                    " in a queue for rescanning"))
             idle_add(self.cb_playlist_todo)
 
     @threadslock
@@ -1526,13 +1526,13 @@ class IDJC_Media_Player:
         if line:
             self.liststore.append(line)
         else:
-            print "file missing or type unsupported %s" % pathname
+            print("file missing or type unsupported %s" % pathname)
         return True
 
     def pl_unpack(self, text):
         """Unmarshall a string to a list."""
-        
-        
+
+
         start = 0
         item = 0
         reply = []
@@ -1559,8 +1559,8 @@ class IDJC_Media_Player:
                         value.append(cst)
                 elif t == "n":
                     value = None
-            except Exception, e:
-                print "pl_unpack: playlist line not valid", e
+            except Exception as e:
+                print("pl_unpack: playlist line not valid", e)
                 try:
                     return NOTVALID._replace(filename=reply[1])
                 except IndexError:
@@ -1590,12 +1590,12 @@ class IDJC_Media_Player:
         if self.is_playing == True:
             if self.is_paused == False:
                 # Player pause code goes here
-                print "Player paused"
+                print("Player paused")
                 self.is_paused = True
                 self.parent.send_new_mixer_stats()
             else:
                 # Player unpause code goes here
-                print "Player unpaused"
+                print("Player unpaused")
                 self.is_paused = False
                 self.parent.send_new_mixer_stats()
         else:
@@ -1635,13 +1635,13 @@ class IDJC_Media_Player:
                 self.new_title = False
                 if self.player_startup():
                     self.player_is_playing = True
-                    print "Player has started"
+                    print("Player has started")
                 else:
                     self.stop.clicked()
 
     def player_startup(self):
         # remember which player started last so we can decide on metadata
-        print "player_startup %s" % self.playername
+        print("player_startup %s" % self.playername)
         self.parent.last_player = self.playername
 
         if self.player_is_playing == True:
@@ -1653,13 +1653,13 @@ class IDJC_Media_Player:
             treeselection = self.treeview.get_selection()
             (model, iter) = treeselection.get_selected()
         if iter == None:
-            print "Nothing selected in the playlist - trying the first entry."
+            print("Nothing selected in the playlist - trying the first entry.")
             try:
                 iter = model.get_iter(0)
             except:
-                print "Playlist is empty"
+                print("Playlist is empty")
                 return False
-            print "We start at the beginning"
+            print("We start at the beginning")
             treeselection.select_iter(iter)
 
         self.treeview.scroll_to_cell(model.get_path(iter)[0], None, False)
@@ -1667,13 +1667,13 @@ class IDJC_Media_Player:
         self.music_filename = model.get_value(iter, 1)
         if self.music_filename != "":
             # Songname is used for metadata for mp3
-            self.songname = unicode(model.get_value(iter, 3))
+            self.songname = str(model.get_value(iter, 3))
             # These two are used for ogg metadata
-            self.title = unicode(model.get_value(iter, 5)).encode(
+            self.title = str(model.get_value(iter, 5)).encode(
                                                             "utf-8", "replace")
-            self.artist = unicode(model.get_value(iter, 6)).encode(
+            self.artist = str(model.get_value(iter, 6)).encode(
                                                             "utf-8", "replace")
-            self.album = unicode(model.get_value(iter, 9)).encode(
+            self.album = str(model.get_value(iter, 9)).encode(
                                                             "utf-8", "replace")
         # rt is the run time in seconds of our song
         rt = model.get_value(iter, 2)
@@ -1683,13 +1683,13 @@ class IDJC_Media_Player:
         # Used for when seek is moved before play is pressed.
         if os.path.isfile(self.music_filename):
             try:
-                self.start_time = int(self.progressadj.get_value() / 
+                self.start_time = int(self.progressadj.get_value() /
                                                     self.max_seek * float(rt))
             except ZeroDivisionError:
                 self.start_time = 0
         else:
             self.start_time = rt    # Seek to the end when file is missing.
-        print "Seek time is %d seconds" % self.start_time
+        print("Seek time is %d seconds" % self.start_time)
 
         # Now we recalibrate the progress bar to the current song length
         self.digiprogress_f = True
@@ -1714,8 +1714,8 @@ class IDJC_Media_Player:
 
         cuesheet = self.cuesheet = model.get_value(iter, 8)
         if cuesheet:
-            print "There is a cuesheet"
-            
+            print("There is a cuesheet")
+
             # Skip to first element that can be played.
             element = self.element = cuesheet.element(self.start_time)
             if element:
@@ -1740,7 +1740,7 @@ class IDJC_Media_Player:
             else:
                 sgain, self.gaintype = RGDEF.split()
         self.gain = float(sgain)
-        
+
         if self.parent.prefs_window.rg_adjust.get_active():
             if self.gaintype == "DEFAULT":
                 self.gain += self.parent.prefs_window.rg_defaultgain.get_value()
@@ -1749,10 +1749,10 @@ class IDJC_Media_Player:
             if self.gaintype == "R128":
                 self.gain += self.parent.prefs_window.r128_boost.get_value()
             self.gain += self.parent.prefs_window.all_boost.get_value()
-            print "final gain value of %f dB" % self.gain
+            print("final gain value of %f dB" % self.gain)
         else:
             self.gain = 0.0
-            print "not using replay gain"
+            print("not using replay gain")
 
         if self.music_filename != "":
             self.parent.mixer_write(
@@ -1768,16 +1768,16 @@ class IDJC_Media_Player:
                     self.player_cid = -1
                     break
         else:
-            print "skipping play for empty filename"
+            print("skipping play for empty filename")
             self.player_cid = -1
         if self.player_cid == -1:
-            print "player startup was unsuccessful for file", \
-                                                            self.music_filename
+            print("player startup was unsuccessful for file", \
+                                                            self.music_filename)
             # The regular code path can handle this.
             self.timeout_source_id = idle_add(
                                 self.cb_play_progress_timeout, self.player_cid)
         else:
-            print "player context id is %d\n" % self.player_cid
+            print("player context id is %d\n" % self.player_cid)
             if self.player_cid & 1:
                 self.timeout_source_id = timeout_add(PROGRESS_TIMEOUT,
                                 self.cb_play_progress_timeout, self.player_cid)
@@ -1787,7 +1787,7 @@ class IDJC_Media_Player:
         return True
 
     def player_shutdown(self):
-        print "player shutdown code was called"
+        print("player shutdown code was called")
 
         if self.cuesheet is not None:
             self.cuesheet.non_playing()
@@ -1824,7 +1824,7 @@ class IDJC_Media_Player:
 
     def player_restart(self):
         # remember which player started last so we can decide on metadata
-        print "player_restart %s" % self.playername
+        print("player_restart %s" % self.playername)
         self.parent.last_player = self.playername
 
         source_remove(self.timeout_source_id)
@@ -1835,7 +1835,7 @@ class IDJC_Media_Player:
         iter = self.iter_playing
         cuesheet = self.cuesheet = model.get_value(iter, 8)
         if cuesheet:
-            print "There is a cuesheet" 
+            print("There is a cuesheet")
             # Skip to first element that can be played.
             cuesheet.non_playing()
             element = self.element = cuesheet.element(self.start_time)
@@ -1851,19 +1851,19 @@ class IDJC_Media_Player:
                 self.element = cuesheet[-1]
                 self.start_time = self.progressadj.props.upper
             self.progressadj.set_value(self.start_time)
-            
+
             if self.parent.prefs_window.rg_adjust.get_active():
                 if self.gain == RGDEF:
                     self.gain = self.parent.prefs_window.rg_defaultgain.get_value()
                 self.gain += self.parent.prefs_window.rg_boost.get_value()
-                print "final gain value of %f dB" % self.gain
+                print("final gain value of %f dB" % self.gain)
             else:
                 self.gain = 0.0
-                print "not using replay gain"
+                print("not using replay gain")
         else:
             self.element = None
             self.cuesheet_track_title = self.cuesheet_track_performer = self.cuesheet_track_album = None
-        
+
         self.parent.mixer_write("PLRP=%s\nSEEK=%d\nACTN=play%s\nend\n" % (
                         self.music_filename, self.start_time, self.playername))
         while 1:
@@ -1875,10 +1875,10 @@ class IDJC_Media_Player:
                 self.player_cid = -1
                 break
         if self.player_cid == -1:
-            print "player startup was unsuccessful for", self.music_filename
+            print("player startup was unsuccessful for", self.music_filename)
             return False
 
-        print "player context id is %d\n" % self.player_cid
+        print("player context id is %d\n" % self.player_cid)
         # Restart a callback to update the progressbar.
         self.timeout_source_id = timeout_add(
             PROGRESS_TIMEOUT, self.cb_play_progress_timeout, self.player_cid)
@@ -1915,12 +1915,12 @@ class IDJC_Media_Player:
             iter = self.pl_mode.get_active_iter()
             mode_text = model.get_value(iter, 0)
             if self.is_playing == False:
-                print "Assertion failed in: invoke_end_of_track_policy"
+                print("Assertion failed in: invoke_end_of_track_policy")
                 return
 
         if mode_text == N_('Manual'):
             # For Manual mode just stop the player at the end of the track.
-            print "Stopping in accordance with manual mode"
+            print("Stopping in accordance with manual mode")
             self.stop.clicked()
         elif mode_text == N_('Play All'):
             if self.music_filename == "":
@@ -1942,7 +1942,7 @@ class IDJC_Media_Player:
                 if mode_text == N_('Loop All'):
                     self.play.clicked()
             else:
-                treeselection.select_path(0)    
+                treeselection.select_path(0)
         elif mode_text == N_('Random'):
             # Not truly random. Effort is made to break the appearance of
             # having a set play order to a long term listener without
@@ -1965,9 +1965,9 @@ class IDJC_Media_Player:
                 fp = self.parent.files_played_offline
             timestamped_pathnames = []
             while not timestamped_pathnames:
-                random_pathnames = [PlayerRow(*x).filename 
+                random_pathnames = [PlayerRow(*x).filename
                             for x in random.sample(self.liststore, poolsize)]
-                timestamped_pathnames = [(fp.get(pn, 0), pn) 
+                timestamped_pathnames = [(fp.get(pn, 0), pn)
                                             for pn in random_pathnames if pn]
                 timestamped_pathnames.sort()
                 try:
@@ -1992,7 +1992,7 @@ class IDJC_Media_Player:
             self.stop.clicked()
             next_track = self.external_pl.get_next()
             if next_track is None:
-                print "playlist or directory has no more audio files - stopping"
+                print("playlist or directory has no more audio files - stopping")
             else:
                 self.model_playing.insert_after(self.iter_playing, next_track)
                 self.model_playing.remove(self.iter_playing)
@@ -2020,7 +2020,7 @@ class IDJC_Media_Player:
             elif mode_text == N_('Random Hop'):
                 other_player.invoke_end_of_track_policy(N_('Random'))
         else:
-            print 'handler missing for playlist mode: %s' % mode_text
+            print('handler missing for playlist mode: %s' % mode_text)
             self.stop.clicked()
 
     def handle_playlist_control(self):
@@ -2028,7 +2028,7 @@ class IDJC_Media_Player:
         model = self.model_playing
         iter = self.iter_playing
         control = model.get_value(iter, 0)
-        print "control is", control
+        print("control is", control)
 
         if control == "<b>>normalspeed</b>":
             self.pbspeedzerobutton.clicked()
@@ -2037,7 +2037,7 @@ class IDJC_Media_Player:
                 treeselection.select_path(0)
         def x(control_type, open_auto_type):
             if control == "<b>>%s</b>" % control_type:
-                print "player", self.playername, "stopping by playlist control"
+                print("player", self.playername, "stopping by playlist control")
                 if (self.playername == "left" and \
                                 self.parent.crossfade.get_value() < 50) or \
                                 (self.playername == "right" and \
@@ -2063,7 +2063,7 @@ class IDJC_Media_Player:
             else:
                 treeselection.select_iter(model.get_iter_first())
         if control == "<b>>crossfade</b>":
-            print "player", self.playername, "stopping, crossfade complete"
+            print("player", self.playername, "stopping, crossfade complete")
             self.stop.clicked()
             if model.iter_next(iter):
                 treeselection.select_iter(model.iter_next(iter))
@@ -2086,7 +2086,7 @@ class IDJC_Media_Player:
             elif self.playername == "right":
                 otherplayer = self.parent.player_left
                 self.parent.passleft.clicked()
-            print "transferring to player", otherplayer.playername
+            print("transferring to player", otherplayer.playername)
             otherplayer.play.clicked()
             self.stop.clicked()
             if model.iter_next(iter):
@@ -2128,7 +2128,7 @@ class IDJC_Media_Player:
 
     def update_time_stats(self):
         """In playlist mode 0 the block times are calculated and displayed.
-        
+
         Block times give the DJ an idea when the playlist will finish.
         """
 
@@ -2161,7 +2161,7 @@ class IDJC_Media_Player:
                 else:
                     bs = self.get_pl_block_size(iter)
             except Exception as e:
-                print "Playlist data is fucked up", e
+                print("Playlist data is fucked up", e)
                 bs = 0
         bsm, bss = divmod(bs, 60)
         if self.is_playing:
@@ -2212,7 +2212,7 @@ class IDJC_Media_Player:
                     self.player_cid + 1 and \
                     self.parent.prefs_window.silence_killer.get_active() and \
                     self.eos_inspect() == False:
-                print "termination by check mixer signal"
+                print("termination by check mixer signal")
                 pl_mode = self.pl_mode.get_active()
                 if pl_mode == 7 or (pl_mode == 0 and self.fade_inspect()):
                     if not self.other_player_initiated:
@@ -2233,7 +2233,7 @@ class IDJC_Media_Player:
     @threadslock
     def cb_play_progress_timeout(self, cid):
         """The mover of the play progress bar among other things."""
-        
+
         if cid % 2 == 0:
             # player started at end of track
             self.invoke_end_of_track_policy()
@@ -2250,13 +2250,13 @@ class IDJC_Media_Player:
             self.reselect_cursor_please = False
 
         if self.reselect_please:
-            print "Set cursor on track playing"
+            print("Set cursor on track playing")
             # This code reselects the playing track after a drag operation.
             treeselection = self.treeview.get_selection()
             try:
                 treeselection.select_iter(self.iter_playing)
             except:
-                print "Iter was cancelled probably due to song dragging"
+                print("Iter was cancelled probably due to song dragging")
             self.reselect_please = False
 
         pl_mode = self.pl_mode.get_active()
@@ -2265,11 +2265,11 @@ class IDJC_Media_Player:
             if self.runout.value and self.is_paused == False and \
                                         self.mixer_cid.value > self.player_cid:
                 self.gapless = True
-                print "termination due to end of track"
+                print("termination due to end of track")
                 self.invoke_end_of_track_policy()
                 self.gapless = False
                 return False
-                
+
             # Mid-track silence killer.
             if self.mixer_signal_f.value == False:
                 self.silence_count += 1
@@ -2277,7 +2277,7 @@ class IDJC_Media_Player:
                             self.silence_count >= 120 and \
                             self.playtime_elapsed.value > 15 and \
                             self.parent.prefs_window.bonus_killer.get_active():
-                    print "termination due to excessive silence"
+                    print("termination due to excessive silence")
                     if pl_mode == 7 or (pl_mode == 0 and self.fade_inspect()):
                         if not self.other_player_initiated:
                             if self.playername == "left":
@@ -2292,7 +2292,7 @@ class IDJC_Media_Player:
                             desired_direction = (self.playername == "left")
                             if desired_direction != self.parent.crossdirection:
                                 self.parent.passbutton.clicked()
-                    
+
                     self.invoke_end_of_track_policy()
                     return False
             else:
@@ -2305,7 +2305,7 @@ class IDJC_Media_Player:
                 if self.stream.get_active() and (
                                 self.parent.server_window.is_streaming or
                                 self.parent.server_window.is_recording) and (
-                                (self.playername == "left" and 
+                                (self.playername == "left" and
                                 self.parent.crossadj.value < 90) or
                                 (self.playername == "right" and
                                 self.parent.crossadj.value > 10)):
@@ -2329,10 +2329,10 @@ class IDJC_Media_Player:
             rem = int(cuesheet.time_remaining(self.progress_current_figure))
             current_element = cuesheet.element(self.progress_current_figure + 1)
             if self.element != current_element:
-                print "Cuesheet bump"
+                print("Cuesheet bump")
                 if cuesheet.next_element(self.element) != current_element or \
                             current_element is None:
-                    print "Cuesheet discontinuous"
+                    print("Cuesheet discontinuous")
                     self.set_fade_mode(4)
                     if current_element is not None:
                         self.progressadj.set_value((current_element.offset + 38) // 75)
@@ -2342,7 +2342,7 @@ class IDJC_Media_Player:
                     self.set_fade_mode(0)
                     return True
                 else:
-                    print "cuesheet continuous"
+                    print("cuesheet continuous")
                     element = self.element = current_element
                     self.cuesheet_track_title = element.title
                     self.cuesheet_track_performer = element.performer
@@ -2395,7 +2395,7 @@ class IDJC_Media_Player:
                 # DJ Alarm is on and we are at the correct play position.
                 # The alarm has not sounded yet.
                 fader = "left" if self.parent.crossadj.value < 50.0 else "right"
-                
+
                 if self.playername == fader and (pl_mode in (3, 4) or
                                         (pl_mode == 0 and self.stop_inspect())):
                     self.parent.freewheel_button.set_active(False)
@@ -2430,7 +2430,7 @@ class IDJC_Media_Player:
         if make_sound:
             self.parent.alarm = True
             self.parent.send_new_mixer_stats()
-        
+
         self.parent.tracks_finishing()
         return False
 
@@ -2502,7 +2502,7 @@ class IDJC_Media_Player:
         treeselection = self.treeview.get_selection()
         (model, iter) = treeselection.get_selected()
         if iter == None:
-            print "Nothing is selected"
+            print("Nothing is selected")
         else:
             path = model.get_path(iter)
             if path[0]:
@@ -2514,7 +2514,7 @@ class IDJC_Media_Player:
         treeselection = self.treeview.get_selection()
         (model, iter) = treeselection.get_selected()
         if iter == None:
-            print "Nothing is selected"
+            print("Nothing is selected")
         else:
             path = model.get_path(iter)
             try:
@@ -2628,11 +2628,11 @@ class IDJC_Media_Player:
         if response_id != gtk.RESPONSE_ACCEPT:
             return
         gen = self.filter_allowed_controls(self.get_elements_from(chosenfiles))
-        idle_add(self.drag_data_received_data_idle, self.liststore, None, gen) 
+        idle_add(self.drag_data_received_data_idle, self.liststore, None, gen)
 
     def filter_allowed_controls(self, items):
         """Interlude playlist must not contain certain playlist controls."""
-        
+
         if self.playername != "interlude":
             for each in items:
                 yield each
@@ -2686,7 +2686,7 @@ class IDJC_Media_Player:
         else:
             data = self.liststore
 
-        print "Chosenfile is", chosenfile
+        print("Chosenfile is", chosenfile)
         try:
             with open(chosenfile, "w") as h:
                 if ext in (".m3u", ".m3u8"):
@@ -2700,13 +2700,13 @@ class IDJC_Media_Player:
                 elif ext == ".xspf":
                     self.write_xspf_playlist(h, data)
         except IOError:
-            print "problem writing out playlist file"
-            
+            print("problem writing out playlist file")
+
     def write_m3u_playlist(self, h, data, proc):
         h.write("#EXTM3U\r\n")
         for each in data:
             h.write("#EXTINF:%d,%s\r\n" % (each[2], proc(each[3])))
-            h.write("file://" + urllib.quote(each[1]) + "\r\n")
+            h.write("file://" + urllib.parse.quote(each[1]) + "\r\n")
 
     def write_pls_playlist(self, h, data):
         h.write("[playlist]\r\nNumberOfEntries=%d\r\n\r\n" % len(data))
@@ -2744,16 +2744,16 @@ class IDJC_Media_Player:
                 pld = doc.createElementNS(
                     'http://idjc.sourceforge.net/ns/', 'idjc:pld')
                 extension.appendChild(pld)
-                
+
                 for field, value in zip(row._fields, row):
                     if isinstance(value, (str, int, float)):
-                        pld.setAttribute(field, str(value))                
+                        pld.setAttribute(field, str(value))
 
             else:
                 location = doc.createElement('location')
                 track.appendChild(location)
                 locationText = doc.createTextNode(
-                                    "file://" + urllib.quote(each[1]))
+                                    "file://" + urllib.parse.quote(each[1]))
                 location.appendChild(locationText)
 
                 if each[6]:
@@ -2799,8 +2799,8 @@ class IDJC_Media_Player:
         self.showing_pl_save_requester = False
 
     def cb_toggle(self, widget, data):
-        print "Toggle %s recieved for signal: %s" % (("OFF","ON")[
-                                                    widget.get_active()], data)
+        print("Toggle %s recieved for signal: %s" % (("OFF","ON")[
+                                                    widget.get_active()], data))
 
         if data == "Play":
             self.handle_play_button(widget, widget.get_active())
@@ -2889,7 +2889,7 @@ class IDJC_Media_Player:
         return False
 
     def cb_menu_select(self, widget, data):
-        print "The %s was chosen from the %s menu" % (data, self.playername)
+        print("The %s was chosen from the %s menu" % (data, self.playername))
 
     def delete_event(self, widget, event, data=None):
         return False
@@ -2927,7 +2927,7 @@ class IDJC_Media_Player:
     def get_elements_from_cue(self, filename):
         cuesheet_entry = self.make_cuesheet_playlist_entry(filename)
         pathnames = list(x.pathname for x in cuesheet_entry.cuesheet if x.index == 1)
-        # Multi file cue sheet adds as content files.        
+        # Multi file cue sheet adds as content files.
         if len(set(pathnames)) > 1:
             for each in pathnames:
                 meta = self.get_media_metadata(each)
@@ -2954,7 +2954,7 @@ class IDJC_Media_Player:
 
         directories = set()
 
-        print chosendir
+        print(chosendir)
         files = os.listdir(chosendir)
         files.sort()
         for filename in files:
@@ -2970,7 +2970,7 @@ class IDJC_Media_Player:
 
         if depth:
             for subdir in directories:
-                print "examining", "/".join((chosendir, subdir))
+                print("examining", "/".join((chosendir, subdir)))
                 gen = self.get_elements_from_directory("/".join(
                                         (chosendir, subdir)), depth, visited)
                 for meta in gen:
@@ -2982,11 +2982,11 @@ class IDJC_Media_Player:
             data = file.read().strip()
             file.close()
         except IOError:
-            print "Problem reading file", filename
+            print("Problem reading file", filename)
             return
         basepath = os.path.split(filename)[0] + "/"
         data = data.splitlines()
-        
+
         for line, each in enumerate(data):
             if each[0] == "#":
                 continue
@@ -2995,7 +2995,7 @@ class IDJC_Media_Player:
                     host, abspathname = each[7:].split("/", 1)
                     if host not in ("", "localhost", "127.0.0.1", "::1"):
                         continue
-                    each = "/" + urllib.unquote(abspathname)
+                    each = "/" + urllib.parse.unquote(abspathname)
                 else:
                     each = basepath + each
             # handle special case of a single element referring to a directory
@@ -3010,31 +3010,31 @@ class IDJC_Media_Player:
             line += 1
 
     def get_elements_from_pls(self, filename):
-        import ConfigParser
-        cfg = ConfigParser.RawConfigParser()
+        import configparser
+        cfg = configparser.RawConfigParser()
         try:
             cfg.readfp(open(filename))
         except IOError:
-            print "Problem reading file"
+            print("Problem reading file")
             return
         if cfg.sections() != ['playlist']:
-            print "wrong number of sections in pls file"
+            print("wrong number of sections in pls file")
             return
         if cfg.getint('playlist', 'Version') != 2:
-            print "can handle version 2 pls playlists only"
+            print("can handle version 2 pls playlists only")
             return
         try:
             n = cfg.getint('playlist', 'NumberOfEntries')
-        except ConfigParser.NoOptionError:
-            print "NumberOfEntries is missing from playlist"
+        except configparser.NoOptionError:
+            print("NumberOfEntries is missing from playlist")
             return
         except ValueError:
-            print "NumberOfEntries is not an int"
+            print("NumberOfEntries is not an int")
         for i in range(1, n + 1):
             try:
                 path = cfg.get('playlist', 'File%d' % i)
             except:
-                print "Problem getting file path from playlist"
+                print("Problem getting file path from playlist")
             else:
                 if os.path.isfile(path):
                     meta = self.get_media_metadata(path)
@@ -3056,12 +3056,12 @@ class IDJC_Media_Player:
                 raise BadXspf
 
             if dom.hasChildNodes() and len(dom.childNodes) == 1 and \
-                                    dom.documentElement.nodeName == u'playlist':
+                                    dom.documentElement.nodeName == 'playlist':
                 playlist = dom.documentElement
             else:
                 raise BadXspf
 
-            if playlist.namespaceURI != u"http://xspf.org/ns/0/":
+            if playlist.namespaceURI != "http://xspf.org/ns/0/":
                 raise BadXspf
 
             try:
@@ -3069,25 +3069,25 @@ class IDJC_Media_Player:
             except:
                 raise BadXspf
             if v < 0 or v > 1:
-                print "only xspf playlist versions 0 and 1 supported"
+                print("only xspf playlist versions 0 and 1 supported")
                 raise BadXspf
             del v
 
             # obtain base URLs for relative URLs encountered in trackList
             # only one location tag is allowed
-            locations = [x for x in playlist.childNodes 
-                                                if x.nodeName == u"location"]
+            locations = [x for x in playlist.childNodes
+                                                if x.nodeName == "location"]
             if len(locations) == 1:
                 url = locations[0].childNodes[0].wholeText
-                if url.startswith(u"file:///"):
+                if url.startswith("file:///"):
                     baseurl.append(url)
             elif locations:
                 raise BadXspf
-                
+
             def append_baseurl(fname):
-                baseurl.append(u"file://" + urllib.quote(os.path.split(
-                                            fname)[0].decode("ASCII") + u"/"))
-                
+                baseurl.append("file://" + urllib.parse.quote(os.path.split(
+                                            fname)[0].decode("ASCII") + "/"))
+
             for each in (os.path.realpath(filename), filename):
                 append_baseurl(each)
 
@@ -3109,7 +3109,7 @@ class IDJC_Media_Player:
                 try:
                     for location in locations:
                         for base in baseurl:
-                            url = urllib.unquote(urllib.basejoin(base, 
+                            url = urllib.parse.unquote(urllib.basejoin(base,
                                 location.firstChild.wholeText).encode("ASCII"))
                             meta = self.get_media_metadata(url)
                             if meta:
@@ -3128,9 +3128,9 @@ class IDJC_Media_Player:
                                     literal_entry = NOTVALID._replace(**dict((
                                             k, type(getattr(NOTVALID, k))(
                                             tag.attributes.get(k).nodeValue))
-                                            for k in tag.attributes.keys()))
-                                except Exception, e:
-                                    print e
+                                            for k in list(tag.attributes.keys())))
+                                except Exception as e:
+                                    print(e)
                                     pass
                                 else:
                                     yield literal_entry
@@ -3139,7 +3139,7 @@ class IDJC_Media_Player:
                     pass
             return
         except BadXspf:
-            print "could not parse playlist", filename
+            print("could not parse playlist", filename)
             return
 
     def drag_data_delete(self, treeview, context):
@@ -3160,7 +3160,7 @@ class IDJC_Media_Player:
         else:
             data = "idjcplayercontrol://" + "+".join(
                             str(model.get_value(iter, x)) for x in (0, 2, 3, 4))
-        print "data for drag_get =", data
+        print("data for drag_get =", data)
         selection.set(selection.target, 8, data)
         self.reselect_please = True
         return True
@@ -3170,10 +3170,10 @@ class IDJC_Media_Player:
         if info != 0:
             text = str(dragged.data)
             if text[:20] == "idjcplayercontrol://":
-                newrow = NOTVALID._replace(**dict(zip(
+                newrow = NOTVALID._replace(**dict(list(zip(
                                 "rsmeta length meta encoding".split(),
                                 (x[0](x[1]) for x in zip((str, int, str, str),
-                                text[20:].split("+"))))))
+                                text[20:].split("+")))))))
                 drop_info = treeview.get_dest_row_at_pos(x, y)
                 model = treeview.get_model()
                 if drop_info == None:
@@ -3191,8 +3191,8 @@ class IDJC_Media_Player:
             else:
                 if context.action == gtk.gdk.ACTION_MOVE:
                     context.finish(True, True, etime)
-                elements = self.get_elements_from([urllib.unquote(t[7:])
-                                    for t in dragged.data.strip().splitlines() 
+                elements = self.get_elements_from([urllib.parse.unquote(t[7:])
+                                    for t in dragged.data.strip().splitlines()
                                     if t.startswith("file://")])
                 model = treeview.get_model()
                 try:
@@ -3208,7 +3208,7 @@ class IDJC_Media_Player:
                             iter_ = model.insert_before(iter_, element)
                         else:
                             iter_ = model.insert_after(iter_, element)
-                            
+
                         idle_add(self.drag_data_received_data_idle,
                                                         model, iter_, elements)
                         break
@@ -3241,7 +3241,7 @@ class IDJC_Media_Player:
             else:
                 timestamp = time.time()
                 self.fill_stopper.register(elements)
-            
+
         if self.no_more_files:
             self.no_more_files = False
         else:
@@ -3254,7 +3254,7 @@ class IDJC_Media_Player:
 
                 if not self.fill_stopper.check(elements):
                     elements = []
-                    
+
                 idle_add(self.drag_data_received_data_idle, model, iter_,
                                                 elements, timestamp, reselect)
                 break
@@ -3283,7 +3283,7 @@ class IDJC_Media_Player:
     def _cb_cuesheet_item(self, widget, cue_model, cue_path):
         treeselection = self.treeview.get_selection()
         (model, iter) = treeselection.get_selected()
-        
+
         if self.is_playing:
             self.stop.clicked()
 
@@ -3357,7 +3357,7 @@ class IDJC_Media_Player:
                     tv = self.parent.player_right.treeview.get_selection()
                 elif self.playername == "right":
                     tv = self.parent.player_left.treeview.get_selection()
-                    
+
                 model, iter = tv.get_selected()
                 sens3 = True if iter else False
 
@@ -3379,7 +3379,7 @@ class IDJC_Media_Player:
             self.plframe.hide()
 
     def menuitem_response(self, widget, text):
-        print "The %s menu option was chosen" % text
+        print("The %s menu option was chosen" % text)
         model = self.menu_model
         iter = self.menu_iter
 
@@ -3404,7 +3404,7 @@ class IDJC_Media_Player:
                  "Fade none"                      : ">fadenone",
                  "Jump To Top Control"       : ">jumptotop",
         }
-        if dict.has_key(text) and self.pl_mode.get_active() == 0:
+        if text in dict and self.pl_mode.get_active() == 0:
             for ctl in self.filter_allowed_controls(((dict[text], ), )):
                 if iter is not None:
                     iter = model.insert_after(iter)
@@ -3477,7 +3477,7 @@ class IDJC_Media_Player:
                     self.expander.set_expanded(True)
                 vbox.add(self.plframe)
 
-                self.plfilerq = gtk.FileChooserDialog(filerqtext + 
+                self.plfilerq = gtk.FileChooserDialog(filerqtext +
                             PM.title_extra, None, gtk.FILE_CHOOSER_ACTION_SAVE,
                             (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
                             gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
@@ -3521,7 +3521,7 @@ class IDJC_Media_Player:
                     self.no_more_files = True
                     self.liststore.remove(iter)
             except:
-                print "Nothing more to delete"
+                print("Nothing more to delete")
 
         if text == "Remove To Here" and iter != None:
             self.no_more_files = True
@@ -3622,7 +3622,7 @@ class IDJC_Media_Player:
 
     def copy_playlist(self, dest):
         assert(self.playername != "interlude")
-        
+
         if self.playername == "left":
             other = self.parent.player_right
         elif self.playername == "right":
@@ -3760,7 +3760,7 @@ class IDJC_Media_Player:
                     self.treeview.scroll_to_cell(
                                             model.get_path(prev), None, False)
             else:
-                print "Playlist is empty!"
+                print("Playlist is empty!")
             return True
 
         if event.string =="\r":
@@ -3774,7 +3774,7 @@ class IDJC_Media_Player:
     def rgrowconfig(self, tv_column, cell_renderer, model, iter):
         if self.exiting:
             return
-            
+
         self.rowconfig(tv_column, cell_renderer, model, iter)
         cell_renderer.set_property("markup", " ")
         if model.get_value(iter, 0)[0] != ">":
@@ -3831,7 +3831,7 @@ class IDJC_Media_Player:
                             ("foreground", "dark red"),
                             # TC: Playlist control.
                             ("text", _('Fade 10s'))),
-                    
+
         ">fade5":           (("cell-background", "dark red"),
                             ("background-gdk", gray),
                             ("foreground", "dark red"),
@@ -3907,7 +3907,7 @@ class IDJC_Media_Player:
                         crprop(name, value)
 
                 if celltext == ">announcement":
-                    crprop("text", _('Announcement:') + " " + urllib.unquote(
+                    crprop("text", _('Announcement:') + " " + urllib.parse.unquote(
                                                     model.get_value(iter, 4)))
 
                 if celltext == ">transfer":
@@ -3917,7 +3917,7 @@ class IDJC_Media_Player:
                     elif self.playername == "right":
                         # TC: Playlist control.
                         crprop("text", _('<<< Transfer across <<<'))
-                
+
                 if celltext == ">crossfade":
                     if self.playername == "left":
                         # TC: Playlist control.
@@ -3940,7 +3940,7 @@ class IDJC_Media_Player:
             crprop("ypad", 2)
 
     def cb_playlist_delay(self, widget):
-        print "inter track fade was changed"
+        print("inter track fade was changed")
 
     def cb_playlist_mode(self, widget):
         self.pl_delay.set_sensitive(self.pl_mode.get_active() in (0, 1, 2, 5))
@@ -4032,7 +4032,7 @@ class IDJC_Media_Player:
 
     def popupwindow_inhibit(self):
         """Block popup window if the menu is displayed."""
-        
+
         return self.pl_menu.flags() & gtk.MAPPED
 
     def pbspeedbar_format(self, scale, value):
@@ -4102,7 +4102,7 @@ class IDJC_Media_Player:
         # A frame for our playlist
         plframe = gtk.Frame(" %s " % dict(left=_('Playlist 1'),
                         right=_('Playlist 2'), interlude=_('Playlist 3'))[name])
-            
+
         plframe.set_border_width(4)
         plframe.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         plframe.show()
@@ -4298,9 +4298,9 @@ class IDJC_Media_Player:
         self.next = gtk.Button()
         self.next.add(image)
         self.next.connect("clicked", self.callback, "Next")
-        self.hbox1.add(self.next)
+        self.hbox1.add(self.__next__)
         self.next.show()
-        set_tip(self.next, _('Next track.'))
+        set_tip(self.__next__, _('Next track.'))
 
         pixbuf = gtk.gdk.pixbuf_new_from_file(FGlobs.pkgdatadir / "add3.png")
         pixbuf = pixbuf.scale_simple(14, 14, gtk.gdk.INTERP_HYPER)
@@ -4329,7 +4329,7 @@ class IDJC_Media_Player:
         self.pl_mode.pack_start(rend)
         self.pl_mode.add_attribute(rend, "text", 1)
         # TC: playlist modes
-        for each in (N_('Play All'), N_('Loop All'), N_('Random'), 
+        for each in (N_('Play All'), N_('Loop All'), N_('Random'),
                     N_('Manual'), N_('Cue Up'), N_('External')):
             store.append((each, _(each)))
         if self.playername != "interlude":
@@ -4759,7 +4759,7 @@ class IDJC_Media_Player:
         self.max_seek = 100.0
         self.reselect_please = False
         self.reselect_cursor_please = False
-        self.songname = u""
+        self.songname = ""
         self.flush = False
         self.title = ""
         self.artist = ""

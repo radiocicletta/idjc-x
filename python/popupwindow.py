@@ -26,7 +26,7 @@ from .gtkstuff import threadslock, timeout_add, source_remove
 class PopupWindow:
     def message(self, text):
         if self.messages:
-            print "PopupWindow:", text
+            print("PopupWindow:", text)
 
         
     def set_messages(self, boolean):

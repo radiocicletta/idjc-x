@@ -25,7 +25,7 @@ import uuid
 import gtk
 import gobject
 import itertools
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from idjc import *
 from .playergui import *
@@ -182,7 +182,7 @@ class Effect(gtk.HBox):
         else:
             data = dragged.data.splitlines()
             if len(data) == 1 and data[0].startswith("file://"):
-                pathname = urllib.unquote(data[0][7:])
+                pathname = urllib.parse.unquote(data[0][7:])
                 title = self.interlude.get_media_metadata(pathname).title
                 if title:
                     self.stop.clicked()
@@ -456,14 +456,14 @@ class EffectBank(gtk.Frame):
             with open(PM.basedir / self.session_filename, "r") as f:
                 self.unmarshall(f.read())
         except IOError:
-            print "failed to read effects session file"
+            print("failed to read effects session file")
 
     def save_session(self, where):
         try:
             with open((where or PM.basedir) / self.session_filename, "w") as f:
                 f.write(self.marshall())
         except IOError:
-            print "failed to write effects session file"
+            print("failed to write effects session file")
 
     def update_leds(self, bits):
         for bit, each in enumerate(self.effects):
