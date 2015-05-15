@@ -202,13 +202,13 @@ class PanWidget(gtk.Frame):
             
     def _cb_format_value(self, scale, value):
         if value == 50:
-            return u"\u25C8"
+            return "\u25C8"
 
         pc = str(abs(int(value) * 2 - 100))
         if value < 50:
-            return u"\u25C4 %s%%" % pc
+            return "\u25C4 %s%%" % pc
         
-        return u"%s%% \u25BA" % pc
+        return "%s%% \u25BA" % pc
         
 
 class PanPresetButton(gtk.Button):
@@ -230,7 +230,7 @@ class PanPresetChooser(gtk.HBox):
         gtk.HBox.__init__(self)
         self.set_spacing(1)
 
-        label = gtk.Label(u"\u25C4")
+        label = gtk.Label("\u25C4")
         self.pack_start(label)
         label.show()
 
@@ -243,7 +243,7 @@ class PanPresetChooser(gtk.HBox):
             button.connect_object("clicked", PanWidget.load_presets, i)
             button.connect("clicked", self._cb_clicked)
 
-        label = gtk.Label(u"\u25BA")
+        label = gtk.Label("\u25BA")
         self.pack_start(label)
         label.show()
             
@@ -723,7 +723,7 @@ class mixprefs:
         try:
             with open(pm.basedir / "config", "w") as f:
                 f.write("[resource_count]\n")
-                for name, widget in self.rrvaluesdict.iteritems():
+                for name, widget in self.rrvaluesdict.items():
                     f.write(name + "=" + str(int(widget.get_value())) + "\n")
                 f.write("num_effects=%d\n" % (24 if self.more_effects.get_active() else 12))
         except IOError:
@@ -733,11 +733,11 @@ class mixprefs:
     def save_player_prefs(self, where=None):
         try:
             with open((where or pm.basedir) / "playerdefaults", "w") as f:
-                for name, widget in self.activedict.iteritems():
+                for name, widget in self.activedict.items():
                     f.write(name + "=" + str(int(widget.get_active())) + "\n")
-                for name, widget in self.valuesdict.iteritems():
+                for name, widget in self.valuesdict.items():
                     f.write(name + "=" + str(widget.get_value()) + "\n")
-                for name, widget in self.textdict.iteritems():
+                for name, widget in self.textdict.items():
                     text = widget.get_text()
                     if text is not None:
                         f.write(name + "=" + text + "\n")
@@ -761,7 +761,7 @@ class mixprefs:
                 line = line.split("=")
                 key = line[0].strip()
                 value = line[1][:-1].strip()
-                if self.activedict.has_key(key):
+                if key in self.activedict:
                     if value == "True":
                         value = True
                     elif value == "False":
@@ -772,9 +772,9 @@ class mixprefs:
                         songdb_active = value
                     else:
                         self.activedict[key].set_active(value)
-                elif self.valuesdict.has_key(key):
+                elif key in self.valuesdict:
                     self.valuesdict[key].set_value(float(value))
-                elif self.textdict.has_key(key):
+                elif key in self.textdict:
                     self.textdict[key].set_text(value)
             file.close()
         except IOError:
@@ -1519,8 +1519,8 @@ class mixprefs:
         image.show()
         
         label = gtk.Label()
-        label.set_markup(u'<span font_desc="sans 13">' +
-                                            self.parent.copyright + u'</span>')
+        label.set_markup('<span font_desc="sans 13">' +
+                                            self.parent.copyright + '</span>')
         vbox.pack_start(label, False, False, 12)
         label.show()
         
@@ -1613,7 +1613,7 @@ class mixprefs:
         t.has_reminder_flash.set_active(True)
         t.is_microphone.set_active(True)
         t.freewheel_cancel.set_active(True)
-        for cb, state in zip(t.open_triggers.itervalues(), (1, 1, 0, 1)):
+        for cb, state in zip(iter(t.open_triggers.values()), (1, 1, 0, 1)):
             cb.set_active(state)
         if len(mic_controls) >= 4:
             mic_controls[2].mode.set_active(1)
@@ -1628,7 +1628,7 @@ class mixprefs:
             t = parent.mic_opener.ix2button[2].opener_tab
             t.button_text.set_text("Aux")
             t.icb.set_filename(FGlobs.pkgdatadir / "jack2.png")
-            t.open_triggers.values()[2].set_active(True)
+            list(t.open_triggers.values())[2].set_active(True)
 
         self.parent.menu.strmetersmenu_a.connect_proxy(self.show_stream_meters)
         self.parent.menu.chmetersmenu_a.connect_proxy(self.show_microphones)

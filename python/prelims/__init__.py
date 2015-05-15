@@ -81,10 +81,8 @@ class ArgumentParser(argparse.ArgumentParser):
 
 
 
-class ArgumentParserImplementation(object):
+class ArgumentParserImplementation(object, metaclass=Singleton):
     """To parse the command line arguments, if any."""
-
-    __metaclass__ = Singleton
 
 
     def __init__(self, args=None, description=None, epilog=None):
@@ -252,7 +250,7 @@ class ArgumentParserImplementation(object):
             return self._ap.parse_args(self._args)
         except ArgumentParserError as e:
             try:
-                for cmd in self._sp.choices.iterkeys():
+                for cmd in self._sp.choices.keys():
                     if cmd in self._args:
                         raise
                 return self._ap.parse_args(self._args + ["run"])
@@ -385,14 +383,12 @@ def profileclosure(cmd, name):
 
 
 
-class ProfileManager(object):
+class ProfileManager(object, metaclass=Singleton):
     """The profile gives each application instance a unique identity.
 
     This identity extends to the config file directory if present,
     to the JACK application ID, to the DBus bus name.
     """
-
-    __metaclass__ = Singleton
 
 
     _profile = _dbus_bus_name = _profile_dialog = _init_time = None
@@ -508,7 +504,7 @@ class ProfileManager(object):
                                                                 verbose=True)
             if self._profile is None:
                 ap.error(_("no profile is set"))
-                
+
         else:
             claim = "session." + self._session_name
             try:
@@ -554,14 +550,14 @@ class ProfileManager(object):
     @property
     def session_name(self):
         """The name of the session."""
-        
+
         return self._session_name
-        
-        
+
+
     @property
     def session_uuid(self):
         """When session is JACK this will be set to something."""
-        
+
         return self._session_uuid
 
 
@@ -662,7 +658,7 @@ class ProfileManager(object):
             session_type = supported_sessions[session_type.lower()]
         except KeyError:
             ap.error(_("unknown session type: %s: must be one of %s") %
-                            (session_type, str(supported_sessions.values())))
+                            (session_type, str(list(supported_sessions.values()))))
 
         # The backend when started needs to know what session type we are using.
         os.environ["session_type"] = session_type
@@ -672,10 +668,10 @@ class ProfileManager(object):
 
         if session_dir is not None:
             session_dir = os.path.realpath(os.path.expanduser(session_dir))
-            
+
             if not os.path.isdir(session_dir):
                 ap.error(_('directory does not exist: %s') % session_dir)
-            
+
             # Use a subdir for the actual save path based on the mode and name.
             session_dir = os.path.join(session_dir, "idjc-%s-%s" % (
                                                 session_type, session_name))
@@ -691,13 +687,13 @@ class ProfileManager(object):
                     else:
                         # Perform copy of profile data.
                         try:
-                            shutil.copytree(PGlobs.profile_dir / 
+                            shutil.copytree(PGlobs.profile_dir /
                                                 args.profile[0], session_dir)
                         except EnvironmentError as e:
                             if e.errno != 17:
                                 ap.error("failed to copy data from the"
                                                 " profile directory: %s" % e)
-                    
+
             elif session_type != "JACK":
                 # Just make the empty session directory.
                 try:
@@ -710,15 +706,15 @@ class ProfileManager(object):
         if session_type == "JACK":
             if session_dir is None and args.profile is not None:
                 profile_check()
-                session_dir = PGlobs.profile_dir / args.profile[0] 
+                session_dir = PGlobs.profile_dir / args.profile[0]
             try:
                 session_uuid = uuid.UUID(args.jackserver[0])
             except TypeError:
                 if args.jackserver is not None:
                     ap.error("supplied parameter to -j is not a UUID")
                 session_uuid = uuid.uuid4()
-                print("creating random UUID for JACK session = {%s}" %
-                      session_uuid)
+                print("creating random UUID for JACK session = {%s}" % \
+                                                                session_uuid)
         else:
             session_uuid = None
 
@@ -747,7 +743,7 @@ class ProfileManager(object):
             if not os.path.exists(PGlobs.autoload_profile_pathname):
                 with open(PGlobs.autoload_profile_pathname, "w"):
                     pass
-            
+
             with open(PGlobs.autoload_profile_pathname, "r+") as f:
                 fcntl.flock(f, fcntl.LOCK_EX)
                 al_profile = f.readline().strip()
@@ -860,8 +856,8 @@ class ProfileManager(object):
                 self._uprep.activate_for_profile(
                                 self._dbus_bus_name, self.get_uptime)
         else:
-            print("%s run -p %s" % (FGlobs.bindir / FGlobs.package_name,
-                  profile))
+            print("%s run -p %s" % (FGlobs.bindir /
+                                                FGlobs.package_name, profile))
             subprocess.Popen([FGlobs.bindir / FGlobs.package_name,
                 "run", "-p", profile], close_fds=True)
 
@@ -998,7 +994,7 @@ class ProfileManager(object):
 
         for row in sorted(table):
             print("{1} {0:{5}} {2:>16} {3} {4}".format(*(tuple(row) +
-                  (MAX_PROFILE_LENGTH,))))
+                                                        (MAX_PROFILE_LENGTH,))))
 
 
     _profile_has_owner = profileclosure(dbus.SessionBus().name_has_owner,

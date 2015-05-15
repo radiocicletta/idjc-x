@@ -256,7 +256,7 @@ class Binding(tuple):
 
         # Parse from string. Can also parse an input string alone
         #
-        elif isinstance(binding, (str, unicode)):
+        elif isinstance(binding, str):
             input_part, _, action_part= binding.partition(':')
             binding= list(cls._default)
             s= input_part[:1]
@@ -340,7 +340,7 @@ class Binding(tuple):
         """Get user-facing representation of action/mode/value
         """
         return control_methods[self.method]
-        
+
     @property
     def modifier_str(self):
         """Get user-facing representation of interaction type and value
@@ -415,7 +415,7 @@ class Binding(tuple):
 
     # Note names. Convert to/from MIDI note/octave format.
     #
-    NOTES= u'C,C#,D,D#,E,F,F#,G,G#,A,A#,B'.replace(u'#', u'\u266F').split(',')
+    NOTES= 'C,C#,D,D#,E,F,F#,G,G#,A,A#,B'.replace('#', '\u266F').split(',')
 
     @staticmethod
     def note_to_str(n):
@@ -423,8 +423,8 @@ class Binding(tuple):
 
     @staticmethod
     def str_to_note(s):
-        m= re.match(u'^([A-G](?:\u266F?))(-1|\d)$', s.replace(' ', '').replace(
-                                                    u'#', u'\u266F').upper())
+        m= re.match('^([A-G](?:\u266F?))(-1|\d)$', s.replace(' ', '').replace(
+                                                    '#', '\u266F').upper())
         if m is None:
             raise ValueError('Invalid note')
         n= Binding.NOTES.index(m.group(1))
@@ -440,13 +440,13 @@ class Binding(tuple):
     # a simple 0..127 range, for easy use in a SpinButton.
     #
     MODIFIERS= (
-        (gtk.gdk.SHIFT_MASK, u'\u21D1'),
-        (gtk.gdk.CONTROL_MASK, u'^'),
-        (gtk.gdk.MOD1_MASK, u'\u2020'), # alt/option
-        (gtk.gdk.MOD5_MASK, u'\u2021'), # altgr/option
-        (gtk.gdk.META_MASK, u'\u25C6'),
-        (gtk.gdk.SUPER_MASK, u'\u2318'), # win/command
-        (gtk.gdk.HYPER_MASK, u'\u25CF'),
+        (gtk.gdk.SHIFT_MASK, '\u21D1'),
+        (gtk.gdk.CONTROL_MASK, '^'),
+        (gtk.gdk.MOD1_MASK, '\u2020'), # alt/option
+        (gtk.gdk.MOD5_MASK, '\u2021'), # altgr/option
+        (gtk.gdk.META_MASK, '\u25C6'),
+        (gtk.gdk.SUPER_MASK, '\u2318'), # win/command
+        (gtk.gdk.HYPER_MASK, '\u25CF'),
     )
     MODIFIERS_MASK= sum(m for m, c in MODIFIERS)
 
@@ -479,8 +479,8 @@ class Binding(tuple):
 def action_method(*modes):
     def wrap(fn):
         fn.action_modes= modes
-        Binding.METHODS.append(fn.func_name)
-        group= fn.func_name[0]
+        Binding.METHODS.append(fn.__name__)
+        group= fn.__name__[0]
         if group not in Binding.METHOD_GROUPS:
             Binding.METHOD_GROUPS.append(group)
         return fn
@@ -503,25 +503,25 @@ class RepeatCache(collections.MutableSet):
 
     The __contains__ method runs the TTL cache purge.
     """
-    
+
     @property
     def ttl(self):
         """Time To Live.
-        
-        The duration a keystroke is valid in the absence of repeats.""" 
+
+        The duration a keystroke is valid in the absence of repeats."""
         return self._ttl
     @ttl.setter
     def ttl(self, ttl):
         assert(isinstance(ttl, (float, int)))
         self._ttl = ttl
-    
+
     def __init__(self, ttl=0.8):
         self.ttl = ttl
         self._cache = {}
-    
+
     def __len__(self):
         return len(self._cache)
-        
+
     def __iter__(self):
         return iter(self._cache)
 
@@ -535,10 +535,10 @@ class RepeatCache(collections.MutableSet):
                 return True
         else:
             return False
-            
+
     def add(self, key):
         self._cache[key] = time.time() + self._ttl
-            
+
     def discard(self, key):
         if key in self._cache:
             del self._cache[key]
@@ -619,9 +619,8 @@ class Controls(dbus.service.Object):
                     try:
                         self.bindings.append(Binding(line))
                     except ValueError as e:
-                        print('Warning: controls prefs file '
-                              'contained unreadable binding %r' % line,
-                              file=sys.stderr)
+                        print('Warning: controls prefs file ' \
+                                        'contained unreadable binding %r' % line, file=sys.stderr)
             fp.close()
             self.update_lookup()
 
@@ -722,11 +721,11 @@ class Controls(dbus.service.Object):
         if isd:
             v= 0 if control.get_active() else 127
         control.set_active(v>=64)
-        
+
     @dbusify(in_signature='b')
     def set_enable_tooltips(self, enabled):
         self.owner.prefs_window.enable_tooltips.set_active(enabled)
-        
+
     @dbusify(out_signature='b')
     def get_enable_tooltips(self):
         return self.owner.prefs_window.enable_tooltips.get_active()
@@ -742,7 +741,7 @@ class Controls(dbus.service.Object):
     @dbusify()
     def set_listen_dj_mix(self):
         self.owner.listen_dj.set_active(True)
-        
+
     @dbusify(out_signature='b')
     def get_listen_dj_mix(self):
         return self.owner.listen_dj.get_active()
@@ -798,18 +797,18 @@ class Controls(dbus.service.Object):
         player= self._get_player(n)
         if player is None: return
         player.advance()
-        
+
     @dbusify(in_signature='u')
     def player_advance(self, index):
         self.p_advance(index, 0, 0)
-        
+
 
     @action_method(Binding.MODE_PULSE)
     def p_prev(self, n, v, isd):
         player= self._get_player(n)
         if player is None: return
         player.prev.clicked()
-        
+
     @dbusify(in_signature='u')
     def player_previous(self, index):
         self.p_prev(index, 0, 0)
@@ -835,14 +834,14 @@ class Controls(dbus.service.Object):
     @dbusify(in_signature='u')
     def player_select_previous(self, index):
         self.p_sprev(index, 0, 0)
-        
+
 
     @action_method(Binding.MODE_PULSE)
     def p_snext(self, n, v, isd):
         player= self._get_player(n)
         if player is None: return
         treeview_selectnext(player.treeview)
-        
+
     @dbusify(in_signature='u')
     def player_select_next(self, index):
         self.p_snext(index, 0, 0)
@@ -920,7 +919,7 @@ class Controls(dbus.service.Object):
             deckadj = self.owner.jingles.ivol_adj
         cross= deckadj.get_value()+v if isd else v
         deckadj.set_value(cross)
-        
+
     @dbusify(in_signature='uib')
     def player_set_volume(self, index, value, delta):
         self.p_vol(index, value, delta)
@@ -1052,7 +1051,7 @@ class Controls(dbus.service.Object):
         if row:
             model.insert_after(iter, row)
             self.player_select_next(index)
-        
+
     @dbusify()
     def playlist_clear(self, index):
         player = self._get_player(index)
@@ -1067,19 +1066,19 @@ class Controls(dbus.service.Object):
         v= v/127.0*100
         cross= self.owner.crossadj.get_value()+v if isd else v
         self.owner.crossadj.set_value(cross)
-        
+
     @dbusify(in_signature='ib')
     def crossfade_set(self, value, delta):
-        self.x_fade(0, value, delta) 
+        self.x_fade(0, value, delta)
 
 
     @action_method(Binding.MODE_PULSE)
     def x_advance(self, n, v, isd):
         self.owner.advance.clicked()
-        
+
     @dbusify()
     def playlist_advance(self):
-        self.x_advance(0, 0, 0)    
+        self.x_advance(0, 0, 0)
 
 
     @action_method(Binding.MODE_PULSE)
@@ -1122,7 +1121,7 @@ class Controls(dbus.service.Object):
     #
     @action_method(Binding.MODE_PULSE, Binding.MODE_DIRECT, Binding.MODE_SET)
     def m_on(self, n, v, isd):
-       
+
         button = self.owner.mic_opener.get_opener_button(n)
         if button is not None:
             s = not button.get_active() if isd else v>=0x40
@@ -1132,7 +1131,7 @@ class Controls(dbus.service.Object):
     def channel_open(self, index, value, toggle):
         self.m_on(index, 127 if value else 0, toggle)
 
-        
+
     @action_method(Binding.MODE_DIRECT, Binding.MODE_SET, Binding.MODE_ALTER)
     def m_vol(self, n, v, isd):
         agc = getattr(self.owner.prefs_window, 'mic_control_%d'%n)
@@ -1207,7 +1206,7 @@ class Controls(dbus.service.Object):
     @dbusify(in_signature='ib')
     def voip_set_mixback_level(self, value, delta):
         self.v_mixback(0, value, delta)
-    
+
 
     #@action_method(Binding.MODE_DIRECT, Binding.MODE_SET, Binding.MODE_ALTER)
     #def v_gain(self, n, v, isd):
@@ -1379,7 +1378,7 @@ class GroupedComboBox(gtk.ComboBox):
             group_rows[group]= model.append(
                                         None, [-1, groupnames[group], False])
         for i in range(len(values)):
-            iter= model.append(group_rows[valuegroups[i]], 
+            iter= model.append(group_rows[valuegroups[i]],
                                             [i, valuenames[values[i]], True])
             self._lookup[values[i]]= model.get_path(iter)
         gtk.ComboBox.__init__(self, model)
@@ -1387,7 +1386,7 @@ class GroupedComboBox(gtk.ComboBox):
         cr= gtk.CellRendererText()
         self.pack_start(cr, True)
         self.set_attributes(cr, text= 1, sensitive= 2)
-        
+
     def get_value(self):
         iter= self.get_active_iter()
         if iter is None:
@@ -1468,9 +1467,9 @@ class CustomAdjustment(gtk.Adjustment):
 class BindingEditor(gtk.Dialog):
     binding_values= {
         # TC: binding editor, action pane, third row, heading text.
-        'd': _('Use value'), 
+        'd': _('Use value'),
         # TC: binding editor, action pane, third row, heading text.
-        'p': _('Act if'), 
+        'p': _('Act if'),
         # TC: binding editor, action pane, third row, heading text.
         's': _('Set to'),
         # TC: binding editor, action pane, third row, heading text.
@@ -1487,7 +1486,7 @@ class BindingEditor(gtk.Dialog):
         # TC: binding editor, input pane, fourth row, heading text.
         'k': _('Key'),
     }
-   
+
     control_method_groups= {
         # TC: binding editor, action pane, first row, toplevel menu.
         'c': _('Miscellaneous'),
@@ -1509,8 +1508,8 @@ class BindingEditor(gtk.Dialog):
         's': _('Stream'),
         # TC: binding editor, action pane, first row, toplevel menu.
         'r': _('Stream recorder'),
-    }   
-   
+    }
+
     control_modes= {
         # TC: binding editor, action pane, second row, dropdown text.
         'd': _('Direct fader/held button'),
@@ -1520,7 +1519,7 @@ class BindingEditor(gtk.Dialog):
         's': _('Set value'),
         # TC: binding editor, action pane, second row, dropdown text.
         'a': _('Alter value')
-    }  
+    }
 
     control_sources= {
         # TC: binding editor, input pane, second row, dropdown text.
@@ -1534,15 +1533,15 @@ class BindingEditor(gtk.Dialog):
         # TC: binding editor, input pane, second row, dropdown text.
         'x': _('XChat command')
     }
-   
-   
+
+
     def __init__(self, owner):
         self.owner= owner
         gtk.Dialog.__init__(self,
             # TC: Dialog window title text.
             # TC: User is expected to edit a control binding.
             _('Edit control binding'), owner.owner.owner.prefs_window.window,
-            gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_NO_SEPARATOR | 
+            gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_NO_SEPARATOR |
             gtk.DIALOG_MODAL, (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
             gtk.STOCK_OK, gtk.RESPONSE_OK))
 
@@ -1792,7 +1791,7 @@ class BindingEditor(gtk.Dialog):
         else:
             self.target_field.set_adjustment(SingularAdjustment())
         self.target_field.update()
-        
+
         # Snap state may need altering.
         self.snap_needed = 'p' in modes and 'a' not in modes
         if bool(self.value_field_scale.snap) != self.snap_needed:
@@ -1805,7 +1804,7 @@ class BindingEditor(gtk.Dialog):
         self.value_field_pulsebox.hide()
         self.value_field_scale.hide()
         self.value_field_invert.hide()
-        
+
         if mode==Binding.MODE_DIRECT:
             self.value_field_invert.set_active(False)
             self.value_field_invert.show()
@@ -1826,11 +1825,11 @@ class BindingEditor(gtk.Dialog):
 #
 class ValueSnapHScale(gtk.HBox):
     can_mark= all(hasattr(gtk.Scale, x) for x in ('add_mark', 'clear_marks'))
-    
+
     def __init__(self, *args, **kwds):
         gtk.HBox.__init__(self)
         self.set_spacing(2)
-        self.label= gtk.Label() 
+        self.label= gtk.Label()
         self.label.set_width_chars(4)
         self.label.set_alignment(1.0, 0.5)
         self.pack_start(self.label, False)
@@ -1953,7 +1952,7 @@ class SingularAdjustment(CustomAdjustment):
         return 0.0
     def write_output(self, value):
         return _('Singular control')
-        
+
 # SpinButton that can translate its underlying adjustment values to GTK shift
 # key modifier flags, when a ModifierAdjustment is used.
 #
@@ -1975,7 +1974,7 @@ class ControlsUI(gtk.VBox):
     """Controls main config interface, displayed in a tab by IDJCmixprefs
     """
     tooltip_coords = (0, 0)
-    
+
     def __init__(self, owner):
         gtk.VBox.__init__(self, spacing= 4)
         self.owner= owner
@@ -2168,16 +2167,16 @@ class BindingListModel(gtk.GenericTreeModel):
         self.owner= owner
         self.bindings= owner.owner.bindings
         self.highlights= owner.owner.highlights
-        
+
     def on_realize(self, tree, column0, model_sort):
         source= timeout_add(100, self.cb_highlights, tree, column0, model_sort)
         tree.connect_object('destroy', source_remove, source)
-        
+
     @threadslock
     def cb_highlights(self, tree, column0, model_sort):
         d= self.highlights
         if d:
-            for rowref, (count, is_new) in d.items():
+            for rowref, (count, is_new) in list(d.items()):
                 # Highlights counter is reduced.
                 if count < 1:
                     del d[rowref]

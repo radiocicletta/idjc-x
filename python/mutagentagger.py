@@ -153,21 +153,21 @@ class WMATagger(MutagenTagger):
             except KeyError:
                 pass
             else:
-                each[1].set_text("/".join(unicode(y) for y in data))
+                each[1].set_text("/".join(str(y) for y in data))
 
         additional = []
 
         for key in self.secondaries:
             values = tag.get(key, [ASFUnicodeAttribute("")])
             for val in values:
-                additional.append(key.encode("utf-8") + "=" + unicode(
+                additional.append(key.encode("utf-8") + "=" + str(
                                                         val).encode("utf-8"))
 
         for key in self.text_set:
             if key not in self.primary_data and key not in self.secondaries:
                 values = tag[key]
                 for val in values:
-                    additional.append(key.encode("utf-8") + "=" + unicode(
+                    additional.append(key.encode("utf-8") + "=" + str(
                                                         val).encode("utf-8"))
         
         self.tag_frame.tb.set_text("\n".join(additional))
@@ -207,9 +207,9 @@ class WMATagger(MutagenTagger):
 
         self.text_set = []
 
-        for key, val in self.tag.iteritems():
+        for key, val in self.tag.items():
             if key not in self.primary_line and all(isinstance(v, (
-                                ASFUnicodeAttribute, unicode)) for v in val):
+                                ASFUnicodeAttribute, str)) for v in val):
                 self.text_set.append(key)
 
 
@@ -228,7 +228,7 @@ class ID3Tagger(MutagenTagger):
         tag = self.tag
         
         # Remove all text tags.
-        for fid in tag.iterkeys():
+        for fid in tag.keys():
             if fid[0] == "T":
                 del tag[fid]
     
@@ -263,7 +263,7 @@ class ID3Tagger(MutagenTagger):
  
             if frame is id3.TXXX:
                 try:
-                    key, val = val.split(u"=", 1)
+                    key, val = val.split("=", 1)
                 
                 except ValueError:
                     continue
@@ -304,7 +304,7 @@ class ID3Tagger(MutagenTagger):
             
             done.append(fid)
                 
-        for fid, frame in self.tag.iteritems():
+        for fid, frame in self.tag.items():
             if fid[0] == "T" and fid not in done:
                 sep = "=" if fid.startswith("TXXX:") else ":"
                 for text in frame.text:
@@ -473,7 +473,7 @@ class NativeTagger(MutagenTagger):
         
         tag = self.tag
         
-        for key in tag.iterkeys():
+        for key in tag.keys():
             if key not in self.blacklist:
                 del tag[key]
                 
@@ -517,7 +517,7 @@ class NativeTagger(MutagenTagger):
                 for val in values:
                     lines.append(key + "=" + val.encode("utf-8"))
 
-        for key, values in tag.iteritems():
+        for key, values in tag.items():
             if key not in primaries and key not in self.blacklist:
                 for val in values:
                     lines.append(key + "=" + val.encode("utf-8"))
@@ -550,7 +550,7 @@ class ApeTagger(MutagenTagger):
         
         tag = self.tag
         
-        for key, values in tag.iteritems():
+        for key, values in tag.items():
             if isinstance(values, APETextValue):
                 del tag[key]
                 
@@ -594,7 +594,7 @@ class ApeTagger(MutagenTagger):
                 for val in values:
                     lines.append(key + "=" + val.encode("utf-8"))
 
-        for key, values in tag.iteritems():
+        for key, values in tag.items():
             if key not in primaries and isinstance(values, APETextValue):
                 for val in values:
                     lines.append(key + "=" + val.encode("utf-8"))
@@ -698,17 +698,17 @@ class MutagenGUI:
         label = gtk.Label()
         if idjcroot:
             if encoding is not None:
-                label.set_markup(u"<b>" + _('Filename:').decode("utf-8") + \
-                u" " + glib.markup_escape_text(unicode(os.path.split(
-                pathname)[1], encoding).encode("utf-8", "replace")) + u"</b>")
+                label.set_markup("<b>" + _('Filename:').decode("utf-8") + \
+                " " + glib.markup_escape_text(str(os.path.split(
+                pathname)[1], encoding).encode("utf-8", "replace")) + "</b>")
             else:
-                label.set_markup(u"<b>" + _('Filename:').decode("utf-8") + \
-                u" " + glib.markup_escape_text(os.path.split(
-                pathname)[1]).encode("utf-8", "replace") + u"</b>")
+                label.set_markup("<b>" + _('Filename:').decode("utf-8") + \
+                " " + glib.markup_escape_text(os.path.split(
+                pathname)[1]).encode("utf-8", "replace") + "</b>")
         else:
-            label.set_markup(u"<b>" + _('Filename:').decode("utf-8") + u" " + \
-            glib.markup_escape_text(unicode(os.path.split(
-            pathname)[1], "latin1").encode("utf-8", "replace")) + u"</b>")
+            label.set_markup("<b>" + _('Filename:').decode("utf-8") + " " + \
+            glib.markup_escape_text(str(os.path.split(
+            pathname)[1], "latin1").encode("utf-8", "replace")) + "</b>")
         vbox.pack_start(label, False, False, 6)
         label.show()
         

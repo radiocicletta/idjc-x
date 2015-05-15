@@ -59,7 +59,7 @@ def _pa_rlock(func):
     @wraps(func)
     def _wrapper(cls, *args, **kwds):
         """Wrapper with locking feature. Performs rlock."""
-        
+
         rlock = type.__getattribute__(cls, "_rlock")
 
         try:
@@ -135,7 +135,7 @@ class PolicedAttributes(FixedAttributes):
 
 class PathStrMeta(type):
     """PathStr() returns None if called with None."""
-    
+
     def __call__(cls, arg):
         if arg is None:
             return None
@@ -144,13 +144,11 @@ class PathStrMeta(type):
 
 
 
-class PathStr(str):
+class PathStr(str, metaclass=PathStrMeta):
     """A data type to perform path joins using the / operator.
 
     In this case the higher precedence of / is unfortunate.
     """
-
-    __metaclass__ = PathStrMeta
 
 
     def __div__(self, other):
@@ -195,10 +193,10 @@ class SlotObject(object):
 
     def __getattr__(self, what):
         """Universal getter for get_ prefix."""
-        
+
         def assign(value):
             """Returned by set_ prefix call. A setter function."""
-            
+
             self.value = value
 
         if what.startswith("get_"):
@@ -231,13 +229,10 @@ def string_multireplace(part, table):
 
 
 
-class LinkUUIDRegistry(dict):
+class LinkUUIDRegistry(dict, metaclass=Singleton):
     """Manage substitute hard links for data files."""
 
 
-    __metaclass__ = Singleton
-
-    
     link_re = re.compile(
                     "\{[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}\}")
     link_dir = None
@@ -260,7 +255,7 @@ class LinkUUIDRegistry(dict):
     def _purge(self, where):
         """Clean orphaned hard links from the links directory."""
 
-        basedir, dirs, files = os.walk(where).next()
+        basedir, dirs, files = next(os.walk(where))
         for filename in files:
             match = self.link_re.match(filename)
             try:
@@ -272,11 +267,11 @@ class LinkUUIDRegistry(dict):
 
     def _save(self, where, copy):
         """Write new hard links to the links directory.
-        
+
         Existing links are kept as they are. To unlink them could delete the
         only copy of the link source.
         """
-        
+
         # Create the links directory as needed.
         if not os.path.isdir(where):
             try:
@@ -285,7 +280,7 @@ class LinkUUIDRegistry(dict):
                 print("LinkUUIDRegistry: link directory creation failed:", e)
                 return
 
-        for uuid_, source in self.iteritems():
+        for uuid_, source in self.items():
             ext = os.path.splitext(source)[1]
             if copy:
                 cmd = shutil.copyfile
@@ -303,9 +298,9 @@ class LinkUUIDRegistry(dict):
 
     def update(self, where, copy=False):
         """Update the hard links in the links directory."""
-        
+
         self._save(where, copy)
-        # Purge after save because the link source may just be in the 
+        # Purge after save because the link source may just be in the
         # links directory itself.
         self._purge(where)
         self.link_dir = where
@@ -313,7 +308,7 @@ class LinkUUIDRegistry(dict):
 
     def get_link_filename(self, uuid_):
         """Check in the links directory for a specific UUID filename."""
-        
+
         if self.link_dir is not None:
             matches = glob.glob(os.path.join(self.link_dir, "{%s}.*" % uuid_))
             if len(matches) == 1:

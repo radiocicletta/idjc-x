@@ -26,7 +26,7 @@ import uuid
 import gtk
 import gobject
 import itertools
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from idjc import *
 from .playergui import *
@@ -183,7 +183,7 @@ class Effect(gtk.HBox):
         else:
             data = dragged.data.splitlines()
             if len(data) == 1 and data[0].startswith("file://"):
-                pathname = urllib.unquote(data[0][7:])
+                pathname = urllib.parse.unquote(data[0][7:])
                 title = self.interlude.get_media_metadata(pathname).title
                 if title:
                     self.stop.clicked()

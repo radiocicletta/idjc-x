@@ -29,7 +29,7 @@ import json
 from functools import partial, wraps
 from collections import deque, defaultdict
 from contextlib import contextmanager
-from urllib import quote
+from urllib.parse import quote
 
 import glib
 import gobject
@@ -53,7 +53,7 @@ __all__ = ['MediaPane', 'have_songdb']
 AMPACHE = "Ampache"
 AMPACHE_3_7 = "Ampache 3.7"
 PROKYON_3 = "Prokyon 3"
-FUZZY, CLEAN, WHERE, DIRTY = xrange(4)
+FUZZY, CLEAN, WHERE, DIRTY = range(4)
 
 t = gettext.translation(FGlobs.package_name, FGlobs.localedir, fallback=True)
 _ = t.gettext
@@ -313,7 +313,7 @@ class Settings(gtk.Table):
         gtk.Table.__init__(self, 5, 4)
         self.set_border_width(10)
         self.set_row_spacings(1)
-        for col, spc in zip(xrange(3), (3, 10, 3)):
+        for col, spc in zip(range(3), (3, 10, 3)):
             self.set_col_spacing(col, spc)
 
         self._controls = []
@@ -1184,7 +1184,7 @@ class TreePage(ViewerCommon):
         BLANK_ROW = self.BLANK_ROW
         if letter is None: letter = {}
         
-        for each in xrange(do_max):
+        for each in range(do_max):
             if acc.keepalive == False:
                 return False
                 
@@ -1488,7 +1488,7 @@ class FlatPage(ViewerCommon):
         next_row = cursor.fetchone
         append = self.list_store.append
 
-        for i in xrange(100):
+        for i in range(100):
             if acc.keepalive == False:
                 return False
 
@@ -1570,7 +1570,7 @@ class CatalogsInterface(gobject.GObject):
         return os.path.isfile(path), path
     
     def sql(self):
-        ids = tuple(x for x in self._dict.iterkeys())
+        ids = tuple(x for x in self._dict.keys())
         if not ids:
             return "FALSE"
 
@@ -1593,9 +1593,9 @@ class CatalogsInterface(gobject.GObject):
     @staticmethod
     def _stripped_copy(_dict):
         copy = {}
-        for key1, val1 in _dict.iteritems():
+        for key1, val1 in _dict.items():
             copy[key1] = {}
-            for key2, val2 in val1.iteritems():
+            for key2, val2 in val1.items():
                 if key2 not in ("peel", "prepend", "lpscale"):
                     copy[key1][key2] = val2
 
@@ -1879,7 +1879,7 @@ class MediaPane(gtk.VBox):
             self._acc1.request(('SHOW tables',), self._stage_1, self._fail_1)
         else:
             try:
-                for i in xrange(1, 4):
+                for i in range(1, 4):
                     getattr(self, "_acc%d" % i).close()
             except AttributeError:
                 pass
