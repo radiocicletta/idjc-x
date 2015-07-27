@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([idjc], [0.8.15_development], 
+AC_INIT([idjc], [0.8.15], 
                 [http://idjc.sourceforge.net])
 AC_SUBST(COPYRIGHT_YEAR, [2015])
 AC_CANONICAL_SYSTEM

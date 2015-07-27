@@ -54,11 +54,9 @@ however after doing so there may still be reason 2 to contend with.</p>
 <a href="http://packages.debian.org/squeeze/libasound2-plugins">binary</a>. This is intended
 as a replacement for the current <i>alsa-plugins</i> package so remove the old version first.</p>
 
-<h4>Skype configuration</h4>
-
-<p>Launch Skype and Hit <i>Ctrl + O</i>. Choose <i>Sound Devices</i> and for each of the
-<i>Sound In</i>, <i>Sound Out</i>, and <i>Ringing</i> options, select <i>idjcvoip</i> then
-click <i>Apply</i>. Leave the configuration window open for the next step.</p>
+<h4>Skype/Pulseaudio configuration</h4>
+<p>Lots of messing about ever since Skype forced the use of Pulseaudio. Official JACK documentation <a href="http://jackaudio.org/faq/pulseaudio_and_jack.html
+">here</a>. Once you have Pulseaudio ports in JACK they will require connection to the IDJC VoIP JACK ports.</p>
 
 <h4>Testing</h4>
 

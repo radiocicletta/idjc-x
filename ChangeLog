@@ -1,5 +1,7 @@
 * Changes in version 0.8.15 *
 
+Documentation update for VoIP.
+
 Support for more signals by the IDJCMonitor class.
 
 Support for latest version of python-irc.
