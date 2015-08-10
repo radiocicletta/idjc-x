@@ -2067,11 +2067,12 @@ class IDJC_Media_Player:
                 treeselection.select_path(0)
 
     def get_pl_block_size(self, iter):
+        use_controls = self.pl_mode.get_active() == 0
         size = 0
         speedfactor = self.pbspeedfactor
         while iter is not None:
             length = self.liststore.get_value(iter, 2)
-            if length == -11:
+            if length == -11 and use_controls:
                 text = self.liststore.get_value(iter, 0)
                 if text.startswith("<b>"):
                     text = text[3:-4]
@@ -2094,7 +2095,7 @@ class IDJC_Media_Player:
         Block times give the DJ an idea when the playlist will finish.
         """
 
-        if self.pl_mode.get_active() != 0:
+        if self.pl_mode.get_active() not in (0, 3, 4):
             return
         if self.player_is_playing:
             if self.cuesheet:
@@ -3885,7 +3886,7 @@ class IDJC_Media_Player:
 
     def cb_playlist_mode(self, widget):
         self.pl_delay.set_sensitive(self.pl_mode.get_active() in (0, 1, 2, 5))
-        if widget.get_active() == 0:
+        if widget.get_active() in (0, 3, 4):
             self.update_time_stats()
             self.pl_statusbar.show()
         else:

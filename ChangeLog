@@ -1,3 +1,7 @@
+* Changes in version 0.8.16 *
+
+Playlist block size and finish time now also appears when using the cue up and manual playlist modes. 
+
 * Changes in version 0.8.15 *
 
 Documentation update for VoIP.
