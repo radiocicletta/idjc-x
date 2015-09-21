@@ -2343,7 +2343,7 @@ class IDJC_Media_Player:
             else:
                 fade = self.pl_delay.get_active()
                 if (fade == 1 and rem == 10) or (fade == 2 and rem == 5) or \
-                                    pl_mode in (3, 4, 6) or \
+                                    pl_mode in (3, 4, 6, 7, 8) or \
                                     (pl_mode == 0 and self.islastinplaylist()):
                     fade = 0
                 if fade:

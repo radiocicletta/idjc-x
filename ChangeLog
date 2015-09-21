@@ -2,6 +2,8 @@
 
 Playlist block size and finish time now also appears when using the cue up and manual playlist modes. 
 
+Fix for playlist modes 'Fade Over' and 'Random Hop' so that they work with fade settings other than 'None'
+
 * Changes in version 0.8.15 *
 
 Documentation update for VoIP.
