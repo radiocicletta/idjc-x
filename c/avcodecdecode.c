@@ -173,13 +173,13 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
         
         if (!self->frame)
             {
-            if (!(self->frame = avcodec_alloc_frame()))
+            if (!(self->frame = av_frame_alloc()))
                 {
                 fprintf(stderr, "avcodecdecode_play: malloc failure\n");
                 exit(1);
                 }
             else
-                avcodec_get_frame_defaults(self->frame);
+                av_frame_unref(self->frame);
             }
 
         while (pthread_mutex_trylock(&g.avc_mutex))
@@ -245,7 +245,7 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
         if (self->floatsamples)
             av_freep(&self->floatsamples);
 
-        if (av_samples_alloc(&self->floatsamples, NULL, 2, self->frame->nb_samples, AV_SAMPLE_FMT_FLT, 0))
+        if (av_samples_alloc(&self->floatsamples, NULL, 2, self->frame->nb_samples, AV_SAMPLE_FMT_FLT, 0) < 0)
             {
             fprintf(stderr, "avcodecdecode_play: av_samples_alloc failed\n");
             xlplayer->playmode = PM_EJECTING;

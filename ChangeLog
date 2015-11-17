@@ -1,5 +1,9 @@
 * Changes in version 0.8.16 *
 
+Updated avcodec encoder and decoder to silence deprecation warnings.   
+
+Fixed the return value check of call to av_samples_alloc.
+
 Playlist block size and finish time now also appears when using the cue up and manual playlist modes. 
 
 Fix for playlist modes 'Fade Over' and 'Random Hop' so that they work with fade settings other than 'None'

@@ -142,12 +142,12 @@ static void live_avcodec_encoder_main(struct encoder *encoder)
 
             // prepare an AVFrame to put that data
             if (!s->decoded_frame) {
-                if (!(s->decoded_frame = avcodec_alloc_frame())) {
+                if (!(s->decoded_frame = av_frame_alloc())) {
                     fprintf(stderr, "avcodec_encoder_main: failed to allocate frame\n");
                     encoder->encoder_state = ES_STOPPING;
                 }
             } else
-                avcodec_get_frame_defaults(s->decoded_frame);
+                av_frame_unref(s->decoded_frame);
             s->decoded_frame->nb_samples = in_samples;
             
             if (id) {
