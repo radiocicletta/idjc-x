@@ -28,6 +28,13 @@
 
 #include "avcodec_encoder.h"
 
+#ifndef HAVE_AV_FRAME_ALLOC
+#define av_frame_alloc avcodec_alloc_frame
+#endif
+#ifndef HAVE_AV_FRAME_UNREF
+#define av_frame_unref avcodec_get_frame_defaults
+#endif
+
 #define BYTE_ALIGNMENT (8)
 
 static const struct timespec time_delay = { .tv_nsec = 10 };

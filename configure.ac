@@ -81,8 +81,11 @@ if test $makelibav != "no" ; then
                AC_MSG_WARN([IDJC will be built without wma/mp4/ape support])
             fi)
 
-   PKG_CHECK_MODULES([LIBAVUTIL], [libavutil], AC_DEFINE(HAVE_AVUTIL, 1, [Set if libavutil was found])
-            AC_SUBST(HAVE_AVUTIL, 1),
+   PKG_CHECK_MODULES([LIBAVUTIL], [libavutil], [AC_DEFINE(HAVE_AVUTIL, 1, [Set if libavutil was found])
+            AC_SUBST(HAVE_AVUTIL, 1)
+            AC_CHECK_LIB([avutil],[av_frame_alloc], AC_DEFINE(HAVE_AV_FRAME_ALLOC, 1, [Set if av_frame_alloc function exists]))
+            AC_CHECK_LIB([avutil],[av_frame_unref], AC_DEFINE(HAVE_AV_FRAME_UNREF, 1, [Set if av_frame_unref function exists]))
+            ],
             AC_SUBST(HAVE_AVUTIL, 0)
 
             if test $makelibav = "yes" ; then

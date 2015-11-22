@@ -42,6 +42,13 @@
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
 #endif
 
+#ifndef HAVE_AV_FRAME_ALLOC
+#define av_frame_alloc avcodec_alloc_frame
+#endif
+#ifndef HAVE_AV_FRAME_UNREF
+#define av_frame_unref avcodec_get_frame_defaults
+#endif
+
 extern int dynamic_metadata_form[];
 
 static const struct timespec time_delay = { .tv_nsec = 10 };
