@@ -1236,12 +1236,14 @@ class IDJC_Media_Player:
                     # due to it frequently being based on the source audio.
                     if rg == RGDEF:
                         try:
-                            rg = str(audio.info.track_gain) + " RG"
-                        except:
+                            rg = audio.info.track_gain
+                        except AttributeError:
                             pass
                         else:
-                             if rg is None:
-                                 rg = RGDEF
+                            if rg is None:
+                                rg = RGDEF
+                            else:
+                                rg = str(rg) + " RG"
                 else:
                     x = list(audio.get("Artist", []))
                     x += list(audio.get("Author", []))

@@ -1,5 +1,7 @@
 * Changes in version 0.8.16 *
 
+Fixed LAME tag ReplayGain metadata collection for newer versions of Mutagen.
+
 Updated avcodec encoder and decoder to silence deprecation warnings.   
 
 Fixed the return value check of call to av_samples_alloc.
