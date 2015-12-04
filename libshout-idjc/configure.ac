@@ -21,7 +21,7 @@ AC_DEFINE([LIBSHOUT_MICRO], libshout_micro, [Shout library patch version])
 
 VERSION=libshout_version
 
-AM_INIT_AUTOMAKE([libshout], libshout_version)
+AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 
 dnl create our name mangling macro
@@ -108,7 +108,7 @@ AC_SUBST([SHOUT_THREADSAFE])
 AM_CONDITIONAL([HAVE_THREAD], [test "$SHOUT_THREADSAFE" = "1"])
 if test "$SHOUT_THREADSAFE" != "1"
 then
-  AC_DEFINE([NO_THREAD], 1, [Define if you don't want to use the thread library])
+  AC_DEFINE([NO_THREAD], 1, [Define if you do not want to use the thread library])
 fi
 
 SHOUT_REQUIRES="ogg"

@@ -28,3 +28,7 @@ debug:
 
 profile:
 	$(MAKE) all CFLAGS="@PROFILE@"
+
+distclean-am:
+	rm -f libtool missing install-sh config.sub compile depcomp ltmain.sh \
+	config.guess shout.pc config.h stamp-h1

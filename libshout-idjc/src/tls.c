@@ -61,7 +61,7 @@ shout_tls_t *shout_tls_new(shout_t *self, sock_t socket)
 
 static inline int tls_setup(shout_tls_t *tls)
 {
-	SSL_METHOD *meth;
+	const SSL_METHOD *meth;
 
 	SSL_library_init();
 	SSL_load_error_strings();

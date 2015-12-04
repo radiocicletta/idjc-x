@@ -8,13 +8,10 @@ noinst_LTLIBRARIES = libicenet.la
 noinst_HEADERS = resolver.h sock.h
 
 libicenet_la_SOURCES = sock.c resolver.c
-libicenet_la_CFLAGS = @XIPH_CFLAGS@
-
-INCLUDES = -I$(srcdir)/..
+libicenet_la_CFLAGS = @XIPH_CFLAGS@ -I$(srcdir)/..
 
 debug:
 	$(MAKE) all CFLAGS="@DEBUG@"
 
 profile:
 	$(MAKE) all CFLAGS="@PROFILE@
-

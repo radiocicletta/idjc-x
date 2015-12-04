@@ -7,9 +7,7 @@ noinst_HEADERS = httpp.h encoding.h
 
 libicehttpp_la_SOURCES = httpp.c encoding.c
 libicehttpp_la_CFLAGS = @XIPH_CFLAGS@
-AM_CPPFLAGS = @XIPH_CPPFLAGS@
-
-INCLUDES = -I$(srcdir)/..
+AM_CPPFLAGS = @XIPH_CPPFLAGS@ -I$(srcdir)/..
 
 # SCCS stuff (for BitKeeper)
 GET = true
@@ -19,4 +17,3 @@ debug:
 
 profile:
 	$(MAKE) all CFLAGS="@PROFILE@"
-

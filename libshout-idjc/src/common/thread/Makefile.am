@@ -8,13 +8,10 @@ noinst_LTLIBRARIES = libicethread.la
 noinst_HEADERS = thread.h
 
 libicethread_la_SOURCES = thread.c
-libicethread_la_CFLAGS = @XIPH_CFLAGS@
-
-INCLUDES = -I$(srcdir)/..
+libicethread_la_CFLAGS = @XIPH_CFLAGS@ -I$(srcdir)/..
 
 debug:
 	$(MAKE) all CFLAGS="@DEBUG@"
 
 profile:
 	$(MAKE) all CFLAGS="@PROFILE@"
-
