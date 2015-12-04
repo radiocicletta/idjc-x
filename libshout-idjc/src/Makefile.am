@@ -3,28 +3,39 @@
 AUTOMAKE_OPTIONS = foreign 1.6
 
 if HAVE_THREAD
-  MAYBE_THREAD = thread
-  MAYBE_THREAD_LIB = thread/libicethread.la
+  MAYBE_THREAD = common/thread
+  MAYBE_THREAD_LIB = common/thread/libicethread.la
+endif
+
+if HAVE_THEORA
+  MAYBE_THEORA = codec_theora.c
 endif
 
 if HAVE_SPEEX
-  MAYBE_SPEEX = speex.c
+  MAYBE_SPEEX = codec_speex.c
 endif
 
-SUBDIRS = avl net timing httpp $(MAYBE_THREAD)
+if HAVE_TLS
+  MAYBE_TLS = tls.c
+endif
 
-lib_LTLIBRARIES = libshout-idjc.la
-libshout_idjc_la_LDFLAGS = -version-info 5:0:2
+SUBDIRS = common/avl common/net common/timing common/httpp $(MAYBE_THREAD)
 
-EXTRA_DIST = speex.c
-noinst_HEADERS = shout_ogg.h shout_private.h util.h
-libshout_idjc_la_SOURCES = shout.c util.c ogg.c vorbis.c mpeg.c webm.c opus.c $(MAYBE_SPEEX)
+lib_LTLIBRARIES = libshout.la
+libshout_la_LDFLAGS = -version-info 5:0:2
+
+EXTRA_DIST = codec_theora.c codec_speex.c tls.c
+noinst_HEADERS = format_ogg.h shout_private.h util.h
+PROTOCOLS=proto_http.c proto_xaudiocast.c proto_icy.c proto_roaraudio.c
+FORMATS=format_ogg.c format_webm.c format_mp3.c
+CODECS=codec_vorbis.c codec_opus.c $(MAYBE_THEORA) $(MAYBE_SPEEX)
+libshout_la_SOURCES = shout.c util.c queue.c $(PROTOCOLS) $(FORMATS) $(CODECS) $(MAYBE_TLS)
 AM_CFLAGS = @XIPH_CFLAGS@
 
-libshout_idjc_la_LIBADD = net/libicenet.la timing/libicetiming.la avl/libiceavl.la\
-		httpp/libicehttpp.la $(MAYBE_THREAD_LIB) $(VORBIS_LIBS) $(SPEEX_LIBS)
+libshout_la_LIBADD = common/net/libicenet.la common/timing/libicetiming.la common/avl/libiceavl.la\
+		common/httpp/libicehttpp.la $(MAYBE_THREAD_LIB) $(THEORA_LIBS) $(VORBIS_LIBS) $(SPEEX_LIBS) @XIPH_LIBS@
 
-AM_CPPFLAGS = -I$(top_builddir)/include
+INCLUDES = -I$(top_builddir)/include -I./common/
 
 debug:
 	$(MAKE) all CFLAGS="@DEBUG@"

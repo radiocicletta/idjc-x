@@ -1,12 +1,12 @@
 # Process this file with autoconf to produce a configure script.
-# $Id: configure.ac 18320 2012-05-25 15:32:16Z giles $
+# $Id$
 
 m4_define(libshout_major, 2)
-m4_define(libshout_minor, 3)
+m4_define(libshout_minor, 4)
 m4_define(libshout_micro, 1)
 m4_define(libshout_version, libshout_major.libshout_minor.libshout_micro)
 
-AC_INIT([libshout-idjc], libshout_version, [s-fairchild@users.sourceforge.net])
+AC_INIT([libshout], libshout_version, [icecast-dev@xiph.org])
 AC_PREREQ([2.54])
 AC_CONFIG_SRCDIR([src/shout.c])
 AM_CONFIG_HEADER(config.h)
@@ -21,7 +21,7 @@ AC_DEFINE([LIBSHOUT_MICRO], libshout_micro, [Shout library patch version])
 
 VERSION=libshout_version
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([libshout], libshout_version)
 AM_MAINTAINER_MODE
 
 dnl create our name mangling macro
@@ -73,7 +73,8 @@ dnl Checks for programs.
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([strings.h time.h sys/time.h sys/timeb.h])
+AC_HEADER_TIME
+AC_CHECK_HEADERS([strings.h sys/timeb.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -121,6 +122,25 @@ PKG_CHECK_MODULES(VORBIS, vorbis, [
 VORBIS_LIBS="$VORBIS_LDFLAGS $VORBIS_LIBS"
 XIPH_CFLAGS="$XIPH_CFLAGS $VORBIS_CFLAGS"
 
+AC_ARG_ENABLE([theora],
+  AC_HELP_STRING([--disable-theora],[do not build with Theora support]))
+
+if test "x$enable_theora" != "xno"; then
+PKG_CHECK_MODULES(THEORA, theora, [
+    HAVE_THEORA="yes"
+    SHOUT_REQUIRES="$SHOUT_REQUIRES, theora"
+  ], [
+    XIPH_PATH_THEORA(, [AC_MSG_WARN([Theora library not found, disabling])])
+  ])
+fi
+XIPH_VAR_APPEND([XIPH_CPPFLAGS],[$THEORA_CFLAGS])
+XIPH_VAR_PREPEND([XIPH_LIBS],[$THEORA LDFLAGS $THEORA_LIBS])
+AM_CONDITIONAL([HAVE_THEORA], [test -n "$THEORA_LIBS"])
+if test -n "$THEORA_LIBS"
+then
+  AC_DEFINE([HAVE_THEORA], 1, [Define if you want theora streams supported])
+fi
+
 AC_ARG_ENABLE([speex],
   AC_HELP_STRING([--disable-speex],[do not build with Speex support]))
 
@@ -140,7 +160,7 @@ then
   AC_DEFINE([HAVE_SPEEX], 1, [Define if you want speex streams supported])
 fi
 
-dnl If pkgconfig is found, install a shout-idjc.pc file.
+dnl If pkgconfig is found, install a shout.pc file.
 
 AC_ARG_ENABLE([pkgconfig],
   AC_HELP_STRING([--disable-pkgconfig],[disable pkgconfig data files (auto)]),
@@ -155,7 +175,7 @@ else
 fi
 AM_CONDITIONAL([HAVE_PKGCONFIG], [test "$PKGCONFIG" != "no"])
 
-# Collect flags for shout-idjc.pc
+# Collect flags for shout.pc
 
 # I hate myself for doing this.
 save_prefix="$prefix"
@@ -166,6 +186,18 @@ fi
 eval shout_includedir="$includedir"
 prefix="$save_prefix"
 
+XIPH_PATH_OPENSSL([
+    XIPH_VAR_APPEND([XIPH_CPPFLAGS],[$OPENSSL_CFLAGS])
+    XIPH_VAR_APPEND([XIPH_LDFLAGS],[$OPENSSL_LDFLAGS])
+    XIPH_VAR_PREPEND([XIPH_LIBS],[$OPENSSL_LIBS])
+    SHOUT_TLS="1"
+    ],
+    [ AC_MSG_NOTICE([SSL disabled!])
+      SHOUT_TLS="0"
+    ])
+AC_SUBST([SHOUT_TLS])
+AM_CONDITIONAL([HAVE_TLS], [test -n "$OPENSSL_LIBS"])
+
 SHOUT_VERSION="$VERSION"
 SHOUT_CPPFLAGS="-I$shout_includedir $VORBIS_CFLAGS $PTHREAD_CPPFLAGS"
 SHOUT_CFLAGS="$PTHREAD_CFLAGS"
@@ -173,7 +205,7 @@ SHOUT_LIBS="-lshout"
 
 XIPH_CLEAN_CCFLAGS([$SHOUT_CPPFLAGS], [SHOUT_CPPFLAGS])
 XIPH_CLEAN_CCFLAGS([$SHOUT_CFLAGS], [SHOUT_CFLAGS])
-XIPH_CLEAN_CCFLAGS([$VORBIS_LIBS $SPEEX_LIBS $PTHREAD_LIBS $LIBS], [SHOUT_LIBDEPS])
+XIPH_CLEAN_CCFLAGS([$VORBIS_LIBS $THEORA_LIBS $SPEEX_LIBS $PTHREAD_LIBS $OPENSSL_LIBS $OPENSSL_LIBS $LIBS], [SHOUT_LIBDEPS])
 AC_SUBST(PTHREAD_CPPFLAGS)
 AC_SUBST(SHOUT_LIBDEPS)
 AC_SUBST(SHOUT_REQUIRES)
@@ -190,8 +222,9 @@ AC_SUBST(CFLAGS)
 AC_SUBST(PROFILE)
 AC_SUBST(XIPH_CFLAGS)
 AC_SUBST(XIPH_CPPFLAGS)
+AC_SUBST(XIPH_LIBS)
 
-AC_OUTPUT([Makefile include/Makefile include/shoutidjc/Makefile
-  include/shoutidjc/shout.h src/Makefile src/net/Makefile src/timing/Makefile
-  src/thread/Makefile src/avl/Makefile src/httpp/Makefile shout-idjc.pc
-  ])
+AC_OUTPUT([Makefile include/Makefile include/shout/Makefile
+  include/shout/shout.h src/Makefile src/common/net/Makefile src/common/timing/Makefile
+  src/common/thread/Makefile src/common/avl/Makefile src/common/httpp/Makefile doc/Makefile
+  examples/Makefile win32/Makefile shout.pc])
