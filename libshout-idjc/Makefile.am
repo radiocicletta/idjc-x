@@ -3,24 +3,21 @@
 AUTOMAKE_OPTIONS = 1.6 foreign
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = include src examples doc win32
+SUBDIRS = include src
 
 EXTRA_DIST = INSTALL m4/shout.m4 m4/acx_pthread.m4 \
 	m4/ogg.m4 m4/vorbis.m4 m4/xiph_compiler.m4 m4/xiph_net.m4 \
-	m4/xiph_types.m4 libshout.ckport
+	m4/xiph_types.m4
 
 docdir = $(datadir)/doc/$(PACKAGE)
-doc_DATA = COPYING NEWS README examples/example.c examples/nonblocking.c
+doc_DATA = COPYING NEWS README
 
 m4datadir = $(datadir)/aclocal
 m4data_DATA = m4/shout.m4
 
-ckportdir = $(libdir)/ckport/db
-ckport_DATA = libshout.ckport
-
 if HAVE_PKGCONFIG
   pkgconfigdir = $(libdir)/pkgconfig
-  pkgconfig_DATA = shout.pc
+  pkgconfig_DATA = shout-idjc.pc
 endif
 
 debug:
@@ -31,4 +28,4 @@ profile:
 
 distclean-am:
 	rm -f libtool missing install-sh config.sub compile depcomp ltmain.sh \
-	config.guess shout.pc config.h stamp-h1
+	config.guess shout-idjc.pc config.h stamp-h1

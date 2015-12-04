@@ -6,7 +6,7 @@ m4_define(libshout_minor, 4)
 m4_define(libshout_micro, 1)
 m4_define(libshout_version, libshout_major.libshout_minor.libshout_micro)
 
-AC_INIT([libshout], libshout_version, [icecast-dev@xiph.org])
+AC_INIT([libshout-idjc], libshout_version, [icecast-dev@xiph.org])
 AC_PREREQ([2.54])
 AC_CONFIG_SRCDIR([src/shout.c])
 AM_CONFIG_HEADER(config.h)
@@ -160,7 +160,7 @@ then
   AC_DEFINE([HAVE_SPEEX], 1, [Define if you want speex streams supported])
 fi
 
-dnl If pkgconfig is found, install a shout.pc file.
+dnl If pkgconfig is found, install a shout-idjc.pc file.
 
 AC_ARG_ENABLE([pkgconfig],
   AC_HELP_STRING([--disable-pkgconfig],[disable pkgconfig data files (auto)]),
@@ -175,7 +175,7 @@ else
 fi
 AM_CONDITIONAL([HAVE_PKGCONFIG], [test "$PKGCONFIG" != "no"])
 
-# Collect flags for shout.pc
+# Collect flags for shout-idjc.pc
 
 # I hate myself for doing this.
 save_prefix="$prefix"
@@ -201,7 +201,7 @@ AM_CONDITIONAL([HAVE_TLS], [test -n "$OPENSSL_LIBS"])
 SHOUT_VERSION="$VERSION"
 SHOUT_CPPFLAGS="-I$shout_includedir $VORBIS_CFLAGS $PTHREAD_CPPFLAGS"
 SHOUT_CFLAGS="$PTHREAD_CFLAGS"
-SHOUT_LIBS="-lshout"
+SHOUT_LIBS="-lshout-idjc"
 
 XIPH_CLEAN_CCFLAGS([$SHOUT_CPPFLAGS], [SHOUT_CPPFLAGS])
 XIPH_CLEAN_CCFLAGS([$SHOUT_CFLAGS], [SHOUT_CFLAGS])
@@ -224,7 +224,7 @@ AC_SUBST(XIPH_CFLAGS)
 AC_SUBST(XIPH_CPPFLAGS)
 AC_SUBST(XIPH_LIBS)
 
-AC_OUTPUT([Makefile include/Makefile include/shout/Makefile
-  include/shout/shout.h src/Makefile src/common/net/Makefile src/common/timing/Makefile
-  src/common/thread/Makefile src/common/avl/Makefile src/common/httpp/Makefile doc/Makefile
-  examples/Makefile win32/Makefile shout.pc])
+AC_OUTPUT([Makefile include/Makefile include/shoutidjc/Makefile
+  include/shoutidjc/shout.h src/Makefile src/common/net/Makefile
+  src/common/timing/Makefile src/common/thread/Makefile src/common/avl/Makefile
+  src/common/httpp/Makefile shout-idjc.pc])

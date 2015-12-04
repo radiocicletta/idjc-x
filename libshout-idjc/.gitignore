@@ -7,8 +7,8 @@ examples/example
 examples/example.o
 examples/nonblocking
 examples/nonblocking.o
-include/shout/shout.h
-shout.pc
+include/shoutidjc/shout.h
+shout-idjc.pc
 src/.deps/
 src/.libs/
 src/codec_opus.lo
@@ -54,7 +54,7 @@ src/format_ogg.lo
 src/format_ogg.o
 src/format_webm.lo
 src/format_webm.o
-src/libshout.la
+src/libshout-idjc.la
 src/proto_http.lo
 src/proto_http.o
 src/proto_icy.lo
@@ -71,3 +71,4 @@ src/tls.lo
 src/tls.o
 src/util.lo
 src/util.o
+libshout-idjc-*/
