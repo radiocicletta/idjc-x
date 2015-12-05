@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-#include <shout/shout.h>
+#include <shoutidjc/shout.h>
 #include <common/net/sock.h>
 #include <common/timing/timing.h>
 #include "util.h"
@@ -125,6 +125,8 @@ struct shout {
 	char *user;
 	/* is this stream private? */
 	int public;
+    /* mimetype override */
+    char *mimetype;
 
         /* TLS options */
 #ifdef HAVE_OPENSSL
@@ -202,9 +204,10 @@ int shout_create_roaraudio_request(shout_t *self);
 int shout_get_roaraudio_response(shout_t *self);
 int shout_parse_roaraudio_response(shout_t *self);
 
-/* containsers */
+/* containers */
 int shout_open_ogg(shout_t *self);
 int shout_open_mp3(shout_t *self);
+int shout_open_adts(shout_t *self);
 int shout_open_webm(shout_t *self);
 
 #endif /* __LIBSHOUT_SHOUT_PRIVATE_H__ */

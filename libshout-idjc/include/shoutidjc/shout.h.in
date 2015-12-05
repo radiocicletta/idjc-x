@@ -45,7 +45,9 @@
 #define SHOUT_FORMAT_OGG		(0) /* application/ogg */
 #define SHOUT_FORMAT_MP3		(1) /* audio/mpeg */
 #define SHOUT_FORMAT_WEBM		(2) /* video/webm */
-#define SHOUT_FORMAT_WEBMAUDIO		(3) /* audio/webm audio only */
+#define SHOUT_FORMAT_WEBMAUDIO	(3) /* audio/webm audio only */
+#define SHOUT_FORMAT_AAC        (10) /* audio/aac */
+#define SHOUT_FORMAT_AACPLUS    (11) /* audio/aacp */
 
 /* backward-compatibility alias */
 #define SHOUT_FORMAT_VORBIS	SHOUT_FORMAT_OGG
@@ -198,6 +200,12 @@ unsigned int shout_get_format(shout_t *self);
 /* takes a SHOUT_PROTOCOL_xxxxx argument */
 int shout_set_protocol(shout_t *self, unsigned int protocol);
 unsigned int shout_get_protocol(shout_t *self);
+
+/* Explicitly sets the mimetype. Set to NULL to revert back to the default.
+   The default value is dependent on the format setting. */
+int shout_set_mimetype(shout_t *self, const char *mimetype);
+
+const char *shout_get_mimetype(shout_t *self);
 
 /* Instructs libshout to use nonblocking I/O. Must be called before
  * shout_open (no switching back and forth midstream at the moment). */

@@ -29,7 +29,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <shout/shout.h>
+#include <shoutidjc/shout.h>
 #include "shout_private.h"
 
 /* queue data in pages of SHOUT_BUFSIZE bytes */

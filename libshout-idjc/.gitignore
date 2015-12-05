@@ -48,8 +48,8 @@ src/common/timing/.libs/
 src/common/timing/libicetiming.la
 src/common/timing/libicetiming_la-timing.lo
 src/common/timing/libicetiming_la-timing.o
-src/format_mp3.lo
-src/format_mp3.o
+src/format_mpeg.lo
+src/format_mpeg.o
 src/format_ogg.lo
 src/format_ogg.o
 src/format_webm.lo

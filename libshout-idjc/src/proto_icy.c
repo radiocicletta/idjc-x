@@ -25,7 +25,7 @@
  #include <config.h>
 #endif
 
-#include <shout/shout.h>
+#include <shoutidjc/shout.h>
 #include "shout_private.h"
 
 int shout_create_icy_request(shout_t *self)
@@ -42,6 +42,8 @@ int shout_create_icy_request(shout_t *self)
 	do {
 		if (shout_queue_printf(self, "%s\n", self->password))
 			break;
+        if (shout_queue_printf(self, "content-type:%s\n", shout_get_mimetype(self)))
+            break;
 		if (shout_queue_printf(self, "icy-name:%s\n", shout_get_meta(self, "name")))
 			break;
 		val = shout_get_meta(self, "url");

@@ -23,7 +23,7 @@
  #include <config.h>
 #endif
 
-#include <shout/shout.h>
+#include <shoutidjc/shout.h>
 #include "shout_private.h"
 
 #ifndef XXX_HAVE_X509_check_host

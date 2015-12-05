@@ -44,6 +44,7 @@ static void *streamer_main(void *args)
     struct encoder_op_packet *packet;
     char buffer[10];
     size_t data_size;
+    unsigned connect_time = 0;
     
     char *s_conv(unsigned long value)
         {
@@ -70,7 +71,7 @@ static void *streamer_main(void *args)
                     case SHOUTERR_BUSY:
                         self->shout_status = shout_get_connected(self->shout);
 
-                        if (self->disconnect_request)
+                        if (self->disconnect_request || ++connect_time > 100)
                             self->stream_mode = SM_DISCONNECTING;
                         break;
                     case SHOUTERR_CONNECTED:
@@ -150,7 +151,7 @@ static void *streamer_main(void *args)
                         {
                         *strpbrk(packet->data, "\n") = '\0';
                         fprintf(stderr, "streamer_main: packet is metadata: %s\n", (char *)packet->data);
-                        shout_metadata_add(self->shout_meta, "song", packet->data);
+                        fprintf(stderr, "### %d\n", shout_metadata_add(self->shout_meta, "song", packet->data));
                         switch (shout_set_metadata(self->shout, self->shout_meta))
                             {
                             case SHOUTERR_SUCCESS:
@@ -158,7 +159,7 @@ static void *streamer_main(void *args)
                                 break;
                             default:
                                 fprintf(stderr, "streamer_main: failed writing metadata to stream, shout_get_error reports: %s\n", shout_get_error(self->shout));
-                                self->stream_mode = SM_DISCONNECTING;
+                                //self->stream_mode = SM_DISCONNECTING;
                             }
                         }
                     encoder_client_free_packet(packet);
@@ -177,6 +178,7 @@ static void *streamer_main(void *args)
                 self->disconnect_request = FALSE;
                 self->disconnect_pending = FALSE;
                 self->stream_mode = SM_DISCONNECTED;
+                connect_time = 0;
                 fprintf(stderr, "streamer_main: disconnection complete\n");
                 break;
             }
@@ -330,48 +332,53 @@ int streamer_connect(struct threads_info *ti, struct universal_vars *uv, void *o
         else
             fprintf(stderr, "user agent is set\n");
         }
-    if (shout_set_name(self->shout, sv->dj_name) != SHOUTERR_SUCCESS)
+    if (shout_set_meta(self->shout, SHOUT_META_NAME, sv->dj_name) != SHOUTERR_SUCCESS)
         {
         sce("stream/dj name");
         goto error;
         }
-    if (shout_set_url(self->shout, sv->listen_url) != SHOUTERR_SUCCESS)
+    if (shout_set_meta(self->shout, SHOUT_META_URL, sv->listen_url) != SHOUTERR_SUCCESS)
         {
         sce("url");
         goto error;
         }
-    if (shout_set_description(self->shout, sv->description) != SHOUTERR_SUCCESS)
+    if (shout_set_meta(self->shout, SHOUT_META_DESCRIPTION, sv->description) != SHOUTERR_SUCCESS)
         {
         sce("description");
         goto error;
         }
-    if (shout_set_genre(self->shout, sv->genre) != SHOUTERR_SUCCESS)
+    if (shout_set_meta(self->shout, SHOUT_META_GENRE, sv->genre) != SHOUTERR_SUCCESS)
         {
         sce("genre");
         goto error;
         }
-
-    if (shout_set_irc(self->shout, sv->irc) != SHOUTERR_SUCCESS)
+    if (shout_set_meta(self->shout, SHOUT_META_IRC, sv->irc) != SHOUTERR_SUCCESS)
         {
         sce("irc");
         goto error;
         }
-    if (shout_set_aim(self->shout, sv->aim) != SHOUTERR_SUCCESS)
+    if (shout_set_meta(self->shout, SHOUT_META_AIM, sv->aim) != SHOUTERR_SUCCESS)
         {
         sce("aim");
         goto error;
         }
-    if (shout_set_icq(self->shout, sv->icq) != SHOUTERR_SUCCESS)
+    if (shout_set_meta(self->shout, SHOUT_META_ICQ, sv->icq) != SHOUTERR_SUCCESS)
         {
         sce("icq");
         goto error;
         }
-
     if (shout_set_public(self->shout, !strcmp(sv->make_public, "True")) != SHOUTERR_SUCCESS)
         {
         sce("make public");
         goto error;
         }
+    #if SHOUT_TLS
+    if (shout_set_tls(self->shout, SHOUT_TLS_DISABLED) != SHOUTERR_SUCCESS)
+        {
+        sce("tls");
+        goto error;
+        }
+    #endif
         
     snprintf(channels,   sizeof channels  , "%d",  self->encoder_op->encoder->n_channels);
     {
@@ -413,6 +420,8 @@ int streamer_connect(struct threads_info *ti, struct universal_vars *uv, void *o
             pthread_mutex_unlock(&self->mode_mutex);
             fprintf(stderr, "streamer_connect: established connection to the server\n");
             return SUCCEEDED;
+        default:
+            fprintf(stderr, "streamer_connect: unhandled response: %ld\n", self->shout_status);
         }
     error:
     fprintf(stderr, "streamer_connect: shout_get_error reports: %s\n", shout_get_error(self->shout));

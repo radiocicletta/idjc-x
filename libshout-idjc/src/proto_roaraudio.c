@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <shout/shout.h>
+#include <shoutidjc/shout.h>
 #include "shout_private.h"
 
 typedef enum {

@@ -34,7 +34,7 @@ then
 else
   if test "$PKGCONFIG" != "no"
   then
-    AC_MSG_NOTICE([$PKGCONFIG couldn't find libshout. Try adjusting PKG_CONFIG_PATH.])
+    AC_MSG_NOTICE([$PKGCONFIG could not find libshout. Try adjusting PKG_CONFIG_PATH.])
   fi
   # pkg-config unavailable, try shout-config
   AC_PATH_PROG([SHOUTCONFIG], [shout-config], [no])
@@ -56,12 +56,12 @@ then
   CPPFLAGS="$CPPFLAGS $SHOUT_CPPFLAGS"
   CFLAGS="$CFLAGS $SHOUT_CFLAGS"
   LIBS="$SHOUT_LIBS $LIBS"
-  AC_CHECK_HEADERS([shout/shout.h], [
+  AC_CHECK_HEADERS([shoutidjc/shout.h], [
     AC_CHECK_FUNC([shout_new], [
       ifelse([$1], , :, [$1])
       xt_have_shout="yes"
     ])
-    AC_EGREP_CPP([yes], [#include <shout/shout.h>
+    AC_EGREP_CPP([yes], [#include <shoutidjc/shout.h>
 #if SHOUT_THREADSAFE
 yes
 #endif

@@ -30,7 +30,7 @@
 #include <string.h>
 #include <strings.h>
 
-#include <shout/shout.h>
+#include <shoutidjc/shout.h>
 #include "shout_private.h"
 #include "common/httpp/httpp.h"
 
@@ -69,23 +69,8 @@ int shout_create_http_request(shout_t *self)
 	const char *key, *val;
 	const char *mimetype;
 
-	switch (self->format) {
-	case SHOUT_FORMAT_OGG:
-		mimetype = "application/ogg";
-		break;
-	case SHOUT_FORMAT_MP3:
-		mimetype = "audio/mpeg";
-		break;
-	case SHOUT_FORMAT_WEBM:
-		mimetype = "video/webm";
-		break;
-	case SHOUT_FORMAT_WEBMAUDIO:
-		mimetype = "audio/webm";
-		break;
-	default:
-		return SHOUTERR_INSANE;
-		break;
-	}
+    if (!(mimetype = shout_get_mimetype(self)))
+        return SHOUTERR_INSANE;
 
 	/* this is lazy code that relies on the only error from queue_* being
 	 * SHOUTERR_MALLOC */

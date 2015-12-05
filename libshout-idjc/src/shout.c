@@ -32,7 +32,7 @@
 #include <strings.h>
 #include <errno.h>
 
-#include <shout/shout.h>
+#include <shoutidjc/shout.h>
 #include <common/net/sock.h>
 #include "common/timing/timing.h"
 #include "common/httpp/httpp.h"
@@ -850,7 +850,9 @@ int shout_set_format(shout_t *self, unsigned int format)
 	if (format != SHOUT_FORMAT_OGG
          && format != SHOUT_FORMAT_MP3
 	 && format != SHOUT_FORMAT_WEBM
-	 && format != SHOUT_FORMAT_WEBMAUDIO)
+	 && format != SHOUT_FORMAT_WEBMAUDIO
+     && format != SHOUT_FORMAT_AAC
+     && format != SHOUT_FORMAT_AACPLUS)
 		return self->error = SHOUTERR_UNSUPPORTED;
 
 	self->format = format;
@@ -864,6 +866,61 @@ unsigned int shout_get_format(shout_t* self)
 		return 0;
 
 	return self->format;
+}
+
+int shout_set_mimetype(shout_t *self, const char *mimetype)
+{
+    if (!self)
+        return self->error = SHOUTERR_INSANE;
+
+    if (self->state != SHOUT_STATE_UNCONNECTED)
+		return self->error = SHOUTERR_CONNECTED;
+
+    if (self->mimetype)
+        free(self->mimetype);
+        
+    if (!mimetype)
+        self->mimetype = NULL;
+    else
+        if (! (self->mimetype = _shout_util_strdup (mimetype)))
+            return self->error = SHOUTERR_MALLOC;
+        
+    return self->error = SHOUTERR_SUCCESS;
+}
+
+const char *shout_get_mimetype(shout_t *self)
+{        
+    const char *mimetype;
+    
+    if (!self)
+        return NULL;
+        
+    if (self->mimetype)
+        return self->mimetype;
+        
+	switch (self->format) {
+	case SHOUT_FORMAT_OGG:
+		mimetype = "application/ogg";
+		break;
+	case SHOUT_FORMAT_MP3:
+		mimetype = "audio/mpeg";
+		break;
+	case SHOUT_FORMAT_WEBM:
+		mimetype = "video/webm";
+		break;
+	case SHOUT_FORMAT_WEBMAUDIO:
+		mimetype = "audio/webm";
+		break;
+    case SHOUT_FORMAT_AAC:
+        mimetype = "audio/aac";
+        break;
+    case SHOUT_FORMAT_AACPLUS:
+        mimetype = "audio/aacp";
+        break;
+	default:
+		mimetype = NULL;
+	}
+    return mimetype;
 }
 
 int shout_set_protocol(shout_t *self, unsigned int protocol)
@@ -1265,6 +1322,11 @@ retry:
 			if ((rc = self->error = shout_open_webm(self)) != SHOUTERR_SUCCESS)
 				goto failure;
 			break;
+        case SHOUT_FORMAT_AAC:
+        case SHOUT_FORMAT_AACPLUS:
+            if ((rc = self->error = shout_open_adts(self)) != SHOUTERR_SUCCESS)
+                goto failure;
+            break;
 		default:
                         rc = SHOUTERR_INSANE;
                         goto failure;
