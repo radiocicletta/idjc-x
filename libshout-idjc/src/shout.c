@@ -1228,7 +1228,12 @@ retry:
 				}
 				self->state = SHOUT_STATE_TLS_PENDING;
 				goto retry;
-			}
+			} else {
+                if (self->tls_mode == SHOUT_TLS_AUTO_NO_PLAIN)
+                    return SHOUTERR_NOTLS;
+                else
+                    self->tls_mode = SHOUT_TLS_DISABLED;
+            }
 		} else if (self->tls_mode == SHOUT_TLS_RFC2818 || self->upgrade_to_tls) {
 			if (!self->tls) {
 				self->tls = shout_tls_new(self, self->socket);

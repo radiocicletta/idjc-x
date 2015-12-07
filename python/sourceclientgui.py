@@ -55,7 +55,7 @@ from .prelims import ProfileManager
 
 _ = gettext.translation(FGlobs.package_name, FGlobs.localedir,
                                                         fallback=True).gettext
-
+N_ = lambda n: n
 
 pm = ProfileManager()
 
@@ -64,11 +64,14 @@ ENCODER_START = 1; ENCODER_STOP = 0
 
 LISTFORMAT = (("check_stats", bool), ("server_type", int), ("host", str),
                             ("port", int), ("mount", str), ("listeners", int),
-                            ("login", str), ("password", str))
+                            ("login", str), ("password", str), ("tls", int))
                             
 ListLine = namedtuple("ListLine", " ".join([x[0] for x in LISTFORMAT]))
 
-BLANK_LISTLINE = ListLine(1, 0, "", 8000, "", -1, "", "")
+BLANK_LISTLINE = ListLine(1, 0, "", 8000, "", -1, "", "", 1)
+
+tls_options = (N_('Disabled'), N_('Auto'), N_('Auto, no plaintext'),
+                N_('RFC2818'), N_('RFC2817'))
 
 lame_enabled = False
 
@@ -147,6 +150,7 @@ class ConnectionDialog(gtk.Dialog):
         #
         cap_master = True
         preselect = 0
+        tls = 1
         data = BLANK_LISTLINE
         try:
             first = ListLine._make(model[0])
@@ -160,6 +164,7 @@ class ConnectionDialog(gtk.Dialog):
                 index = model.get_path(iter)[0]
                 data = ListLine._make(model[index])
                 preselect = data.server_type
+                tls = data.tls
                 if index and first.server_type < 2:
                     # Editing non first line where a master server is configured.
                     cap_master = False
@@ -191,6 +196,15 @@ class ConnectionDialog(gtk.Dialog):
         self.loginname = DefaultEntry("source")
         self.password = DefaultEntry("changeme")
         self.password.set_visibility(False)
+
+        tls_liststore = gtk.ListStore(str, str)
+        for each in tls_options:
+            tls_liststore.append((each, _(each)))
+        self.tls_security = gtk.ComboBox(tls_liststore)
+        tls_renderer = gtk.CellRendererText()
+        self.tls_security.pack_start(tls_renderer, True)
+        self.tls_security.set_attributes(tls_renderer, text=1)
+
         self.stats = gtk.CheckButton(
                         _('This server is to be scanned for audience figures'))
         
@@ -206,9 +220,11 @@ class ConnectionDialog(gtk.Dialog):
         sg = gtk.SizeGroup(gtk.SIZE_GROUP_HORIZONTAL)
         for text, widget in zip(
                 (_('Server type'), _('Hostname'), _('Port number'), 
-                _('Mount point'), _('Login name'), _('Password')), 
-                (self.servertype, self.hostname, self.portnumber, 
-                self.mountpoint, self.loginname, self.password)):
+                _('Mount point'), _('Login name'), _('Password'),
+                _('TLS')), 
+                (self.servertype, self.hostname, self.portnumber,
+                 self.mountpoint, self.loginname, self.password,
+                 self.tls_security)):
             row = gtk.HBox()
             row.set_spacing(3)
             label = gtk.Label(text)
@@ -235,6 +251,7 @@ class ConnectionDialog(gtk.Dialog):
         self.mountpoint.set_text(data.mount)
         self.loginname.set_text(data.login)
         self.password.set_text(data.password)
+        self.tls_security.set_active(tls)
         self.stats.set_active(data.check_stats)
         
     @staticmethod
@@ -249,13 +266,14 @@ class ConnectionDialog(gtk.Dialog):
                                                                         "/"))
 
             data = ListLine(check_stats=self.stats.get_active(),
-                                 server_type=self.servertype.get_active(),
-                                 host=self.hostname.get_text(),
-                                 port=int(self.portnumber.get_value()),
-                                 mount=self.mountpoint.get_text(),
-                                 listeners=-1,
-                                 login=self.loginname.get_text(),
-                                 password=self.password.get_text())
+                    server_type=self.servertype.get_active(),
+                    host=self.hostname.get_text(),
+                    port=int(self.portnumber.get_value()),
+                    mount=self.mountpoint.get_text(),
+                    listeners=-1,
+                    login=self.loginname.get_text(),
+                    password=self.password.get_text(),
+                    tls=self.tls_security.get_active())
 
             if self.servertype.get_active() < 2:
                 if iter:
@@ -1304,6 +1322,7 @@ class StreamTab(Tab):
                     "irc=" + proc(self.irc_entry),
                     "aim=" + proc(self.aim_entry),
                     "icq=" + proc(self.icq_entry),
+                    "tls=" + tls_options[d["tls"]],
                     "make_public=" + str(bool(self.make_public.get_active())),
                     "command=server_connect\n"))
             self.send(self.connection_string)

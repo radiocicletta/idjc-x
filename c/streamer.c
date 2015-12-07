@@ -151,7 +151,7 @@ static void *streamer_main(void *args)
                         {
                         *strpbrk(packet->data, "\n") = '\0';
                         fprintf(stderr, "streamer_main: packet is metadata: %s\n", (char *)packet->data);
-                        fprintf(stderr, "### %d\n", shout_metadata_add(self->shout_meta, "song", packet->data));
+                        shout_metadata_add(self->shout_meta, "song", packet->data);
                         switch (shout_set_metadata(self->shout, self->shout_meta))
                             {
                             case SHOUTERR_SUCCESS:
@@ -159,7 +159,7 @@ static void *streamer_main(void *args)
                                 break;
                             default:
                                 fprintf(stderr, "streamer_main: failed writing metadata to stream, shout_get_error reports: %s\n", shout_get_error(self->shout));
-                                //self->stream_mode = SM_DISCONNECTING;
+                                self->stream_mode = SM_DISCONNECTING;
                             }
                         }
                     encoder_client_free_packet(packet);
@@ -205,7 +205,7 @@ int streamer_connect(struct threads_info *ti, struct universal_vars *uv, void *o
     {
     struct streamer_vars *sv = other;
     struct streamer *self = ti->streamer[uv->tab];
-    int protocol, data_format = -1;
+    int protocol, data_format = -1, tls;
     char channels[2];
     char bitrate[4];
     char samplerate[6];
@@ -373,11 +373,27 @@ int streamer_connect(struct threads_info *ti, struct universal_vars *uv, void *o
         goto error;
         }
     #if SHOUT_TLS
-    if (shout_set_tls(self->shout, SHOUT_TLS_DISABLED) != SHOUTERR_SUCCESS)
+    if (!strcmp("Disabled", sv->tls))
+        tls = SHOUT_TLS_DISABLED;
+    else if (!strcmp("Auto", sv->tls))
+        tls = SHOUT_TLS_AUTO;
+    else if (!strcmp("Auto, no plaintext", sv->tls))
+        tls = SHOUT_TLS_AUTO_NO_PLAIN;
+    else if (!strcmp("RFC2818", sv->tls))
+        tls = SHOUT_TLS_RFC2818;
+    else if (!strcmp("RFC2817", sv->tls))
+        tls = SHOUT_TLS_RFC2817;
+    else
+        {
+        sce("tls option");
+        goto error;
+        }
+    if (shout_set_tls(self->shout, tls) != SHOUTERR_SUCCESS)
         {
         sce("tls");
         goto error;
         }
+    fprintf(stderr, "### tls option %d\n", tls);
     #endif
         
     snprintf(channels,   sizeof channels  , "%d",  self->encoder_op->encoder->n_channels);
@@ -420,8 +436,6 @@ int streamer_connect(struct threads_info *ti, struct universal_vars *uv, void *o
             pthread_mutex_unlock(&self->mode_mutex);
             fprintf(stderr, "streamer_connect: established connection to the server\n");
             return SUCCEEDED;
-        default:
-            fprintf(stderr, "streamer_connect: unhandled response: %ld\n", self->shout_status);
         }
     error:
     fprintf(stderr, "streamer_connect: shout_get_error reports: %s\n", shout_get_error(self->shout));

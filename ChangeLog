@@ -1,5 +1,9 @@
 * Changes in version 0.8.16 *
 
+Added TLS server login support.
+
+Libshout fork (libshout-idjc) upgraded to upstream version 2.4.1
+
 Fixed LAME tag ReplayGain metadata collection for newer versions of Mutagen.
 
 Updated avcodec encoder and decoder to silence deprecation warnings.   

@@ -39,6 +39,7 @@ struct streamer_vars
     char *irc;
     char *aim;
     char *icq;
+    char *tls;
     char *make_public;
     };
 
