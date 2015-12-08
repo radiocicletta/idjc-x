@@ -64,11 +64,13 @@ ENCODER_START = 1; ENCODER_STOP = 0
 
 LISTFORMAT = (("check_stats", bool), ("server_type", int), ("host", str),
                             ("port", int), ("mount", str), ("listeners", int),
-                            ("login", str), ("password", str), ("tls", int))
+                            ("login", str), ("password", str), ("tls", int),
+                            ("ca_file", str), ("ca_directory", str),
+                            ("client_cert", str))
                             
 ListLine = namedtuple("ListLine", " ".join([x[0] for x in LISTFORMAT]))
 
-BLANK_LISTLINE = ListLine(1, 0, "", 8000, "", -1, "", "", 1)
+BLANK_LISTLINE = ListLine(1, 0, "", 8000, "", -1, "", "", 1, "", "", "")
 
 tls_options = (N_('Disabled'), N_('Auto'), N_('Auto, no plaintext'),
                 N_('RFC2818'), N_('RFC2817'))
@@ -205,6 +207,46 @@ class ConnectionDialog(gtk.Dialog):
         self.tls_security.pack_start(tls_renderer, True)
         self.tls_security.set_attributes(tls_renderer, text=1)
 
+        file_dialog = gtk.FileChooserDialog("", None,
+                gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER, (
+                gtk.STOCK_CLEAR, gtk.RESPONSE_NONE,
+                gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
+                gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+        # TC: Dialog title bar text.
+        file_dialog.set_title(_('Certificate Authority Directory'
+                                                        ) + pm.title_extra)
+        file_dialog.set_do_overwrite_confirmation(True)
+        self.ca_directory = FolderChooserButton(file_dialog)
+        file_dialog.connect("response", self._on_file_response, self.ca_directory)
+
+        file_dialog = gtk.FileChooserDialog("", None,
+                gtk.FILE_CHOOSER_ACTION_OPEN, (
+                gtk.STOCK_CLEAR, gtk.RESPONSE_NONE,
+                gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
+                gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+        # TC: Dialog title bar text.
+        file_dialog.set_title(_('Certificate Authority File'
+                                                        ) + pm.title_extra)
+        file_dialog.set_do_overwrite_confirmation(True)
+        self.ca_file = gtk.FileChooserButton(file_dialog)
+        file_dialog.connect("response", self._on_file_response, self.ca_file)
+
+        file_dialog = gtk.FileChooserDialog("", None,
+                gtk.FILE_CHOOSER_ACTION_OPEN, (
+                gtk.STOCK_CLEAR, gtk.RESPONSE_NONE,
+                gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
+                gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+        # TC: Dialog title bar text.
+        file_dialog.set_title(_('TLS Client Certificate'
+                                                        ) + pm.title_extra)
+        file_dialog.set_do_overwrite_confirmation(True)
+        self.client_cert = gtk.FileChooserButton(file_dialog)
+        file_dialog.connect("response", self._on_file_response, self.client_cert)
+
+        if not FGlobs.shouttlsenabled:
+            for each in (self.tls_security, self.ca_directory, self.ca_file, self.client_cert):
+                each.set_sensitive(False)
+
         self.stats = gtk.CheckButton(
                         _('This server is to be scanned for audience figures'))
         
@@ -221,10 +263,11 @@ class ConnectionDialog(gtk.Dialog):
         for text, widget in zip(
                 (_('Server type'), _('Hostname'), _('Port number'), 
                 _('Mount point'), _('Login name'), _('Password'),
-                _('TLS')), 
+                _('TLS'), _('CA directory'), _('CA file'), _('Client cert')), 
                 (self.servertype, self.hostname, self.portnumber,
                  self.mountpoint, self.loginname, self.password,
-                 self.tls_security)):
+                 self.tls_security, self.ca_directory, self.ca_file,
+                 self.client_cert)):
             row = gtk.HBox()
             row.set_spacing(3)
             label = gtk.Label(text)
@@ -252,6 +295,16 @@ class ConnectionDialog(gtk.Dialog):
         self.loginname.set_text(data.login)
         self.password.set_text(data.password)
         self.tls_security.set_active(tls)
+        self.ca_directory.set_current_folder(data.ca_directory)
+        
+        if data.ca_file:
+            self.ca_file.set_filename(data.ca_file)
+        else:
+            self.ca_file.unselect_all()
+        if data.client_cert:
+            self.client_cert.set_filename(data.client_cert)
+        else:
+            self.client_cert.unselect_all()
         self.stats.set_active(data.check_stats)
         
     @staticmethod
@@ -273,7 +326,11 @@ class ConnectionDialog(gtk.Dialog):
                     listeners=-1,
                     login=self.loginname.get_text(),
                     password=self.password.get_text(),
-                    tls=self.tls_security.get_active())
+                    tls=self.tls_security.get_active(),
+                    ca_file=self.ca_file.get_filename() or "",
+                    ca_directory=self.ca_directory.get_current_folder(),
+                    client_cert=self.client_cert.get_filename() or ""
+                    )
 
             if self.servertype.get_active() < 2:
                 if iter:
@@ -297,6 +354,9 @@ class ConnectionDialog(gtk.Dialog):
         self.mountpoint.set_sensitive(sens)
         self.loginname.set_sensitive(sens)
 
+    def _on_file_response(self, dialog, response_id, chooser):
+        if response_id == gtk.RESPONSE_NONE:
+            chooser.unselect_all()
 
 
 class StatsThread(Thread):
@@ -1323,6 +1383,9 @@ class StreamTab(Tab):
                     "aim=" + proc(self.aim_entry),
                     "icq=" + proc(self.icq_entry),
                     "tls=" + tls_options[d["tls"]],
+                    "ca_directory=" + d["ca_directory"],
+                    "ca_file=" + d["ca_file"],
+                    "client_cert=" + d["client_cert"],
                     "make_public=" + str(bool(self.make_public.get_active())),
                     "command=server_connect\n"))
             self.send(self.connection_string)
@@ -2561,6 +2624,7 @@ class SourceClientGui(dbus.service.Object):
                         f.write("\n")
         except Exception as e:
             print "error attempting to write file: serverdata", e
+            raise
 
     def load_previous_session(self):
         try:

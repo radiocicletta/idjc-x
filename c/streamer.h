@@ -40,6 +40,9 @@ struct streamer_vars
     char *aim;
     char *icq;
     char *tls;
+    char *ca_dir;
+    char *ca_file;
+    char *client_cert;
     char *make_public;
     };
 

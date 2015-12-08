@@ -182,6 +182,9 @@ static struct kvpdict kvpdict[] = {
     { "aim",              &sv.aim, NULL },
     { "icq",              &sv.icq, NULL },
     { "tls",              &sv.tls, NULL },
+    { "ca_directory",     &sv.ca_dir, NULL },
+    { "ca_file",          &sv.ca_file, NULL },
+    { "client_cert",      &sv.client_cert, NULL },
     { "make_public",      &sv.make_public, NULL },
     { "record_source",    &rv.record_source, NULL },        /* recorder_vars */
     { "record_filename",  &rv.record_filename, NULL },

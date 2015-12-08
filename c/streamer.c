@@ -71,7 +71,7 @@ static void *streamer_main(void *args)
                     case SHOUTERR_BUSY:
                         self->shout_status = shout_get_connected(self->shout);
 
-                        if (self->disconnect_request || ++connect_time > 100)
+                        if (self->disconnect_request || ++connect_time > 120)
                             self->stream_mode = SM_DISCONNECTING;
                         break;
                     case SHOUTERR_CONNECTED:
@@ -388,12 +388,30 @@ int streamer_connect(struct threads_info *ti, struct universal_vars *uv, void *o
         sce("tls option");
         goto error;
         }
+    fprintf(stderr, "tls:%d:\n", tls);
     if (shout_set_tls(self->shout, tls) != SHOUTERR_SUCCESS)
         {
         sce("tls");
         goto error;
         }
-    fprintf(stderr, "### tls option %d\n", tls);
+    fprintf(stderr, "ca directory:%s:\n", sv->ca_dir);
+    if (sv->ca_dir[0] && shout_set_ca_directory(self->shout, sv->ca_dir) != SHOUTERR_SUCCESS)
+        {
+        sce("ca directory");
+        goto error;
+        }
+    fprintf(stderr, "ca file:%s:\n", sv->ca_file);
+    if (sv->ca_file[0] && shout_set_ca_file(self->shout, sv->ca_file) != SHOUTERR_SUCCESS)
+        {
+        sce("ca file");
+        goto error;
+        }
+    fprintf(stderr, "client certificate:%s:\n", sv->client_cert);
+    if (sv->client_cert[0] && shout_set_client_certificate(self->shout, sv->client_cert) != SHOUTERR_SUCCESS)
+        {
+        sce("client certificate");
+        goto error;
+        }
     #endif
         
     snprintf(channels,   sizeof channels  , "%d",  self->encoder_op->encoder->n_channels);

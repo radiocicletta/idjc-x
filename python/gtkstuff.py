@@ -643,7 +643,7 @@ class FolderChooserButton(gtk.Button):
         self._icon = gtk.image_new_from_stock(gtk.STOCK_DIRECTORY, gtk.ICON_SIZE_MENU)
         hbox.pack_start(self._icon, False)
         # TC: FolderChooserButton text for null -- no directory is set.
-        self._label = gtk.Label(_("(none)"))
+        self._label = gtk.Label(_("(None)"))
         self._label.set_alignment(0.0, 0.5)
         self._label.set_ellipsize(pango.ELLIPSIZE_END)
         hbox.pack_start(self._label)
@@ -679,10 +679,13 @@ class FolderChooserButton(gtk.Button):
                 self._dialog.set_current_folder(new_folder)
                 self.emit("current-folder-changed", new_folder)
 
+    def unselect_all(self):
+        self.set_current_folder("")
+
     def _update_visual(self):
         folder_name = self.get_current_folder()
         if not folder_name:
-            folder_name = _("(none)")
+            folder_name = _("(None)")
         else:
             folder_name = os.path.split(folder_name)[1]
         self._label.set_text(folder_name)
