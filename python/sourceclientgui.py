@@ -152,7 +152,7 @@ class ConnectionDialog(gtk.Dialog):
         #
         cap_master = True
         preselect = 0
-        tls = 1
+        tls = 0
         data = BLANK_LISTLINE
         try:
             first = ListLine._make(model[0])
@@ -212,6 +212,9 @@ class ConnectionDialog(gtk.Dialog):
                 gtk.STOCK_CLEAR, gtk.RESPONSE_NONE,
                 gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
                 gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+        file_dialog.set_modal(True)
+        file_dialog.set_parent(self)
+        file_dialog.set_transient_for(self)
         # TC: Dialog title bar text.
         file_dialog.set_title(_('Certificate Authority Directory'
                                                         ) + pm.title_extra)
@@ -224,6 +227,9 @@ class ConnectionDialog(gtk.Dialog):
                 gtk.STOCK_CLEAR, gtk.RESPONSE_NONE,
                 gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
                 gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+        file_dialog.set_modal(True)
+        file_dialog.set_parent(self)
+        file_dialog.set_transient_for(self)
         # TC: Dialog title bar text.
         file_dialog.set_title(_('Certificate Authority File'
                                                         ) + pm.title_extra)
@@ -236,6 +242,9 @@ class ConnectionDialog(gtk.Dialog):
                 gtk.STOCK_CLEAR, gtk.RESPONSE_NONE,
                 gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
                 gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+        file_dialog.set_modal(True)
+        file_dialog.set_parent(self)
+        file_dialog.set_transient_for(self)
         # TC: Dialog title bar text.
         file_dialog.set_title(_('TLS Client Certificate'
                                                         ) + pm.title_extra)
@@ -376,9 +385,9 @@ class StatsThread(Thread):
 
 
     def run(self):
-        class NoStats(ValueError):
-            pass
         class BadXML(ValueError):
+            pass
+        class GoodXML(Exception):
             pass
         
         hostport = "%s:%d" % (self.host, self.port)
@@ -393,33 +402,28 @@ class StatsThread(Thread):
         auth_handler.add_password(realm, hostport, self.login, self.passwd)
         opener = urllib2.build_opener(auth_handler)
         opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-        
+
         try:
+            # Logged in method works with Shoutcast 1 and Icecast 2.
             try:
                 with closing(opener.open(stats_url)) as h:
                     data = h.read()
-            except Exception:
-                raise NoStats
-
-            try:
-                dom = mdom.parseString(data)
-            except Exception:
+            except IOError:
                 if self.is_shoutcast:
-                    # SC2 servers will return an HTML page, not XML.
-                    try:
-                        # No need to log in. :)
-                        with closing(urllib2.urlopen("http://%s/statistics" %
-                                                                hostport)) as h:
-                            data = h.read()
-                        dom = mdom.parseString(data)
-                    except Exception:
-                        raise NoStats
-
+                    # Shoutcast 2 servers don't require a login.
+                    with closing(urllib2.urlopen("http://%s/statistics" %
+                                                            hostport)) as h:
+                        data = h.read()
                 else:
-                    raise NoStats
-                    
-        except NoStats:
-            print "failed to obtain server stats for", self.url
+                    raise
+        except IOError:
+            print "failed to obtain server stats data for", self.url
+            return
+
+        try:
+            dom = mdom.parseString(data)
+        except Exception as e:
+            print "server stats data is not valid xml: %s" % e
             return
 
         try:
@@ -435,29 +439,31 @@ class StatsThread(Thread):
                                                 0].firstChild.wholeText.strip())
                 except:
                     raise BadXML
+                else:
+                    raise GoodXML
             else:
+                
                 if dom.documentElement.tagName == u'icestats':
                     icestats = dom.documentElement
                 else:
                     raise BadXML
-                sources = icestats.getElementsByTagName('source')
-                for source in sources:
-                    mount = source.getAttribute('mount')
-                    if stats_url.endswith(mount):
-                        listeners = source.getElementsByTagName('Listeners')
-                        try:
-                            self.listeners = int(
-                                    listeners[0].firstChild.wholeText.strip())
-                            break
-                        except:
-                            raise BadXML
+                for child in icestats.childNodes:
+                    if child.nodeName == u'source':
+                        if child.getAttribute('mount') == self.mount:
+                            for child in child.childNodes:
+                                if child.nodeName.lower() == u'listeners':
+                                    self.listeners = int(
+                                            child.firstChild.wholeText.strip())
+                                    raise GoodXML
                 else:
-                    raise BadXML
-        except BadXML:
-            print "Unexpected data in server stats XML file"
-        dom.unlink()
-        print "server", self.url, "has", self.listeners, "listeners"
+                    raise BadXML                
 
+        except GoodXML:
+            print "server", self.url, "has", self.listeners, "listeners"
+        except BadXML:
+            print "unexpected to parse server stats XML file"
+        finally:
+            dom.unlink()
 
 
 class ActionTimer(object):
