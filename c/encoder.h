@@ -30,7 +30,7 @@
 enum jack_dataflow { JD_OFF, JD_ON, JD_FLUSH };
 enum performance_warning { PW_OK, PW_AUDIO_DATA_DROPPED };
 enum encoder_source {ENCODER_SOURCE_UNHANDLED, ENCODER_SOURCE_JACK, ENCODER_SOURCE_FILE};
-enum encoder_family {ENCODER_FAMILY_UNHANDLED, ENCODER_FAMILY_MPEG, ENCODER_FAMILY_OGG};
+enum encoder_family {ENCODER_FAMILY_UNHANDLED, ENCODER_FAMILY_MPEG, ENCODER_FAMILY_OGG, ENCODER_FAMILY_WEBM};
 enum encoder_codec {ENCODER_CODEC_UNHANDLED, ENCODER_CODEC_MP3, ENCODER_CODEC_VORBIS, ENCODER_CODEC_FLAC, ENCODER_CODEC_SPEEX, ENCODER_CODEC_OPUS, ENCODER_CODEC_MP2, ENCODER_CODEC_AAC, ENCODER_CODEC_AACPLUSV2};
 enum encoder_state { ES_STOPPED, ES_STARTING, ES_RUNNING, ES_STOPPING, ES_PAUSED };
 enum packet_flags {     PF_UNSET    = 0x00,
@@ -42,7 +42,8 @@ enum packet_flags {     PF_UNSET    = 0x00,
                                 PF_HEADER   = 0x20,
                                 PF_MP2      = 0x40,
                                 PF_AAC      = 0x80,
-                                PF_AACP2    = 0x100 };
+                                PF_AACP2    = 0x100,
+                                PF_WEBM     = 0x200 };
 
 struct encoder_vars
     {

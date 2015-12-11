@@ -34,6 +34,7 @@
 #include "live_oggflac_encoder.h"
 #include "live_oggspeex_encoder.h"
 #include "live_oggopus_encoder.h"
+#include "live_webm_encoder.h"
 #include "avcodec_encoder.h"
 #include "bsdcompat.h"
 #include "main.h"
@@ -88,6 +89,9 @@ static struct encoder_data_format encoder_lex_format(char *source, char *family,
         
     if (!strcmp(family, "ogg"))
         df.family = ENCODER_FAMILY_OGG;
+
+    if (!strcmp(family, "webm"))
+        df.family = ENCODER_FAMILY_WEBM;
         
     if (!strcmp(codec, "mp3"))
         df.codec = ENCODER_CODEC_MP3;
@@ -567,6 +571,23 @@ int encoder_start(struct threads_info *ti, struct universal_vars *uv, void *othe
     switch (self->data_format.source) {
         case ENCODER_SOURCE_JACK:
             switch (self->data_format.family) {
+
+#if defined(HAVE_AVCODEC) && defined(HAVE_AVFORMAT)
+                case ENCODER_FAMILY_WEBM:
+                    switch (self->data_format.codec) {
+                        case ENCODER_CODEC_VORBIS:
+                            encoder_init = live_webmvorbis_encoder_init;
+                            break;
+                        case ENCODER_CODEC_OPUS:
+                            encoder_init = live_webmopus_encoder_init;
+                            break;
+                        case ENCODER_CODEC_UNHANDLED:
+                        default:
+                            goto failed;
+                    }
+                    break;
+#endif
+                
                 case ENCODER_FAMILY_MPEG:
                     switch (self->data_format.codec) {
                         case ENCODER_CODEC_MP3:
@@ -588,6 +609,7 @@ int encoder_start(struct threads_info *ti, struct universal_vars *uv, void *othe
                             goto failed;
                         }
                     break;
+
                 case ENCODER_FAMILY_OGG:
                     switch (self->data_format.codec) {
                         case ENCODER_CODEC_VORBIS:
@@ -619,6 +641,7 @@ int encoder_start(struct threads_info *ti, struct universal_vars *uv, void *othe
                             goto failed;
                     }
                     break;
+                    
                 case ENCODER_FAMILY_UNHANDLED:
                 default:
                     break;

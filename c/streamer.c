@@ -235,6 +235,7 @@ int streamer_connect(struct threads_info *ti, struct universal_vars *uv, void *o
             case ENCODER_FAMILY_OGG:
                 data_format = SHOUT_FORMAT_OGG;
                 break;
+
             case ENCODER_FAMILY_MPEG:
                 switch (df->codec) {
                     case ENCODER_CODEC_MP3:
@@ -250,8 +251,20 @@ int streamer_connect(struct threads_info *ti, struct universal_vars *uv, void *o
                     case ENCODER_CODEC_UNHANDLED:
                     default:
                         failed = TRUE;
-                    }
-                    break;
+                }
+                break;
+                
+            case ENCODER_FAMILY_WEBM:
+                switch (df->codec) {
+                    case ENCODER_CODEC_VORBIS:
+                    case ENCODER_CODEC_OPUS:
+                        data_format = SHOUT_FORMAT_WEBMAUDIO;
+                        break;
+                    default:
+                        failed = TRUE;
+                }
+                break;
+                
             case ENCODER_FAMILY_UNHANDLED:
                 failed = TRUE;
             }
