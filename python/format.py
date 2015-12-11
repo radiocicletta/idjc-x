@@ -1088,6 +1088,71 @@ class FormatCodecMPEG(FormatDropdown):
             tooltip)
 
 
+class FormatCodecWebMVorbisBitRate(FormatSpin):
+    """Vorbis bit rate selection."""
+    
+    def __init__(self, prev_object):
+        dict_ = format_collate(prev_object)
+        channels = 1 if dict_["mode"] == "mono" else 2
+        er = EncoderRange(VorbisTestEncoder())
+        sr = int(dict_["samplerate"])
+        bounds = er.bitrate_bounds(channels, sr)
+        FormatSpin.__init__(self, prev_object, _('Bitrate'), "bitrate",
+            (128000,) + bounds + (1, 10), 0, " bps", "FormatMetadataUTF8",
+            er.good_bitrates(channels, sr))
+
+
+class FormatCodecWebMVorbisSampleRate(FormatSpin):
+    """Vorbis sample rate selection."""
+    
+    def __init__(self, prev_object):
+        channels = 1 if format_collate(prev_object)["mode"] == "mono" else 2
+        er = EncoderRange(VorbisTestEncoder())
+        bounds = er.bounds(channels)["samplerate_bounds"]
+        FormatSpin.__init__(self, prev_object, _('Samplerate'), "samplerate",
+            (44100,) + bounds + (1, 10), 0, " Hz", "FormatCodecWebMVorbisBitRate",
+            er.good_samplerates(channels))
+
+
+class FormatCodecWebMVorbisMode(FormatDropdown):
+    """Vorbis mode selection."""
+    
+    def __init__(self, prev_object):
+        FormatDropdown.__init__(self, prev_object, _('Mode'), "mode", (
+            dict(display_text=_("Mono"), value="mono", chain="FormatCodecWebMVorbisSampleRate"),
+            dict(display_text=_("Stereo"), value="stereo", default=True, chain="FormatCodecWebMVorbisSampleRate")), 0)
+
+
+class FormatCodecWebMOpusBitRate(FormatSpin):
+    """Opus bit rate selection for stereo."""
+    
+    def __init__(self, prev_object):
+        dict_ = format_collate(prev_object)
+        channels = 1 if dict_["mode"] == "mono" else 2
+        bounds = (6 * channels, 256 * channels)
+        FormatSpin.__init__(self, prev_object, _('Bitrate'), "bitrate",
+            ((64, 96)[channels - 1],) + bounds + (1, 10), 0, " kbps", "FormatMetadataUTF8",
+            (256 * channels, 128 * channels, 64 * channels, 48 * channels, 32 * channels, 16 * channels))
+
+
+class FormatCodecWebMOpusMode(FormatDropdown):
+    """Opus mode selection."""
+    
+    def __init__(self, prev_object):
+        FormatDropdown.__init__(self, prev_object, _('Mode'), "mode", (
+            dict(display_text=_("Mono"), value="mono", chain="FormatCodecWebMOpusBitRate"),
+            dict(display_text=_("Stereo"), value="stereo", default=True, chain="FormatCodecWebMOpusBitRate")), 0)
+
+
+class FormatCodecWebM(FormatDropdown):
+    """Audio only WebM codec selection."""
+
+    def __init__(self, prev_object):
+        FormatDropdown.__init__(self, prev_object, _('Codec'), "codec", (
+            dict(display_text=_('Opus'), value="opus", chain="FormatCodecWebMOpusMode", default=True),
+            dict(display_text=_('Vorbis'), value="vorbis", chain="FormatCodecWebMVorbisMode")), 0)
+
+
 class FormatFamily(FormatDropdown):
     """Gives choice of codec family/container format e.g. Xiph/Ogg or MPEG.
     
@@ -1097,6 +1162,7 @@ class FormatFamily(FormatDropdown):
     def __init__(self, prev_object):
         # TC: Codec family e.g. Xiph/Ogg, MPEG etc.
         FormatDropdown.__init__(self, prev_object, _('Family'), "family", (
+            dict(display_text=_('WebM'), value="webm", chain="FormatCodecWebM", shoutcast=False, sensitive=FGlobs.avenabled),
             # TC: Xiph.org Ogg container format.
             dict(display_text=_('Xiph/Ogg'), value="ogg", chain="FormatCodecXiphOgg", shoutcast=False),
             dict(display_text=_('MPEG'), value="mpeg", chain="FormatCodecMPEG", default=True)), 0,
@@ -1223,6 +1289,13 @@ class FormatControl(gtk.VBox):
             self.stop_encoder_rc()
             
     _cap_table = {
+            "webm":
+            {
+                "opus":
+                    {"shoutcast": False, "icecast": True, "recordable": True},
+                "vorbis":
+                    {"shoutcast": False, "icecast": True, "recordable": True},
+            },
             "ogg":
             {
                 "vorbis":
