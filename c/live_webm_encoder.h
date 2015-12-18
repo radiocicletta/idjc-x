@@ -21,11 +21,8 @@
 
 #ifdef HAVE_AVCODEC
 
-#include <libavcodec/avcodec.h>
+#include "encoder.h"
 
-#include "sourceclient.h"
-
-int live_webmvorbis_encoder_init(struct encoder *encoder, struct encoder_vars *ev);
-int live_webmopus_encoder_init(struct encoder *encoder, struct encoder_vars *ev);
+int live_webm_encoder_init(struct encoder *encoder, struct encoder_vars *ev);
 
 #endif /* HAVE_AVCODEC */

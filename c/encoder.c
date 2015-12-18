@@ -576,10 +576,16 @@ int encoder_start(struct threads_info *ti, struct universal_vars *uv, void *othe
                 case ENCODER_FAMILY_WEBM:
                     switch (self->data_format.codec) {
                         case ENCODER_CODEC_VORBIS:
-                            encoder_init = live_webmvorbis_encoder_init;
+                            encoder_init = live_webm_encoder_init;
                             break;
                         case ENCODER_CODEC_OPUS:
-                            encoder_init = live_webmopus_encoder_init;
+                            if ((ev->samplerate = realloc(ev->samplerate, 6)))
+                                {
+                                strcpy(ev->samplerate, "48000");
+                                encoder_init = live_webm_encoder_init;
+                                }
+                            else
+                                goto failed;
                             break;
                         case ENCODER_CODEC_UNHANDLED:
                         default:
