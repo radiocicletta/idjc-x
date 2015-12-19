@@ -430,6 +430,7 @@ class FormatSpin(gtk.VBox):
         size_group = gtk.SizeGroup(gtk.SIZE_GROUP_VERTICAL)
         size_group.add_widget(prev_object.get_children()[0])
         size_group.add_widget(frame)
+        self.scale = 1
 
     def _on_changed(self, spin_button):
         self._fixed.set_text(str(int(spin_button.props.value)) + self._unit)
@@ -477,12 +478,20 @@ class FormatSpin(gtk.VBox):
         
     @property
     def value(self):
-        return str(int(self._spin_button.props.value))
+        return str(int(self._spin_button.props.value * self.scale))
 
     @value.setter
     def value(self, value):
         if not self.applied:
-            self._spin_button.props.value = int(value)
+            self._spin_button.props.value = int(value) // self.scale
+            
+    @property
+    def scale(self):
+        return self._scale
+
+    @scale.setter
+    def scale(self, value):
+        self._scale = value
 
 
 class FormatPregain(FormatDropdown):
@@ -953,7 +962,7 @@ class FormatCodecOpusComplexity(FormatDropdown):
 
 
 class FormatCodecOpusBitRate(FormatSpin):
-    """Opus bit rate selection for stereo."""
+    """Opus bit rate selection."""
     
     def __init__(self, prev_object):
         dict_ = format_collate(prev_object)
@@ -1124,7 +1133,7 @@ class FormatCodecWebMVorbisMode(FormatDropdown):
 
 
 class FormatCodecWebMOpusBitRate(FormatSpin):
-    """Opus bit rate selection for stereo."""
+    """Opus bit rate selection."""
     
     def __init__(self, prev_object):
         dict_ = format_collate(prev_object)
@@ -1133,6 +1142,7 @@ class FormatCodecWebMOpusBitRate(FormatSpin):
         FormatSpin.__init__(self, prev_object, _('Bitrate'), "bitrate",
             ((64, 96)[channels - 1],) + bounds + (1, 10), 0, " kbps", "FormatMetadataUTF8",
             (256 * channels, 128 * channels, 64 * channels, 48 * channels, 32 * channels, 16 * channels))
+        self.scale = 1000
 
 
 class FormatCodecWebMOpusMode(FormatDropdown):

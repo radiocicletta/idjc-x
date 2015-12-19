@@ -151,7 +151,7 @@ static int open_stream(WebMState *self, AVCodec *codec)
 
     self->frame     = alloc_audio_frame(c->sample_fmt, c->channel_layout,
                                        c->sample_rate, nb_samples);
-    self->tmp_frame = alloc_audio_frame(AV_SAMPLE_FMT_FLT, c->channel_layout,
+    self->tmp_frame = alloc_audio_frame(AV_SAMPLE_FMT_S16, c->channel_layout,
                                        c->sample_rate, nb_samples);
 
     if (!(self->swr_ctx = swr_alloc())) {
@@ -204,8 +204,9 @@ static AVFrame *get_audio_frame(WebMState *self)
 }
 
 
-static int write_audio_frame(WebMState *self)
+static int write_audio_frame(struct encoder *encoder)
 {
+    WebMState *self = encoder->encoder_private;
     AVCodecContext *c;
     AVPacket pkt = { 0 };
     AVFrame *frame;
@@ -215,6 +216,16 @@ static int write_audio_frame(WebMState *self)
 
     av_init_packet(&pkt);
     c = self->st->codec;
+
+
+    struct encoder_ip_data *id;
+    id = encoder_get_input_data(encoder, 1024, 8192, NULL);
+    if (id)
+        encoder_ip_data_free(id);
+
+
+
+
 
     frame = get_audio_frame(self);
 
@@ -265,8 +276,8 @@ static int write_packet(void *opaque, uint8_t *buf, int buf_size)
 {
     struct encoder *encoder = opaque;
     WebMState *self = encoder->encoder_private;
-
     fwrite(buf, 1, buf_size, self->fp);
+    fprintf(stderr, "### packet written\n");
     return 0;
 }
 
@@ -306,7 +317,7 @@ static int setup(struct encoder *encoder, char *filename)
     }
 
     if (!(self->avio_ctx = avio_alloc_context(avio_ctx_buffer,
-                avio_ctx_buffer_size, 1, self, NULL, &write_packet, NULL))) {
+            avio_ctx_buffer_size, 1, encoder, NULL, &write_packet, NULL))) {
         fprintf(stderr, "avio_alloc_context failed\n");
         goto fail3;
     }
@@ -328,7 +339,7 @@ static int setup(struct encoder *encoder, char *filename)
         fprintf(stderr, "unable to open the output file\n");
         goto fail5;
     }
-
+    
     if (avformat_write_header(self->oc, NULL) < 0) {
         fprintf(stderr, "failed to write header\n");
         goto fail6;
@@ -343,7 +354,7 @@ fail5:
 fail4:
     av_freep(&self->avio_ctx->buffer);
     av_freep(&self->avio_ctx);
-    goto fail3;
+    goto fail2;
 fail3:
     av_freep(&self->avio_ctx->buffer);
 fail2:
@@ -367,13 +378,14 @@ static void teardown(WebMState *self)
 static void live_webm_encoder_main(struct encoder *encoder)
 {
     WebMState *self = encoder->encoder_private;
+    int ret;
 
     if (encoder->encoder_state == ES_STARTING)
     {
         if (setup(encoder, "dump.webm") == FAILED) {
             goto bailout;
         }
-            
+        ++encoder->oggserial;
         if (encoder->run_request_f)
             encoder->encoder_state = ES_RUNNING;
         else
@@ -383,13 +395,22 @@ static void live_webm_encoder_main(struct encoder *encoder)
     
     if (encoder->encoder_state == ES_RUNNING) {
         if (encoder->flush || !encoder->run_request_f) {
+            encoder->flush = FALSE;
             av_write_trailer(self->oc);
+            fprintf(stderr, "### trailer written\n");
             encoder->encoder_state = ES_STOPPING;
-        } else
-            if (write_audio_frame(self) < 0) {
-                fprintf(stderr, "error writing out audio frame\n");
-                encoder->flush = TRUE;
+        } else {
+            switch (write_audio_frame(encoder)) {
+                case 0:
+                    break;
+                case -1:
+                    fprintf(stderr, "error writing out audio frame\n");
+                default:
+                    fprintf(stderr, "############# done ##############\n");
+                    encoder->flush = TRUE;
+                    
             }
+        }
         return;
     }
             
