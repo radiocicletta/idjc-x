@@ -93,7 +93,6 @@ static AVCodec *add_stream(WebMState *self,
     self->st->id = 0;
     self->st->time_base = (AVRational){ 1, sr };
 
-    /* Some formats want stream headers to be separate. */
     if (self->oc->oformat->flags & AVFMT_GLOBALHEADER)
         c->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
         
@@ -151,7 +150,7 @@ static int open_stream(WebMState *self, AVCodec *codec)
 
     self->frame     = alloc_audio_frame(c->sample_fmt, c->channel_layout,
                                        c->sample_rate, nb_samples);
-    self->tmp_frame = alloc_audio_frame(AV_SAMPLE_FMT_S16, c->channel_layout,
+    self->tmp_frame = alloc_audio_frame(AV_SAMPLE_FMT_FLTP, c->channel_layout,
                                        c->sample_rate, nb_samples);
 
     if (!(self->swr_ctx = swr_alloc())) {
@@ -162,7 +161,7 @@ static int open_stream(WebMState *self, AVCodec *codec)
 
     av_opt_set_int       (self->swr_ctx, "in_channel_count",   c->channels,       0);
     av_opt_set_int       (self->swr_ctx, "in_sample_rate",     c->sample_rate,    0);
-    av_opt_set_sample_fmt(self->swr_ctx, "in_sample_fmt",      AV_SAMPLE_FMT_S16, 0);
+    av_opt_set_sample_fmt(self->swr_ctx, "in_sample_fmt",      AV_SAMPLE_FMT_FLTP, 0);
     av_opt_set_int       (self->swr_ctx, "out_channel_count",  c->channels,       0);
     av_opt_set_int       (self->swr_ctx, "out_sample_rate",    c->sample_rate,    0);
     av_opt_set_sample_fmt(self->swr_ctx, "out_sample_fmt",     c->sample_fmt,     0);
@@ -178,33 +177,26 @@ static int open_stream(WebMState *self, AVCodec *codec)
 }
 
 
-static AVFrame *get_audio_frame(WebMState *self)
+static AVFrame *get_audio_frame(struct encoder *encoder)
 {
+    WebMState *self = encoder->encoder_private;
     AVFrame *frame = self->tmp_frame;
-    int j, i, v;
-    int16_t *q = (int16_t*)frame->data[0];
 
-    /* check if we want to generate more frames */
-    if (av_compare_ts(self->next_pts, self->st->codec->time_base,
-                      STREAM_DURATION, (AVRational){ 1, 1 }) >= 0)
-        return NULL;
-
-    for (j = 0; j <frame->nb_samples; j++) {
-        v = (int)(sin(self->t) * 10000);
-        for (i = 0; i < self->st->codec->channels; i++)
-            *q++ = v;
-        self->t     += self->tincr;
-        self->tincr += self->tincr2;
+    struct encoder_ip_data *id;
+    id = encoder_get_input_data(encoder, frame->nb_samples, frame->nb_samples, frame->data);
+    if (id)
+    {
+        encoder_ip_data_free(id);
+        frame->pts = self->next_pts;
+        self->next_pts += frame->nb_samples;
+        return frame;
     }
 
-    frame->pts = self->next_pts;
-    self->next_pts  += frame->nb_samples;
-
-    return frame;
+    return NULL;
 }
 
 
-static int write_audio_frame(struct encoder *encoder)
+static int write_audio_frame(struct encoder *encoder, int final)
 {
     WebMState *self = encoder->encoder_private;
     AVCodecContext *c;
@@ -216,18 +208,10 @@ static int write_audio_frame(struct encoder *encoder)
 
     av_init_packet(&pkt);
     c = self->st->codec;
-
-
-    struct encoder_ip_data *id;
-    id = encoder_get_input_data(encoder, 1024, 8192, NULL);
-    if (id)
-        encoder_ip_data_free(id);
-
-
-
-
-
-    frame = get_audio_frame(self);
+    if (final)
+        frame = NULL;
+    else
+        frame = get_audio_frame(encoder);
 
     if (frame) {
         dst_nb_samples = av_rescale_rnd(swr_get_delay(self->swr_ctx, c->sample_rate) + frame->nb_samples,
@@ -259,7 +243,7 @@ static int write_audio_frame(struct encoder *encoder)
         return -1;
     }
 
-    return (frame || got_packet) ? 0 : 1;
+    return final ? 1 : 0;
 }
 
 
@@ -277,7 +261,6 @@ static int write_packet(void *opaque, uint8_t *buf, int buf_size)
     struct encoder *encoder = opaque;
     WebMState *self = encoder->encoder_private;
     fwrite(buf, 1, buf_size, self->fp);
-    fprintf(stderr, "### packet written\n");
     return 0;
 }
 
@@ -378,7 +361,7 @@ static void teardown(WebMState *self)
 static void live_webm_encoder_main(struct encoder *encoder)
 {
     WebMState *self = encoder->encoder_private;
-    int ret;
+    int final;
 
     if (encoder->encoder_state == ES_STARTING)
     {
@@ -394,22 +377,17 @@ static void live_webm_encoder_main(struct encoder *encoder)
     }
     
     if (encoder->encoder_state == ES_RUNNING) {
-        if (encoder->flush || !encoder->run_request_f) {
-            encoder->flush = FALSE;
-            av_write_trailer(self->oc);
-            fprintf(stderr, "### trailer written\n");
-            encoder->encoder_state = ES_STOPPING;
-        } else {
-            switch (write_audio_frame(encoder)) {
-                case 0:
-                    break;
-                case -1:
-                    fprintf(stderr, "error writing out audio frame\n");
-                default:
-                    fprintf(stderr, "############# done ##############\n");
-                    encoder->flush = TRUE;
-                    
-            }
+        final = encoder->flush || !encoder->run_request_f;
+        switch (write_audio_frame(encoder, final)) {
+            case 0:
+                break;
+            case -1:
+                fprintf(stderr, "error writing out audio frame\n");
+            default:
+                av_write_trailer(self->oc);
+                fprintf(stderr, "### trailer written\n");
+                encoder->flush = FALSE;
+                encoder->encoder_state = ES_STOPPING;
         }
         return;
     }
