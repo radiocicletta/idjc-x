@@ -39,25 +39,18 @@
 #include "sourceclient.h"
 #include "live_webm_encoder.h"
 
-#define STREAM_DURATION   10.0
-
 
 typedef struct WebMState {
     AVStream *st;
 
     int64_t next_pts;
     int samples_count;
-
     AVFrame *frame;
     AVFrame *tmp_frame;
-
-    float t, tincr, tincr2;
-
     struct SwrContext *swr_ctx;
-    
     AVFormatContext *oc;
     AVIOContext *avio_ctx;
-    FILE *fp;
+    enum packet_flags packet_flags;
 } WebMState;
 
 
@@ -101,8 +94,7 @@ static AVCodec *add_stream(WebMState *self,
 
 
 static AVFrame *alloc_audio_frame(enum AVSampleFormat sample_fmt,
-                                  uint64_t channel_layout,
-                                  int sample_rate, int nb_samples)
+                    uint64_t channel_layout, int sample_rate, int nb_samples)
 {
     AVFrame *frame = av_frame_alloc();
 
@@ -138,10 +130,6 @@ static int open_stream(WebMState *self, AVCodec *codec)
         fprintf(stderr, "Could not open audio codec: %s\n", av_err2str(ret));
         return 0;
     }
-
-    self->t     = 0;
-    self->tincr = 2 * M_PI * 110.0 / c->sample_rate;
-    self->tincr2 = 2 * M_PI * 110.0 / c->sample_rate / c->sample_rate;
 
     if (c->codec->capabilities & AV_CODEC_CAP_VARIABLE_FRAME_SIZE)
         nb_samples = 10000;
@@ -183,7 +171,7 @@ static AVFrame *get_audio_frame(struct encoder *encoder)
     AVFrame *frame = self->tmp_frame;
 
     struct encoder_ip_data *id;
-    id = encoder_get_input_data(encoder, frame->nb_samples, frame->nb_samples, frame->data);
+    id = encoder_get_input_data(encoder, frame->nb_samples, frame->nb_samples, (float **)frame->data);
     if (id)
     {
         encoder_ip_data_free(id);
@@ -260,12 +248,42 @@ static int write_packet(void *opaque, uint8_t *buf, int buf_size)
 {
     struct encoder *encoder = opaque;
     WebMState *self = encoder->encoder_private;
-    fwrite(buf, 1, buf_size, self->fp);
-    return 0;
+    struct encoder_op_packet packet;
+
+
+    static FILE *fp;
+    if (self->packet_flags & PF_INITIAL)
+        fp = fopen("dump.webm", "w");
+    fwrite(buf, buf_size, 1, fp);
+    if (self->packet_flags & PF_FINAL)
+        fclose(fp);
+
+
+
+
+
+
+
+
+
+
+
+
+    packet.header.bit_rate = encoder->bitrate;
+    packet.header.sample_rate = encoder->target_samplerate;
+    packet.header.n_channels = encoder->n_channels;
+    packet.header.flags = PF_WEBM | self->packet_flags;
+    packet.header.data_size = buf_size;
+    packet.header.serial = encoder->oggserial;
+    packet.header.timestamp = encoder->timestamp = self->next_pts / (double)encoder->target_samplerate;
+    packet.data = buf;
+    encoder_write_packet_all(encoder, &packet);
+    self->packet_flags &= ~PF_INITIAL;
+    return 1;
 }
 
 
-static int setup(struct encoder *encoder, char *filename)
+static int setup(struct encoder *encoder)
 {
     WebMState *self = encoder->encoder_private;
     size_t avio_ctx_buffer_size = 4096;
@@ -318,20 +336,16 @@ static int setup(struct encoder *encoder, char *filename)
         goto fail4;
     }
 
-    if (!(self->fp = fopen(filename, "w"))) {
-        fprintf(stderr, "unable to open the output file\n");
-        goto fail5;
-    }
-    
+    ++encoder->oggserial;
+    self->packet_flags = PF_HEADER | PF_INITIAL;
     if (avformat_write_header(self->oc, NULL) < 0) {
         fprintf(stderr, "failed to write header\n");
-        goto fail6;
+        goto fail5;
     }
+    self->packet_flags &= ~PF_HEADER;
     
     return SUCCEEDED;
 
-fail6:
-    fclose(self->fp);
 fail5:
     close_stream(self);
 fail4:
@@ -349,7 +363,6 @@ fail1:
 
 static void teardown(WebMState *self)
 {
-    fclose(self->fp);
     close_stream(self);
     av_freep(&self->avio_ctx->buffer);
     av_freep(&self->avio_ctx);
@@ -365,10 +378,9 @@ static void live_webm_encoder_main(struct encoder *encoder)
 
     if (encoder->encoder_state == ES_STARTING)
     {
-        if (setup(encoder, "dump.webm") == FAILED) {
+        if (setup(encoder) == FAILED) {
             goto bailout;
         }
-        ++encoder->oggserial;
         if (encoder->run_request_f)
             encoder->encoder_state = ES_RUNNING;
         else
@@ -385,8 +397,8 @@ static void live_webm_encoder_main(struct encoder *encoder)
                 fprintf(stderr, "error writing out audio frame\n");
             default:
                 av_write_trailer(self->oc);
-                fprintf(stderr, "### trailer written\n");
-                encoder->flush = FALSE;
+                self->packet_flags = PF_FINAL;
+                write_packet(encoder, NULL, 0);
                 encoder->encoder_state = ES_STOPPING;
         }
         return;
@@ -394,6 +406,8 @@ static void live_webm_encoder_main(struct encoder *encoder)
             
     if (encoder->encoder_state == ES_STOPPING) {
         teardown(self);
+        self->packet_flags = PF_HEADER | PF_INITIAL;
+        encoder->flush = FALSE;
         if (encoder->run_request_f) {
             encoder->encoder_state = ES_STARTING;
             return;

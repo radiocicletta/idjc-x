@@ -213,7 +213,6 @@ class ConnectionDialog(gtk.Dialog):
                 gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
                 gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
         file_dialog.set_modal(True)
-        file_dialog.set_parent(self)
         file_dialog.set_transient_for(self)
         # TC: Dialog title bar text.
         file_dialog.set_title(_('Certificate Authority Directory'
@@ -228,7 +227,6 @@ class ConnectionDialog(gtk.Dialog):
                 gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
                 gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
         file_dialog.set_modal(True)
-        file_dialog.set_parent(self)
         file_dialog.set_transient_for(self)
         # TC: Dialog title bar text.
         file_dialog.set_title(_('Certificate Authority File'
@@ -243,7 +241,6 @@ class ConnectionDialog(gtk.Dialog):
                 gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
                 gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
         file_dialog.set_modal(True)
-        file_dialog.set_parent(self)
         file_dialog.set_transient_for(self)
         # TC: Dialog title bar text.
         file_dialog.set_title(_('TLS Client Certificate'

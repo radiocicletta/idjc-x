@@ -607,7 +607,7 @@ static void *recorder_main(void *args)
                             {
                             if ((packet->header.flags & PF_INITIAL) && self->id3_mode)
                                 recorder_append_metadata2(self, packet);
-                            if (packet->header.flags & (PF_OGG | PF_MP3 | PF_MP2 | PF_AAC | PF_AACP2))
+                            if (packet->header.flags & (PF_WEBM | PF_OGG | PF_MP3 | PF_MP2 | PF_AAC | PF_AACP2))
                                 {
                                 if (packet->header.data_size != fwrite(packet->data, 1, packet->header.data_size, self->fp))
                                     {
@@ -846,7 +846,17 @@ int recorder_start(struct threads_info *ti, struct universal_vars *uv, void *oth
                             break;
                         }
                     break;
-            
+                case ENCODER_FAMILY_WEBM:
+                    switch (df->codec) {
+                        case ENCODER_CODEC_VORBIS:
+                        case ENCODER_CODEC_OPUS:
+                            file_extension = ".webm";
+                            break;
+                        case ENCODER_CODEC_UNHANDLED:
+                        default:
+                            break;
+                        }
+                    break;
                 case ENCODER_FAMILY_UNHANDLED:
                 default:
                     break;

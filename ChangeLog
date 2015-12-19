@@ -1,5 +1,7 @@
 * Changes in version 0.8.16 *
 
+Added WebM streaming and recording.
+
 Fix for listener stats.
 
 Added TLS server login support.

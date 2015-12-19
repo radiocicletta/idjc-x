@@ -112,7 +112,7 @@ static void *streamer_main(void *args)
                             /* determine how much audio to hold in the send buffer */
                             self->max_shout_queue = (shout_buffer_seconds * ((br > 1000) ? br / 1000 : br)) << 7;
                             }
-                        if (packet->header.flags & (PF_OGG | PF_MP3 | PF_MP2 | PF_AAC | PF_AACP2))
+                        if (packet->header.flags & (PF_WEBM | PF_OGG | PF_MP3 | PF_MP2 | PF_AAC | PF_AACP2))
                             {
                             if ((packet->header.flags & (PF_HEADER | PF_FINAL)) || shout_queuelen(self->shout) < self->max_shout_queue)
                                 data_size = packet->header.data_size;
