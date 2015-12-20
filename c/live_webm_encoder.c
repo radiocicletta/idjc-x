@@ -250,25 +250,6 @@ static int write_packet(void *opaque, uint8_t *buf, int buf_size)
     WebMState *self = encoder->encoder_private;
     struct encoder_op_packet packet;
 
-
-    static FILE *fp;
-    if (self->packet_flags & PF_INITIAL)
-        fp = fopen("dump.webm", "w");
-    fwrite(buf, buf_size, 1, fp);
-    if (self->packet_flags & PF_FINAL)
-        fclose(fp);
-
-
-
-
-
-
-
-
-
-
-
-
     packet.header.bit_rate = encoder->bitrate;
     packet.header.sample_rate = encoder->target_samplerate;
     packet.header.n_channels = encoder->n_channels;
@@ -282,6 +263,30 @@ static int write_packet(void *opaque, uint8_t *buf, int buf_size)
     return 1;
 }
 
+
+static int write_header(struct encoder *encoder)
+{
+    WebMState *self = encoder->encoder_private;
+    int ret;
+    
+    ++encoder->oggserial;
+    self->packet_flags = PF_HEADER | PF_INITIAL;
+    ret = avformat_write_header(self->oc, NULL);
+    self->packet_flags &= ~PF_HEADER;
+    return ret;
+}
+
+
+static int write_trailer(struct encoder *encoder)
+{
+    WebMState *self = encoder->encoder_private;
+    int ret;
+
+    av_write_trailer(self->oc);
+    self->packet_flags = PF_FINAL;
+    write_packet(encoder, NULL, 0);
+}
+    
 
 static int setup(struct encoder *encoder)
 {
@@ -336,14 +341,9 @@ static int setup(struct encoder *encoder)
         goto fail4;
     }
 
-    ++encoder->oggserial;
-    self->packet_flags = PF_HEADER | PF_INITIAL;
-    if (avformat_write_header(self->oc, NULL) < 0) {
-        fprintf(stderr, "failed to write header\n");
+    if (write_header(encoder) < 0)
         goto fail5;
-    }
-    self->packet_flags &= ~PF_HEADER;
-    
+        
     return SUCCEEDED;
 
 fail5:
@@ -389,16 +389,18 @@ static void live_webm_encoder_main(struct encoder *encoder)
     }
     
     if (encoder->encoder_state == ES_RUNNING) {
-        final = encoder->flush || !encoder->run_request_f;
-        switch (write_audio_frame(encoder, final)) {
+        if (encoder->flush) {
+            encoder->flush = FALSE;
+            write_trailer(encoder);
+            write_header(encoder);
+        }
+        switch (write_audio_frame(encoder, !encoder->run_request_f)) {
             case 0:
                 break;
             case -1:
                 fprintf(stderr, "error writing out audio frame\n");
             default:
-                av_write_trailer(self->oc);
-                self->packet_flags = PF_FINAL;
-                write_packet(encoder, NULL, 0);
+                write_trailer(encoder);
                 encoder->encoder_state = ES_STOPPING;
         }
         return;
