@@ -535,7 +535,7 @@ class FormatMetadataChoice(FormatDropdown):
 
 
 class FormatMetadataNone(FormatDropdown):
-    """User can select whether to have metadata."""
+    """User can not select any metadata."""
     
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Metadata'), "metadata_mode", (
@@ -547,9 +547,11 @@ class FormatMetadataUTF8(FormatDropdown):
     """User can select whether to have metadata."""
     
     def __init__(self, prev_object):
+        discourage = format_collate(prev_object)["family"] == "webm"
+        
         FormatDropdown.__init__(self, prev_object, _('Metadata'), "metadata_mode", (
-            dict(display_text=_('Suppressed'), value="suppressed", chain="FormatResampleQuality"),
-            dict(display_text=_('UTF-8'), value="utf-8", chain="FormatResampleQuality", default=True)), 1,
+            dict(display_text=_('Suppressed'), value="suppressed", chain="FormatResampleQuality", default=discourage),
+            dict(display_text=_('UTF-8'), value="utf-8", chain="FormatResampleQuality", default=not discourage)), 1,
             _("Choose whether the stream will carry dynamic metadata. In the case of Ogg streams this is important as a great many players can't handle chained Ogg streams which result from the metadata updates."))
 
 
@@ -1116,7 +1118,7 @@ class FormatCodecWebMVorbisBitRate(FormatSpin):
         sr = int(dict_["samplerate"])
         bounds = er.bitrate_bounds(channels, sr)
         FormatSpin.__init__(self, prev_object, _('Bitrate'), "bitrate",
-            (128000,) + bounds + (1, 10), 0, " bps", "FormatMetadataNone",
+            (128000,) + bounds + (1, 10), 0, " bps", "FormatMetadataUTF8",
             er.good_bitrates(channels, sr))
 
 
@@ -1149,7 +1151,7 @@ class FormatCodecWebMOpusBitRate(FormatSpin):
         channels = 1 if dict_["mode"] == "mono" else 2
         bounds = (6 * channels, 256 * channels)
         FormatSpin.__init__(self, prev_object, _('Bitrate'), "bitrate",
-            ((64, 96)[channels - 1],) + bounds + (1, 10), 0, " kbps", "FormatMetadataNone",
+            ((64, 96)[channels - 1],) + bounds + (1, 10), 0, " kbps", "FormatMetadataUTF8",
             (256 * channels, 128 * channels, 64 * channels, 48 * channels, 32 * channels, 16 * channels))
         self.scale = 1000
 

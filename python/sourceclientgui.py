@@ -1468,6 +1468,10 @@ class StreamTab(Tab):
                     cm = songname
             elif fdata["family"] == "ogg":
                 disp = "[{0[%r]}], [{0[%t]}], [{0[%l]}]".format(dict(table))
+            elif fdata["family"] == "webm":
+                disp = songname
+                if not cm:
+                    cm = songname
             else:
                 disp = "no metadata string defined for this stream format: %s %s" % (fdata["family"], fdata["codec"])
             

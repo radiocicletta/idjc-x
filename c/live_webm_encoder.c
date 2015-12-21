@@ -39,6 +39,7 @@
 #include "sourceclient.h"
 #include "live_webm_encoder.h"
 
+static const struct timespec time_delay = { .tv_nsec = 10 };
 
 typedef struct WebMState {
     AVStream *st;
@@ -127,7 +128,7 @@ static int open_stream(WebMState *self, AVCodec *codec)
 
     while (pthread_mutex_trylock(&g.avc_mutex))
         nanosleep(&time_delay, NULL);
-    ret = avcodec_open2(c, codec, NULL));
+    ret = avcodec_open2(c, codec, NULL);
     pthread_mutex_unlock(&g.avc_mutex);
 
     if (ret < 0) {
@@ -289,6 +290,7 @@ static int write_trailer(struct encoder *encoder)
     ret = av_write_trailer(self->oc);
     self->packet_flags = PF_FINAL;
     write_packet(encoder, NULL, 0);
+    self->packet_flags = 0;
     return ret;
 }
     
@@ -300,7 +302,7 @@ static void update_metadata(struct encoder *encoder)
     pthread_mutex_lock(&encoder->metadata_mutex);
     encoder->new_metadata = FALSE;
 
-    if (encoder->custom_meta[0]) {
+    if (encoder->custom_meta[0] && encoder->use_metadata) {
         av_dict_set(&self->oc->metadata, "TITLE", encoder->custom_meta, 0);
         av_dict_set(&self->oc->metadata, "ARTIST", NULL, 0);
         av_dict_set(&self->oc->metadata, "ALBUM", NULL, 0);
@@ -366,6 +368,12 @@ static int setup(struct encoder *encoder)
         goto fail4;
     }
 
+    if (encoder->use_metadata) {
+        pthread_mutex_lock(&encoder->metadata_mutex);
+        av_dict_set(&self->oc->metadata, "TITLE", encoder->custom_meta, 0);
+        pthread_mutex_unlock(&encoder->metadata_mutex);
+    }
+
     if (write_header(encoder) < 0)
         goto fail5;
         
@@ -399,7 +407,6 @@ static void teardown(WebMState *self)
 static void live_webm_encoder_main(struct encoder *encoder)
 {
     WebMState *self = encoder->encoder_private;
-    int final;
 
     if (encoder->encoder_state == ES_STARTING)
     {
@@ -415,8 +422,12 @@ static void live_webm_encoder_main(struct encoder *encoder)
     
     if (encoder->encoder_state == ES_RUNNING) {
         if (encoder->new_metadata && encoder->use_metadata) {
-            update_metadata(encoder);
-            encoder->flush = TRUE;
+            encoder->new_metadata = FALSE;
+            write_trailer(encoder);
+            pthread_mutex_lock(&encoder->metadata_mutex);
+            av_dict_set(&self->oc->metadata, "TITLE", encoder->custom_meta, 0);
+            pthread_mutex_unlock(&encoder->metadata_mutex);
+            write_header(encoder);
         }
 
         if (encoder->flush) {
