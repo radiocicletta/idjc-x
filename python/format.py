@@ -1116,7 +1116,7 @@ class FormatCodecWebMVorbisBitRate(FormatSpin):
         sr = int(dict_["samplerate"])
         bounds = er.bitrate_bounds(channels, sr)
         FormatSpin.__init__(self, prev_object, _('Bitrate'), "bitrate",
-            (128000,) + bounds + (1, 10), 0, " bps", "FormatMetadataNone",
+            (128000,) + bounds + (1, 10), 0, " bps", "FormatMetadataUTF8",
             er.good_bitrates(channels, sr))
 
 
@@ -1149,7 +1149,7 @@ class FormatCodecWebMOpusBitRate(FormatSpin):
         channels = 1 if dict_["mode"] == "mono" else 2
         bounds = (6 * channels, 256 * channels)
         FormatSpin.__init__(self, prev_object, _('Bitrate'), "bitrate",
-            ((64, 96)[channels - 1],) + bounds + (1, 10), 0, " kbps", "FormatMetadataNone",
+            ((64, 96)[channels - 1],) + bounds + (1, 10), 0, " kbps", "FormatMetadataUTF8",
             (256 * channels, 128 * channels, 64 * channels, 48 * channels, 32 * channels, 16 * channels))
         self.scale = 1000
 
@@ -1253,9 +1253,9 @@ class FormatControl(gtk.VBox):
         apply_button.add(image)
         button_box.add(apply_button)
 
-        #test_button = gtk.ToggleButton("Test")
-        #button_box.add(test_button)
-        #test_button.connect("toggled", self._on_test)
+        test_button = gtk.ToggleButton("Test")
+        button_box.add(test_button)
+        test_button.connect("toggled", self._on_test)
         
         elem_box[-1].pack_end(button_frame, True)
         self.show_all()

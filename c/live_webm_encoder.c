@@ -39,6 +39,7 @@
 #include "sourceclient.h"
 #include "live_webm_encoder.h"
 
+static const struct timespec time_delay = { .tv_nsec = 10 };
 
 typedef struct WebMState {
     AVStream *st;
@@ -50,6 +51,8 @@ typedef struct WebMState {
     AVFormatContext *oc;
     AVIOContext *avio_ctx;
     enum packet_flags packet_flags;
+    struct WebMState *metadata;
+    struct encoder *encoder;
 } WebMState;
 
 
@@ -127,7 +130,7 @@ static int open_stream(WebMState *self, AVCodec *codec)
 
     while (pthread_mutex_trylock(&g.avc_mutex))
         nanosleep(&time_delay, NULL);
-    ret = avcodec_open2(c, codec, NULL));
+    ret = avcodec_open2(c, codec, NULL);
     pthread_mutex_unlock(&g.avc_mutex);
 
     if (ret < 0) {
@@ -169,13 +172,12 @@ static int open_stream(WebMState *self, AVCodec *codec)
 }
 
 
-static AVFrame *get_audio_frame(struct encoder *encoder)
+static AVFrame *get_audio_frame(WebMState *self)
 {
-    WebMState *self = encoder->encoder_private;
     AVFrame *frame = self->tmp_frame;
 
     struct encoder_ip_data *id;
-    id = encoder_get_input_data(encoder, frame->nb_samples, frame->nb_samples, (float **)frame->data);
+    id = encoder_get_input_data(self->encoder, frame->nb_samples, frame->nb_samples, (float **)frame->data);
     if (id)
     {
         encoder_ip_data_free(id);
@@ -188,22 +190,19 @@ static AVFrame *get_audio_frame(struct encoder *encoder)
 }
 
 
-static int write_audio_frame(struct encoder *encoder, int final)
+static int write_audio_frame(WebMState *self)
 {
-    WebMState *self = encoder->encoder_private;
     AVCodecContext *c;
     AVPacket pkt = { 0 };
-    AVFrame *frame;
+    AVFrame *frame = NULL;
     int ret;
     int got_packet;
     int dst_nb_samples;
 
     av_init_packet(&pkt);
     c = self->st->codec;
-    if (final)
-        frame = NULL;
-    else
-        frame = get_audio_frame(encoder);
+    if (self->encoder->run_request_f)
+        frame = get_audio_frame(self);
 
     if (frame) {
         dst_nb_samples = av_rescale_rnd(swr_get_delay(self->swr_ctx, c->sample_rate) + frame->nb_samples,
@@ -235,7 +234,7 @@ static int write_audio_frame(struct encoder *encoder, int final)
         return -1;
     }
 
-    return final ? 1 : 0;
+    return self->encoder->run_request_f ? 0 : 1;
 }
 
 
@@ -250,72 +249,55 @@ static void close_stream(WebMState *self)
 
 static int write_packet(void *opaque, uint8_t *buf, int buf_size)
 {
-    struct encoder *encoder = opaque;
-    WebMState *self = encoder->encoder_private;
+    WebMState *self = opaque;
+    struct encoder *encoder = self->encoder;
     struct encoder_op_packet packet;
 
-    packet.header.bit_rate = encoder->bitrate;
-    packet.header.sample_rate = encoder->target_samplerate;
-    packet.header.n_channels = encoder->n_channels;
-    packet.header.flags = PF_WEBM | self->packet_flags;
-    packet.header.data_size = buf_size;
-    packet.header.serial = encoder->oggserial;
-    packet.header.timestamp = encoder->timestamp = self->next_pts / (double)encoder->target_samplerate;
-    packet.data = buf;
-    encoder_write_packet_all(encoder, &packet);
+    if (!(self->packet_flags & PF_SUPPRESS)) {
+        packet.header.bit_rate = encoder->bitrate;
+        packet.header.sample_rate = encoder->target_samplerate;
+        packet.header.n_channels = encoder->n_channels;
+        packet.header.flags = PF_WEBM | self->packet_flags;
+        packet.header.data_size = buf_size;
+        packet.header.serial = encoder->oggserial;
+        packet.header.timestamp = encoder->timestamp = self->next_pts / (double)encoder->target_samplerate;
+        packet.data = buf;
+        encoder_write_packet_all(encoder, &packet);
+    }
     self->packet_flags &= ~PF_INITIAL;
     return 1;
 }
 
 
-static int write_header(struct encoder *encoder)
+static int write_header(WebMState *self, int extra_flags)
 {
-    WebMState *self = encoder->encoder_private;
     int ret;
     
-    ++encoder->oggserial;
-    self->packet_flags = PF_HEADER | PF_INITIAL;
+    if (!(extra_flags & PF_SUPPRESS))
+        ++self->encoder->oggserial;
+    self->packet_flags |= PF_HEADER | PF_INITIAL | extra_flags;
     ret = avformat_write_header(self->oc, NULL);
-    self->packet_flags &= ~PF_HEADER;
+    self->packet_flags &= ~(PF_HEADER | extra_flags);
     return ret;
 }
 
 
-static int write_trailer(struct encoder *encoder)
+static int write_trailer(WebMState *self, int extra_flags)
 {
-    WebMState *self = encoder->encoder_private;
     int ret;
 
+    self->packet_flags |= extra_flags;
     ret = av_write_trailer(self->oc);
-    self->packet_flags = PF_FINAL;
-    write_packet(encoder, NULL, 0);
+    self->packet_flags |= PF_FINAL;
+    write_packet(self, NULL, 0);
+    self->packet_flags &= ~ (PF_FINAL | extra_flags);
     return ret;
 }
     
 
-static void update_metadata(struct encoder *encoder)
+static int setup(WebMState *self, int extra_flags)
 {
-    WebMState *self = encoder->encoder_private;
-    
-    pthread_mutex_lock(&encoder->metadata_mutex);
-    encoder->new_metadata = FALSE;
-
-    if (encoder->custom_meta[0]) {
-        av_dict_set(&self->oc->metadata, "TITLE", encoder->custom_meta, 0);
-        av_dict_set(&self->oc->metadata, "ARTIST", NULL, 0);
-        av_dict_set(&self->oc->metadata, "ALBUM", NULL, 0);
-    } else {
-        av_dict_set(&self->oc->metadata, "TITLE", encoder->title, 0);
-        av_dict_set(&self->oc->metadata, "ARTIST", encoder->artist, 0);
-        av_dict_set(&self->oc->metadata, "ALBUM", encoder->album, 0);
-    }
-    pthread_mutex_unlock(&encoder->metadata_mutex);
-}
-
-
-static int setup(struct encoder *encoder)
-{
-    WebMState *self = encoder->encoder_private;
+    struct encoder *encoder = self->encoder;
     size_t avio_ctx_buffer_size = 4096;
     AVCodec *codec;
     uint8_t *avio_ctx_buffer;
@@ -348,7 +330,7 @@ static int setup(struct encoder *encoder)
     }
 
     if (!(self->avio_ctx = avio_alloc_context(avio_ctx_buffer,
-            avio_ctx_buffer_size, 1, encoder, NULL, &write_packet, NULL))) {
+            avio_ctx_buffer_size, 1, self, NULL, &write_packet, NULL))) {
         fprintf(stderr, "avio_alloc_context failed\n");
         goto fail3;
     }
@@ -366,7 +348,10 @@ static int setup(struct encoder *encoder)
         goto fail4;
     }
 
-    if (write_header(encoder) < 0)
+    if (encoder->custom_meta[0] && encoder->use_metadata)
+        av_dict_set(&self->oc->metadata, "TITLE", encoder->custom_meta, 0);
+
+    if (write_header(self, extra_flags) < 0)
         goto fail5;
         
     return SUCCEEDED;
@@ -392,20 +377,23 @@ static void teardown(WebMState *self)
     av_freep(&self->avio_ctx->buffer);
     av_freep(&self->avio_ctx);
     avformat_free_context(self->oc);
-    memset(self, '\0', sizeof (WebMState));
 }
 
 
 static void live_webm_encoder_main(struct encoder *encoder)
 {
     WebMState *self = encoder->encoder_private;
-    int final;
 
     if (encoder->encoder_state == ES_STARTING)
     {
-        if (setup(encoder) == FAILED) {
+        if (setup(self, PF_SUPPRESS) == FAILED)
+            goto bailout;
+        
+        if (setup(self->metadata, 0) == FAILED) {
+            teardown(self);
             goto bailout;
         }
+
         if (encoder->run_request_f)
             encoder->encoder_state = ES_RUNNING;
         else
@@ -415,28 +403,38 @@ static void live_webm_encoder_main(struct encoder *encoder)
     
     if (encoder->encoder_state == ES_RUNNING) {
         if (encoder->new_metadata && encoder->use_metadata) {
-            update_metadata(encoder);
-            encoder->flush = TRUE;
+            encoder->new_metadata = FALSE;
+            fprintf(stderr, "### new metadata\n");
+            write_trailer(self, 0);
+            write_header(self, PF_SUPPRESS);
+            write_trailer(self->metadata, PF_SUPPRESS);
+            teardown(self->metadata);
+            setup(self->metadata, 0);
         }
 
         if (encoder->flush) {
             encoder->flush = FALSE;
-            write_trailer(encoder);
-            write_header(encoder);
+            fprintf(stderr, "### flush\n");
+            write_trailer(self, 0);
+            write_header(self, PF_SUPPRESS);
+            write_trailer(self->metadata, PF_SUPPRESS);
+            write_header(self->metadata, 0);
         }
-        switch (write_audio_frame(encoder, !encoder->run_request_f)) {
+        switch (write_audio_frame(self)) {
             case 0:
                 break;
             case -1:
                 fprintf(stderr, "error writing out audio frame\n");
             default:
-                write_trailer(encoder);
                 encoder->encoder_state = ES_STOPPING;
         }
         return;
     }
             
     if (encoder->encoder_state == ES_STOPPING) {
+        write_trailer(self->metadata, PF_SUPPRESS);
+        write_trailer(self, 0);
+        teardown(self->metadata);
         teardown(self);
         encoder->flush = FALSE;
         if (encoder->run_request_f) {
@@ -452,6 +450,7 @@ bailout:
     encoder->run_encoder = NULL;
     encoder->flush = FALSE;
     encoder->encoder_private = NULL;
+    free(self->metadata);
     free(self);
     fprintf(stderr, "live_webm_encoder_main: finished cleanup\n");
 }
@@ -466,6 +465,13 @@ int live_webm_encoder_init(struct encoder *encoder, struct encoder_vars *ev)
         return FAILED;
     }
 
+    if (!(self->metadata = calloc(1, sizeof (WebMState)))) {
+        fprintf(stderr, "malloc failure\n");
+        return FAILED;
+    }
+
+    self->encoder = encoder;
+    self->metadata->encoder = encoder;
     encoder->encoder_private = self;
     encoder->run_encoder = live_webm_encoder_main;
     return SUCCEEDED;

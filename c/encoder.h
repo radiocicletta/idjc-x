@@ -43,7 +43,8 @@ enum packet_flags {     PF_UNSET    = 0x00,
                                 PF_MP2      = 0x40,
                                 PF_AAC      = 0x80,
                                 PF_AACP2    = 0x100,
-                                PF_WEBM     = 0x200 };
+                                PF_WEBM     = 0x200,
+                                PF_SUPPRESS = 0x400 };
 
 struct encoder_vars
     {
