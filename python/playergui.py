@@ -1882,7 +1882,9 @@ class IDJC_Media_Player:
     def invoke_end_of_track_policy(self, mode_text=None):
         # This is where we implement the playlist modes for the most part.
         if mode_text is None:
-            mode_text = self.pl_mode.get_active_text()
+            model = self.pl_mode.get_model()
+            iter = self.pl_mode.get_active_iter()
+            mode_text = model.get_value(iter, 0)
             if self.is_playing == False:
                 print "Assertion failed in: invoke_end_of_track_policy"
                 return
@@ -1939,7 +1941,11 @@ class IDJC_Media_Player:
                 timestamped_pathnames = [(fp.get(pn, 0), pn) 
                                             for pn in random_pathnames if pn]
                 timestamped_pathnames.sort()
-                least_recent_ts = timestamped_pathnames[0][0]
+                try:
+                    least_recent_ts = timestamped_pathnames[0][0]
+                except IndexError:
+                    print "cannot select from an empty playlist"
+                    return
                 timestamped_pathnames = [x for x in timestamped_pathnames
                                                     if x[0] == least_recent_ts]
                 least_recent = random.choice(timestamped_pathnames)[1]
@@ -4264,17 +4270,19 @@ class IDJC_Media_Player:
         self.hbox2.pack_start(frame)
         frame.show()
 
-        self.pl_mode = gtk.combo_box_new_text()
-        self.pl_mode.append_text(N_('Play All'))
-        self.pl_mode.append_text(N_('Loop All'))
-        self.pl_mode.append_text(N_('Random'))
-        self.pl_mode.append_text(N_('Manual'))
-        self.pl_mode.append_text(N_('Cue Up'))
-        self.pl_mode.append_text(N_('External'))
+        store = gtk.ListStore(str, str)
+        self.pl_mode = gtk.ComboBox(store)
+        rend = gtk.CellRendererText()
+        self.pl_mode.pack_start(rend)
+        self.pl_mode.add_attribute(rend, "text", 1)
+        # TC: playlist modes
+        for each in (N_('Play All'), N_('Loop All'), N_('Random'), 
+                    N_('Manual'), N_('Cue Up'), N_('External')):
+            store.append((each, _(each)))
         if self.playername != "interlude":
-            self.pl_mode.append_text(N_('Alternate'))
-            self.pl_mode.append_text(N_('Fade Over'))
-            self.pl_mode.append_text(N_('Random Hop'))
+            # TC: yet more playlist modes these ones for the main players only
+            for each in (N_('Alternate'), N_('Fade Over'), N_('Random Hop')):
+                store.append((each, _(each)))
             self.pl_mode.set_active(1)
         else:
             self.pl_mode.set_active(0)

@@ -1568,7 +1568,8 @@ class mixprefs:
             "Brian Millham (bmillham@users.sourceforge.net)"))
 
         contribs_page(_('Translators'),
-            ("<b>fr</b> nvignot (nicotux@users.sf.net)",
+            ("<b>es</b> Blank Frank (frank@rhizomatica.org)",
+            "<b>fr</b> nvignot (nicotux@users.sf.net)",
             "<b>it</b>  Raffaele Morelli (raffaele.morelli@gmail.com)"))
 
         label = gtk.Label(_('Build Info'))
