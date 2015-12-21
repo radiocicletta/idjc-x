@@ -42,7 +42,6 @@
 
 typedef struct WebMState {
     AVStream *st;
-
     int64_t next_pts;
     int samples_count;
     AVFrame *frame;
@@ -126,7 +125,12 @@ static int open_stream(WebMState *self, AVCodec *codec)
     
     c = self->st->codec;
 
-    if ((ret = avcodec_open2(c, codec, NULL)) < 0) {
+    while (pthread_mutex_trylock(&g.avc_mutex))
+        nanosleep(&time_delay, NULL);
+    ret = avcodec_open2(c, codec, NULL));
+    pthread_mutex_unlock(&g.avc_mutex);
+
+    if (ret < 0) {
         fprintf(stderr, "Could not open audio codec: %s\n", av_err2str(ret));
         return 0;
     }
@@ -282,11 +286,32 @@ static int write_trailer(struct encoder *encoder)
     WebMState *self = encoder->encoder_private;
     int ret;
 
-    av_write_trailer(self->oc);
+    ret = av_write_trailer(self->oc);
     self->packet_flags = PF_FINAL;
     write_packet(encoder, NULL, 0);
+    return ret;
 }
     
+
+static void update_metadata(struct encoder *encoder)
+{
+    WebMState *self = encoder->encoder_private;
+    
+    pthread_mutex_lock(&encoder->metadata_mutex);
+    encoder->new_metadata = FALSE;
+
+    if (encoder->custom_meta[0]) {
+        av_dict_set(&self->oc->metadata, "TITLE", encoder->custom_meta, 0);
+        av_dict_set(&self->oc->metadata, "ARTIST", NULL, 0);
+        av_dict_set(&self->oc->metadata, "ALBUM", NULL, 0);
+    } else {
+        av_dict_set(&self->oc->metadata, "TITLE", encoder->title, 0);
+        av_dict_set(&self->oc->metadata, "ARTIST", encoder->artist, 0);
+        av_dict_set(&self->oc->metadata, "ALBUM", encoder->album, 0);
+    }
+    pthread_mutex_unlock(&encoder->metadata_mutex);
+}
+
 
 static int setup(struct encoder *encoder)
 {
@@ -389,6 +414,11 @@ static void live_webm_encoder_main(struct encoder *encoder)
     }
     
     if (encoder->encoder_state == ES_RUNNING) {
+        if (encoder->new_metadata && encoder->use_metadata) {
+            update_metadata(encoder);
+            encoder->flush = TRUE;
+        }
+
         if (encoder->flush) {
             encoder->flush = FALSE;
             write_trailer(encoder);
@@ -408,7 +438,6 @@ static void live_webm_encoder_main(struct encoder *encoder)
             
     if (encoder->encoder_state == ES_STOPPING) {
         teardown(self);
-        self->packet_flags = PF_HEADER | PF_INITIAL;
         encoder->flush = FALSE;
         if (encoder->run_request_f) {
             encoder->encoder_state = ES_STARTING;
