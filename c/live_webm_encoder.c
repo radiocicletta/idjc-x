@@ -203,10 +203,12 @@ static int write_audio_frame(struct encoder *encoder, int final)
     c = self->st->codec;
     if (final)
         frame = NULL;
-    else
-        frame = get_audio_frame(encoder);
+    else {
+        go_again:
 
-    if (frame) {
+        if (!(frame = get_audio_frame(encoder)))
+            return 0;
+
         dst_nb_samples = av_rescale_rnd(swr_get_delay(self->swr_ctx, c->sample_rate) + frame->nb_samples,
                                         c->sample_rate, c->sample_rate, AV_ROUND_UP);
         av_assert0(dst_nb_samples == frame->nb_samples);
@@ -236,7 +238,13 @@ static int write_audio_frame(struct encoder *encoder, int final)
         return -1;
     }
 
-    return final ? 1 : 0;
+    if (final)
+        return 1;
+
+    if (!got_packet)
+        goto go_again;
+
+    return 0;
 }
 
 
