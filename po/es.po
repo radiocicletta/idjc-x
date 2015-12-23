@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: idjc 0.8.16_development\n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
 "POT-Creation-Date: 2015-12-21 17:54+0000\n"
-"PO-Revision-Date: 2015-12-23 00:31-0600\n"
+"PO-Revision-Date: 2015-12-23 02:33-0600\n"
 "Last-Translator: Blank Frank <frank@rhizomatica.org>\n"
 "Language-Team: English <team@example.com>\n"
 "Language: es\n"
@@ -24,10 +24,8 @@ msgid ""
 "the sub-commands for example: \"%(prog)s run --help\" shows the help for the "
 "run command"
 msgstr ""
-"mostrar este mensaje de ayuda y termina - ayuda adicional está disponible "
-"en \n"
-"cada uno de los sub-comandos, por ejemplo: \"%(prog)s run --help\" muestra "
-"la ayuda \n"
+"mostrar este mensaje de ayuda y termina -- ayuda adicional está disponible en \n"
+"cada uno de los sub-comandos, por ejemplo: \"%(prog)s run --help\" muestra la ayuda \n"
 "para el comando run"
 
 #. TC: a command line option help string.
@@ -47,7 +45,7 @@ msgstr ""
 #. TC: do not translate run.
 #: python/prelims/__init__.py:116
 msgid "-- sub-command: run -- launch the idjc application"
-msgstr "- Control secundario: run - iniciar la aplicación IDJC"
+msgstr "-- sub-comando: run -- iniciar la aplicación IDJC"
 
 #: python/prelims/__init__.py:121
 msgid "make a new profile"
@@ -56,7 +54,7 @@ msgstr "hacer un nuevo perfil"
 #. TC: do not translate the word new.
 #: python/prelims/__init__.py:123
 msgid "-- sub-command: new -- make a new profile"
-msgstr "- Control secundario: nuevo - hacer un nuevo perfil"
+msgstr "-- sub-comando: nuevo -- hacer un nuevo perfil"
 
 #. TC: a command line option help string.
 #: python/prelims/__init__.py:127
@@ -66,17 +64,17 @@ msgstr "eliminar el perfil (s)"
 #. TC: do not translate the word rm.
 #: python/prelims/__init__.py:129
 msgid "-- sub-command: rm -- remove profile(s)"
-msgstr "- Sub-comando: rm - eliminar el perfil (s)"
+msgstr "-- sub-comando: rm -- eliminar el perfil (s)"
 
 #. TC: a command line option help string.
 #: python/prelims/__init__.py:133
 msgid "select which profile is to automatically launch"
-msgstr "seleccionar qué perfil es poner en marcha de forma automática"
+msgstr "seleccionar cuál perfil se pone en marcha de forma automática"
 
 #. TC: do not translate the word auto.
 #: python/prelims/__init__.py:136
 msgid "-- sub-command: auto -- mark a profile for auto-launch"
-msgstr "- Control secundario: auto - marcar un perfil para auto-lanzamiento"
+msgstr "-- sub-comando: auto -- marcar un perfil para auto-lanzamiento"
 
 #: python/prelims/__init__.py:141
 msgid "remove auto-launch"
@@ -84,16 +82,16 @@ msgstr "eliminar auto-lanzamiento"
 
 #: python/prelims/__init__.py:142
 msgid "-- sub-command: noauto -- remove auto-launch"
-msgstr "- Control secundario: noauto - quitar auto-lanzamiento"
+msgstr "-- sub-comando: noauto -- quitar auto-lanzamiento"
 
 #: python/prelims/__init__.py:147
 msgid "list available profiles"
-msgstr "Lista de perfiles disponibles"
+msgstr "lista de perfiles disponibles"
 
 #. TC: do not translate the word ls.
 #: python/prelims/__init__.py:149
 msgid "-- sub-command: ls -- list available profiles"
-msgstr "- Sub-comando: ls - Lista perfiles disponibles"
+msgstr "-- sub-comando: ls -- Lista perfiles disponibles"
 
 #: python/prelims/__init__.py:153 python/prelims/__init__.py:206
 #: python/prelims/__init__.py:231 python/prelims/__init__.py:236
@@ -127,11 +125,11 @@ msgstr ""
 #. TC: command line help placeholder.
 #: python/prelims/__init__.py:166
 msgid "server_name"
-msgstr "nombre del servidor"
+msgstr "server_name"
 
 #: python/prelims/__init__.py:166
 msgid "the named jack sound-server to connect with"
-msgstr "la toma de sonido-servidor llamado para conectar con"
+msgstr "el sonido-servidor jack nombrado para conectar"
 
 #. TC: command line help placeholder.
 #: python/prelims/__init__.py:170
@@ -150,16 +148,12 @@ msgstr ""
 msgid ""
 "At start-up do not make any JACK connections. This option delegates all "
 "control over restored connections to the session handler."
-msgstr ""
-"En el arranque no se realice ninguna conexión JACK. Esta opción delegados de "
-"todo control sobre las conexiones restauradas al manejador de sesión."
+msgstr "Al arranque no se realice ninguna conexión JACK. Esta opción delega todo control sobre las conexiones restauradas al manejador de sesión."
 
 #: python/prelims/__init__.py:181
 msgid ""
 "No JACK ports will be connected except those listed in the session file."
-msgstr ""
-"No hay puertos JACK se conectarán a excepción de los enumerados en el "
-"archivo de sesión."
+msgstr "Ningúnos puertos JACK se conectarán a excepción de los enumerados en el archivo de sesión."
 
 #: python/prelims/__init__.py:184
 msgid "user interface settings"
@@ -167,7 +161,7 @@ msgstr "configuración de la interfaz de usuario"
 
 #: python/prelims/__init__.py:187
 msgid "the audio channels to have open at startup"
-msgstr "los canales de audio que tienen abiertas en el arranque"
+msgstr "los canales de audio para tener abiertas en el arranque"
 
 #: python/prelims/__init__.py:190
 msgid "the voip mode at startup"
@@ -175,7 +169,7 @@ msgstr "el modo de VoIP en el arranque"
 
 #: python/prelims/__init__.py:196
 msgid "attempt connection with the specified servers"
-msgstr "conexión intento con los servidores especificados"
+msgstr "intentar la conexión con los servidores especificados"
 
 #: python/prelims/__init__.py:199
 msgid ""
@@ -192,7 +186,7 @@ msgstr "sitúe el crossfader para el reproductor especificado"
 #. TC: command line help placeholder.
 #: python/prelims/__init__.py:208 python/prelims/__init__.py:232
 msgid "profile_name"
-msgstr "nombre de perfil"
+msgstr "profile_name"
 
 #: python/prelims/__init__.py:209
 msgid ""
@@ -201,7 +195,7 @@ msgid ""
 "                restrictions therefore apply"
 msgstr ""
 "nuevo nombre de perfil -- formará parte del nombre \n"
-"del bus/objeto/interfaz de dbus y el ID de cliente de JACK --\n"
+"del bus/objeto/interfaz de dbus y la ID del cliente de JACK --\n"
 "Por lo tanto, se aplican restricciones"
 
 #: python/prelims/__init__.py:214
@@ -218,7 +212,7 @@ msgstr "icon_pathname"
 
 #: python/prelims/__init__.py:219
 msgid "pathname to an icon -- defaults to idjc logo"
-msgstr "ruta de acceso a un icono - por defecto logo IDJC"
+msgstr "ruta de acceso a un icono -- por defecto logo IDJC"
 
 #: python/prelims/__init__.py:223
 msgid "nickname"
@@ -240,7 +234,7 @@ msgstr "una descripción del perfil"
 
 #: python/prelims/__init__.py:233
 msgid "the profile(s) to remove"
-msgstr "el perfil (s) para eliminar"
+msgstr "perfil(es) para eliminar"
 
 #: python/prelims/__init__.py:238
 msgid "the profile to make automatic"
@@ -249,7 +243,7 @@ msgstr "el perfil para hacer automática"
 #: python/prelims/__init__.py:417
 #, python-format
 msgid "failed to create profile: %s"
-msgstr "no para crear el %s"
+msgstr "falló en crear el perfil%s"
 
 #: python/prelims/__init__.py:424
 #, python-format
@@ -259,17 +253,17 @@ msgstr "fracasado en eliminar el %s"
 #: python/prelims/__init__.py:431
 #, python-format
 msgid "auto failed: %s"
-msgstr "auto %s"
+msgstr "falló auto: %s"
 
 #: python/prelims/__init__.py:438
 #, python-format
 msgid "noauto failed: %s"
-msgstr "noauto %s"
+msgstr "falló noauto: %s"
 
 #: python/prelims/__init__.py:447
 #, python-format
 msgid "ls failed: %s"
-msgstr "ls %s"
+msgstr "falló ls: %s"
 
 #: python/prelims/__init__.py:466
 msgid "the specified profile name is not valid"
@@ -327,17 +321,17 @@ msgstr "perfil especificado no es %s"
 #: python/prelims/__init__.py:633
 #, python-format
 msgid "specified profile does not exist: %s"
-msgstr "perfil especificado no %s"
+msgstr "perfil especificado no existe: %s"
 
 #: python/prelims/__init__.py:664
 #, python-format
 msgid "unknown session type: %s: must be one of %s"
-msgstr "desconocido tipo de %s debe ser uno %s"
+msgstr "desconocido tipo de sesión: %s debe ser uno %s"
 
 #: python/prelims/__init__.py:677
 #, python-format
 msgid "directory does not exist: %s"
-msgstr "directorio no %s"
+msgstr "directorio no existe: %s"
 
 #: python/prelims/__init__.py:708
 #, python-format
@@ -347,13 +341,12 @@ msgstr "problema con el directorio de sesión %s"
 #: python/prelims/__init__.py:781
 #, python-format
 msgid "Profile %s is active."
-msgstr "%s está activo."
+msgstr "El perfil %s está activo."
 
 #: python/prelims/__init__.py:791
 #, python-brace-format
 msgid "Cannot rename profile {0} to {1}, {1} currently exists."
-msgstr ""
-"No se puede cambiar el nombre de perfil {0} a {1} {1} actualmente existe."
+msgstr "No se puede cambiar el nombre de perfil {0} a {1}, {1} actualmente existe."
 
 #: python/prelims/__init__.py:795
 #, python-brace-format
@@ -374,11 +367,11 @@ msgstr ""
 #: python/prelims/__init__.py:824
 #, python-brace-format
 msgid "could not get a lock on profile {0}: {1}"
-msgstr "no pudo obtener un bloqueo en el perfil de {0} {1}"
+msgstr "no pudo obtener un bloqueo en el perfil de {0}: {1}"
 
 #: python/prelims/__init__.py:829
 msgid "profile does not exist"
-msgstr "perfil no existe"
+msgstr "el perfil no existe"
 
 #: python/prelims/__init__.py:850
 #, python-format
@@ -388,12 +381,12 @@ msgstr "el perfil %s está en uso"
 #: python/prelims/__init__.py:872
 #, python-format
 msgid "the profile length is too long (max %d characters)"
-msgstr "la longitud del perfil es demasiado largo %d caracteres)"
+msgstr "la longitud del perfil es demasiado largo (max %d caracteres)"
 
 #: python/prelims/__init__.py:874
 #, python-format
 msgid "The profile length is too long (max %d characters)."
-msgstr "La longitud del perfil es demasiado largo %d caracteres)."
+msgstr "La longitud del perfil es demasiado largo (max %d caracteres)."
 
 #: python/prelims/__init__.py:878
 msgid "the new profile name is not valid"
@@ -422,22 +415,22 @@ msgstr "Creación del directorio temporal falló."
 #: python/prelims/__init__.py:897
 #, python-format
 msgid "the specified template '%s' is not valid"
-msgstr "la plantilla especificada %s no es válido"
+msgstr "la plantilla especificada '%s' no es válido"
 
 #: python/prelims/__init__.py:899
 #, python-format
 msgid "The specified template '%s' is not valid."
-msgstr "La plantilla especificada %s no es válido."
+msgstr "La plantilla especificada '%s' no es válido."
 
 #: python/prelims/__init__.py:921
 #, python-format
 msgid "the template profile '%s' does not exist"
-msgstr "el perfil de plantilla %s no existe"
+msgstr "el perfil de plantilla '%s' no existe"
 
 #: python/prelims/__init__.py:923
 #, python-format
 msgid "The template profile '%s' does not exist."
-msgstr "El perfil de la plantilla %s no existe."
+msgstr "El perfil de la plantilla '%s' no existe."
 
 #: python/prelims/__init__.py:933
 #, python-format
@@ -452,22 +445,22 @@ msgstr "No se pudo escribir el archivo %s."
 #: python/prelims/__init__.py:942
 #, python-format
 msgid "the profile directory '%s' already exists"
-msgstr "el directorio de perfil %s ya existe'"
+msgstr "el directorio de perfil '%s' ya existe'"
 
 #: python/prelims/__init__.py:944
 #, python-format
 msgid "The profile directory '%s' already exists."
-msgstr "El directorio de perfil %s ya existe'."
+msgstr "El directorio de perfil '%s' ya existe'."
 
 #: python/prelims/__init__.py:947
 #, python-format
 msgid "a non directory path exists at: '%s'"
-msgstr "existe un camino no directorio en: %s"
+msgstr "existe un camino no directorio en: '%s'"
 
 #: python/prelims/__init__.py:948
 #, python-format
 msgid "A Non directory path exists at: '%s'."
-msgstr "Existe una ruta de acceso no directorio en: %s."
+msgstr "Existe una ruta de acceso no directorio en: '%s'."
 
 #: python/prelims/__init__.py:959
 msgid "The default profile"
@@ -515,7 +508,7 @@ msgstr "Descripción"
 #. TC: column heading. The time a particular profile has been running.
 #: python/prelims/profiledialog.py:292
 msgid "Up-time"
-msgstr "Hasta los tiempos"
+msgstr "Tiempo de actividad"
 
 #: python/prelims/profiledialog.py:306
 msgid "_Auto"
@@ -554,11 +547,14 @@ msgid ""
 "A reconnection attempt will be made in {countdown} seconds.\n"
 "This is attempt number {attempt} of {maxtries}."
 msgstr ""
+"<span weight=\"bold\" size=\"12000\">La conexión con el servidor en la pestaña {servertab} ha fallado.</span>\n"
+"Un intento de reconexión se hará en {countdown} segundos.\n"
+"Este es el intento número {attempt} de {maxtries}."
 
 #: python/dialogs.py:254
 #, python-format
 msgid "This is attempt number %d. There is no retry limit."
-msgstr "Este es el número %d No hay límite de reintentos."
+msgstr "Este es el intento número %d No hay límite de reintentos."
 
 #: python/dialogs.py:283
 msgid "_Retry Now"
@@ -571,12 +567,12 @@ msgstr "Derechos de autor %s Stephen Fairchild y otros."
 
 #: python/__init__.py.in.in:104
 msgid "Released under the GNU General Public License V2.0+."
-msgstr "Publicado bajo la GNU General Public License V2.0 +."
+msgstr "Publicado bajo la GNU General Public License V2.0+."
 
 #. TC: IRC message subcategory, triggers on new track announcements.
 #: python/irc.py:82
 msgid "Track announce"
-msgstr "Seguimiento de anunciar"
+msgstr "Anunciar pista"
 
 #. TC: IRC message subcategory, triggered by a timer.
 #: python/irc.py:84
@@ -625,11 +621,11 @@ msgstr "Nombre de DJ"
 
 #: python/irc.py:96 python/sourceclientgui.py:1784
 msgid "Listen URL"
-msgstr "Escuchar URL"
+msgstr "URL de Escuchar"
 
 #: python/irc.py:96
 msgid "Source URI"
-msgstr "Fuente URI"
+msgstr "URI Fuente"
 
 #. TC: Popup menu item for a GTK text entry widget.
 #: python/irc.py:139
@@ -639,12 +635,12 @@ msgstr "Inserte Atributo o Código de color"
 #. TC: Text formatting style.
 #: python/irc.py:176
 msgid "<b>Bold</b>"
-msgstr "<b> negrita </ ​​b>"
+msgstr "<b>Negrita</​b>"
 
 #. TC: Text formatting style.
 #: python/irc.py:178
 msgid "<u>Underline</u>"
-msgstr "<u> subrayado </ u>"
+msgstr "<u>Subrayado</u>"
 
 #. TC: Text formatting style.
 #: python/irc.py:180
@@ -657,7 +653,7 @@ msgstr "Colores"
 
 #: python/irc.py:403
 msgid "Optional data entry field for information only."
-msgstr "Campo de entrada de datos opcional para sólo información."
+msgstr "Campo de entrada de datos opcional sólo para información."
 
 #. TC: Tab heading text.
 #: python/irc.py:406
@@ -670,7 +666,7 @@ msgstr "Inicio manual"
 
 #: python/irc.py:420
 msgid "Off when restarting IDJC and off initially."
-msgstr "Off al reiniciar IDJC y fuera inicialmente."
+msgstr "Apagado al reiniciar IDJC y apagado inicialmente."
 
 #. TC: The IRC network e.g. EFnet.
 #: python/irc.py:444
@@ -694,7 +690,7 @@ msgstr "Nombre de usuario"
 
 #: python/irc.py:450 python/songdb.py:343 python/sourceclientgui.py:271
 msgid "Password"
-msgstr "Clave"
+msgstr "Contraseña"
 
 #. TC: Second choice of IRC nickname.
 #: python/irc.py:454
@@ -704,7 +700,7 @@ msgstr "Segunda elección"
 #. TC: Third choice of IRC nickname.
 #: python/irc.py:456
 msgid "Third choice"
-msgstr "Tercera opción"
+msgstr "Tercera elección"
 
 #. TC: The IRC user's 'real' name.
 #: python/irc.py:458
@@ -714,7 +710,7 @@ msgstr "Nombre real"
 #. TC: The NickServ password.
 #: python/irc.py:460
 msgid "NickServ p/w"
-msgstr "NickServ p / w"
+msgstr "NickServ p/w"
 
 #. TC: Tooltip to IRC 'User name' field.
 #: python/irc.py:465
@@ -732,11 +728,7 @@ msgid ""
 "IRC nicknames are cycled through, then twice again after appending an "
 "additional underscore until giving up. This gives IDJC a maximum of nine IRC "
 "nicknames to try."
-msgstr ""
-"Cuando un apodo está en uso en la red IRC objetivo, durante la conexión "
-"estos apodos se reciclan a través de IRC, después dos veces de nuevo después "
-"añadiendo un subrayado adicional hasta que darse por vencido. Este IDJC da "
-"un máximo de nueve apodos IRC a intentarlo."
+msgstr "Cuando un apodo está en uso en la red objetivo de IRC, durante la conexión estos apodos IRC se reciclan, después dos veces de nuevo después de añadir un subrayado adicional hasta que darse por vencido. Este IDJC da un máximo de nueve apodos IRC para probar."
 
 #: python/irc.py:480
 msgid ""
@@ -781,7 +773,7 @@ msgstr ""
 #. TC: An IRC channel #chan or user name entry box label.
 #: python/irc.py:559
 msgid "Channels/Users"
-msgstr "Canales / Usuarios"
+msgstr "Canales/Usuarios"
 
 #: python/irc.py:563
 msgid ""
@@ -822,7 +814,7 @@ msgstr ""
 #. TC: Dialog window title text.
 #: python/irc.py:673
 msgid "IRC track announce"
-msgstr "Pista IRC anunciar"
+msgstr "Anunciar pista IRC"
 
 #. TC: Spinbutton label for a delay value.
 #: python/irc.py:680
@@ -885,7 +877,7 @@ msgstr "Esta función requiere la instalación de python-irc."
 #. TC: Indicator text: We used a password.
 #: python/irc.py:1058
 msgid "PASSWORD"
-msgstr "CLAVE"
+msgstr "CONTRASEÑA"
 
 #. TC: Indicator text: We interact with NickServ.
 #: python/irc.py:1061
@@ -900,12 +892,12 @@ msgstr "MANUAL"
 #. TC: Dialog title text.
 #: python/irc.py:1089
 msgid "IRC stream up message"
-msgstr "IRC stream arriba mensaje"
+msgstr "Mensaje IRC de stream activo"
 
 #. TC: Dialog title text.
 #: python/irc.py:1091
 msgid "IRC stream down message"
-msgstr "Tráfico de IRC por mensaje"
+msgstr "Mensaje IRC de stream inactivo"
 
 #. TC: Dialog title text.
 #: python/irc.py:1093
@@ -2524,7 +2516,7 @@ msgstr "Añadir música de fondo"
 #. TC: File filter text.
 #: python/playergui.py:2566
 msgid "Supported Media Formats"
-msgstr "Formatos Soportados de los Medios"
+msgstr "Formatos Admitidos de los Medios"
 
 #. TC: Expander text "Select File Type (.pls)" for the pls file type.
 #: python/playergui.py:2628
