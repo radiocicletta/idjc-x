@@ -4051,7 +4051,7 @@ class IDJC_Media_Player:
 
         # A frame for our playlist
         plframe = gtk.Frame(" %s " % dict(left=_('Playlist 1'),
-                        right=_('Playlist 2'), interlude=('Playlist 3'))[name])
+                        right=_('Playlist 2'), interlude=_('Playlist 3'))[name])
             
         plframe.set_border_width(4)
         plframe.set_shadow_type(gtk.SHADOW_ETCHED_IN)
