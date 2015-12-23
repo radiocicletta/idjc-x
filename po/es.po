@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: idjc 0.8.16_development\n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
 "POT-Creation-Date: 2015-12-21 17:54+0000\n"
-"PO-Revision-Date: 2015-12-20 02:56-0600\n"
+"PO-Revision-Date: 2015-12-23 02:55-0600\n"
 "Last-Translator: Blank Frank <frank@rhizomatica.org>\n"
 "Language-Team: English <team@example.com>\n"
 "Language: es\n"
@@ -24,10 +24,8 @@ msgid ""
 "the sub-commands for example: \"%(prog)s run --help\" shows the help for the "
 "run command"
 msgstr ""
-"mostrar este mensaje de ayuda y termina - ayuda adicional está disponible "
-"en \n"
-"cada uno de los sub-comandos, por ejemplo: \"%(prog)s run --help\" muestra "
-"la ayuda \n"
+"mostrar este mensaje de ayuda y termina -- ayuda adicional está disponible en \n"
+"cada uno de los sub-comandos, por ejemplo: \"%(prog)s run --help\" muestra la ayuda \n"
 "para el comando run"
 
 #. TC: a command line option help string.
@@ -47,7 +45,7 @@ msgstr ""
 #. TC: do not translate run.
 #: python/prelims/__init__.py:116
 msgid "-- sub-command: run -- launch the idjc application"
-msgstr "- Control secundario: run - iniciar la aplicación IDJC"
+msgstr "-- sub-comando: run -- iniciar la aplicación IDJC"
 
 #: python/prelims/__init__.py:121
 msgid "make a new profile"
@@ -56,27 +54,27 @@ msgstr "hacer un nuevo perfil"
 #. TC: do not translate the word new.
 #: python/prelims/__init__.py:123
 msgid "-- sub-command: new -- make a new profile"
-msgstr "- Control secundario: nuevo - hacer un nuevo perfil"
+msgstr "-- sub-comando: nuevo -- hacer un nuevo perfil"
 
 #. TC: a command line option help string.
 #: python/prelims/__init__.py:127
 msgid "remove profile(s)"
-msgstr "eliminar el perfil (s)"
+msgstr "eliminar perfil(es)"
 
 #. TC: do not translate the word rm.
 #: python/prelims/__init__.py:129
 msgid "-- sub-command: rm -- remove profile(s)"
-msgstr "- Sub-comando: rm - eliminar el perfil (s)"
+msgstr "-- sub-comando: rm -- eliminar el perfil (s)"
 
 #. TC: a command line option help string.
 #: python/prelims/__init__.py:133
 msgid "select which profile is to automatically launch"
-msgstr "seleccionar qué perfil es poner en marcha de forma automática"
+msgstr "seleccionar cuál perfil se pone en marcha de forma automática"
 
 #. TC: do not translate the word auto.
 #: python/prelims/__init__.py:136
 msgid "-- sub-command: auto -- mark a profile for auto-launch"
-msgstr "- Control secundario: auto - marcar un perfil para auto-lanzamiento"
+msgstr "-- sub-comando: auto -- marcar un perfil para auto-lanzamiento"
 
 #: python/prelims/__init__.py:141
 msgid "remove auto-launch"
@@ -84,16 +82,16 @@ msgstr "eliminar auto-lanzamiento"
 
 #: python/prelims/__init__.py:142
 msgid "-- sub-command: noauto -- remove auto-launch"
-msgstr "- Control secundario: noauto - quitar auto-lanzamiento"
+msgstr "-- sub-comando: noauto -- quitar auto-lanzamiento"
 
 #: python/prelims/__init__.py:147
 msgid "list available profiles"
-msgstr "Lista de perfiles disponibles"
+msgstr "lista de perfiles disponibles"
 
 #. TC: do not translate the word ls.
 #: python/prelims/__init__.py:149
 msgid "-- sub-command: ls -- list available profiles"
-msgstr "- Sub-comando: ls - Lista perfiles disponibles"
+msgstr "-- sub-comando: ls -- Lista perfiles disponibles"
 
 #: python/prelims/__init__.py:153 python/prelims/__init__.py:206
 #: python/prelims/__init__.py:231 python/prelims/__init__.py:236
@@ -127,11 +125,11 @@ msgstr ""
 #. TC: command line help placeholder.
 #: python/prelims/__init__.py:166
 msgid "server_name"
-msgstr "nombre del servidor"
+msgstr "server_name"
 
 #: python/prelims/__init__.py:166
 msgid "the named jack sound-server to connect with"
-msgstr "la toma de sonido-servidor llamado para conectar con"
+msgstr "el sonido-servidor jack nombrado para conectar"
 
 #. TC: command line help placeholder.
 #: python/prelims/__init__.py:170
@@ -150,16 +148,12 @@ msgstr ""
 msgid ""
 "At start-up do not make any JACK connections. This option delegates all "
 "control over restored connections to the session handler."
-msgstr ""
-"En el arranque no se realice ninguna conexión JACK. Esta opción delegados de "
-"todo control sobre las conexiones restauradas al manejador de sesión."
+msgstr "Al arranque no se realice ninguna conexión JACK. Esta opción delega todo control sobre las conexiones restauradas al manejador de sesión."
 
 #: python/prelims/__init__.py:181
 msgid ""
 "No JACK ports will be connected except those listed in the session file."
-msgstr ""
-"No hay puertos JACK se conectarán a excepción de los enumerados en el "
-"archivo de sesión."
+msgstr "Ningúnos puertos JACK se conectarán a excepción de los enumerados en el archivo de sesión."
 
 #: python/prelims/__init__.py:184
 msgid "user interface settings"
@@ -167,7 +161,7 @@ msgstr "configuración de la interfaz de usuario"
 
 #: python/prelims/__init__.py:187
 msgid "the audio channels to have open at startup"
-msgstr "los canales de audio que tienen abiertas en el arranque"
+msgstr "los canales de audio para tener abiertas en el arranque"
 
 #: python/prelims/__init__.py:190
 msgid "the voip mode at startup"
@@ -175,14 +169,14 @@ msgstr "el modo de VoIP en el arranque"
 
 #: python/prelims/__init__.py:196
 msgid "attempt connection with the specified servers"
-msgstr "conexión intento con los servidores especificados"
+msgstr "intentar la conexión con los servidores especificados"
 
 #: python/prelims/__init__.py:199
 msgid ""
 "kick sources on servers -- note that this will be\n"
 "                done before any server connection attempts are made"
 msgstr ""
-"patear las fuentes en los servidores - tenga en cuenta que esto \n"
+"patear las fuentes en los servidores -- tenga en cuenta que esto \n"
 "se hace antes de realizar cualquier intento de conexión del servidor"
 
 #: python/prelims/__init__.py:203
@@ -192,7 +186,7 @@ msgstr "sitúe el crossfader para el reproductor especificado"
 #. TC: command line help placeholder.
 #: python/prelims/__init__.py:208 python/prelims/__init__.py:232
 msgid "profile_name"
-msgstr "nombre de perfil"
+msgstr "profile_name"
 
 #: python/prelims/__init__.py:209
 msgid ""
@@ -201,7 +195,7 @@ msgid ""
 "                restrictions therefore apply"
 msgstr ""
 "nuevo nombre de perfil -- formará parte del nombre \n"
-"del bus/objeto/interfaz de dbus y el ID de cliente de JACK --\n"
+"del bus/objeto/interfaz de dbus y la ID del cliente de JACK --\n"
 "Por lo tanto, se aplican restricciones"
 
 #: python/prelims/__init__.py:214
@@ -218,7 +212,7 @@ msgstr "icon_pathname"
 
 #: python/prelims/__init__.py:219
 msgid "pathname to an icon -- defaults to idjc logo"
-msgstr "ruta de acceso a un icono - por defecto logo IDJC"
+msgstr "ruta de acceso a un icono -- por defecto logo IDJC"
 
 #: python/prelims/__init__.py:223
 msgid "nickname"
@@ -240,7 +234,7 @@ msgstr "una descripción del perfil"
 
 #: python/prelims/__init__.py:233
 msgid "the profile(s) to remove"
-msgstr "el perfil (s) para eliminar"
+msgstr "perfil(es) para eliminar"
 
 #: python/prelims/__init__.py:238
 msgid "the profile to make automatic"
@@ -249,7 +243,7 @@ msgstr "el perfil para hacer automática"
 #: python/prelims/__init__.py:417
 #, python-format
 msgid "failed to create profile: %s"
-msgstr "no para crear el %s"
+msgstr "falló en crear el perfil: %s"
 
 #: python/prelims/__init__.py:424
 #, python-format
@@ -259,17 +253,17 @@ msgstr "fracasado en eliminar el %s"
 #: python/prelims/__init__.py:431
 #, python-format
 msgid "auto failed: %s"
-msgstr "auto %s"
+msgstr "falló auto: %s"
 
 #: python/prelims/__init__.py:438
 #, python-format
 msgid "noauto failed: %s"
-msgstr "noauto %s"
+msgstr "falló noauto: %s"
 
 #: python/prelims/__init__.py:447
 #, python-format
 msgid "ls failed: %s"
-msgstr "ls %s"
+msgstr "falló ls: %s"
 
 #: python/prelims/__init__.py:466
 msgid "the specified profile name is not valid"
@@ -282,12 +276,12 @@ msgstr "nombre del perfil es malo"
 #: python/prelims/__init__.py:476 python/prelims/__init__.py:744
 #, python-format
 msgid "profile %s does not exist"
-msgstr "%s no existe"
+msgstr "perfil %s no existe"
 
 #: python/prelims/__init__.py:479
 #, python-format
 msgid "profile %s is already running"
-msgstr "%s ya está funcionando"
+msgstr "perfil %s ya está funcionando"
 
 #: python/prelims/__init__.py:492
 #, python-format
@@ -327,17 +321,17 @@ msgstr "perfil especificado no es %s"
 #: python/prelims/__init__.py:633
 #, python-format
 msgid "specified profile does not exist: %s"
-msgstr "perfil especificado no %s"
+msgstr "perfil especificado no existe: %s"
 
 #: python/prelims/__init__.py:664
 #, python-format
 msgid "unknown session type: %s: must be one of %s"
-msgstr "desconocido tipo de %s debe ser uno %s"
+msgstr "desconocido tipo de sesión: %s debe ser uno %s"
 
 #: python/prelims/__init__.py:677
 #, python-format
 msgid "directory does not exist: %s"
-msgstr "directorio no %s"
+msgstr "directorio no existe: %s"
 
 #: python/prelims/__init__.py:708
 #, python-format
@@ -347,13 +341,12 @@ msgstr "problema con el directorio de sesión %s"
 #: python/prelims/__init__.py:781
 #, python-format
 msgid "Profile %s is active."
-msgstr "%s está activo."
+msgstr "El perfil %s está activo."
 
 #: python/prelims/__init__.py:791
 #, python-brace-format
 msgid "Cannot rename profile {0} to {1}, {1} currently exists."
-msgstr ""
-"No se puede cambiar el nombre de perfil {0} a {1} {1} actualmente existe."
+msgstr "No se puede cambiar el nombre de perfil {0} a {1}, {1} actualmente existe."
 
 #: python/prelims/__init__.py:795
 #, python-brace-format
@@ -374,11 +367,11 @@ msgstr ""
 #: python/prelims/__init__.py:824
 #, python-brace-format
 msgid "could not get a lock on profile {0}: {1}"
-msgstr "no pudo obtener un bloqueo en el perfil de {0} {1}"
+msgstr "no pudo obtener un bloqueo en el perfil de {0}: {1}"
 
 #: python/prelims/__init__.py:829
 msgid "profile does not exist"
-msgstr "perfil no existe"
+msgstr "el perfil no existe"
 
 #: python/prelims/__init__.py:850
 #, python-format
@@ -388,12 +381,12 @@ msgstr "el perfil %s está en uso"
 #: python/prelims/__init__.py:872
 #, python-format
 msgid "the profile length is too long (max %d characters)"
-msgstr "la longitud del perfil es demasiado largo %d caracteres)"
+msgstr "la longitud del perfil es demasiado largo (max %d caracteres)"
 
 #: python/prelims/__init__.py:874
 #, python-format
 msgid "The profile length is too long (max %d characters)."
-msgstr "La longitud del perfil es demasiado largo %d caracteres)."
+msgstr "La longitud del perfil es demasiado largo (max %d caracteres)."
 
 #: python/prelims/__init__.py:878
 msgid "the new profile name is not valid"
@@ -422,22 +415,22 @@ msgstr "Creación del directorio temporal falló."
 #: python/prelims/__init__.py:897
 #, python-format
 msgid "the specified template '%s' is not valid"
-msgstr "la plantilla especificada %s no es válido"
+msgstr "la plantilla especificada '%s' no es válido"
 
 #: python/prelims/__init__.py:899
 #, python-format
 msgid "The specified template '%s' is not valid."
-msgstr "La plantilla especificada %s no es válido."
+msgstr "La plantilla especificada '%s' no es válido."
 
 #: python/prelims/__init__.py:921
 #, python-format
 msgid "the template profile '%s' does not exist"
-msgstr "el perfil de plantilla %s no existe"
+msgstr "el perfil de plantilla '%s' no existe"
 
 #: python/prelims/__init__.py:923
 #, python-format
 msgid "The template profile '%s' does not exist."
-msgstr "El perfil de la plantilla %s no existe."
+msgstr "El perfil de la plantilla '%s' no existe."
 
 #: python/prelims/__init__.py:933
 #, python-format
@@ -452,22 +445,22 @@ msgstr "No se pudo escribir el archivo %s."
 #: python/prelims/__init__.py:942
 #, python-format
 msgid "the profile directory '%s' already exists"
-msgstr "el directorio de perfil %s ya existe'"
+msgstr "el directorio de perfil '%s' ya existe'"
 
 #: python/prelims/__init__.py:944
 #, python-format
 msgid "The profile directory '%s' already exists."
-msgstr "El directorio de perfil %s ya existe'."
+msgstr "El directorio de perfil '%s' ya existe'."
 
 #: python/prelims/__init__.py:947
 #, python-format
 msgid "a non directory path exists at: '%s'"
-msgstr "existe un camino no directorio en: %s"
+msgstr "existe un camino no directorio en: '%s'"
 
 #: python/prelims/__init__.py:948
 #, python-format
 msgid "A Non directory path exists at: '%s'."
-msgstr "Existe una ruta de acceso no directorio en: %s."
+msgstr "Existe una ruta de acceso no directorio en: '%s'."
 
 #: python/prelims/__init__.py:959
 msgid "The default profile"
@@ -515,7 +508,7 @@ msgstr "Descripción"
 #. TC: column heading. The time a particular profile has been running.
 #: python/prelims/profiledialog.py:292
 msgid "Up-time"
-msgstr "Hasta los tiempos"
+msgstr "Tiempo de actividad"
 
 #: python/prelims/profiledialog.py:306
 msgid "_Auto"
@@ -554,11 +547,14 @@ msgid ""
 "A reconnection attempt will be made in {countdown} seconds.\n"
 "This is attempt number {attempt} of {maxtries}."
 msgstr ""
+"<span weight=\"bold\" size=\"12000\">La conexión con el servidor en la pestaña {servertab} ha fallado.</span>\n"
+"Un intento de reconexión se hará en {countdown} segundos.\n"
+"Este es el intento número {attempt} de {maxtries}."
 
 #: python/dialogs.py:254
 #, python-format
 msgid "This is attempt number %d. There is no retry limit."
-msgstr "Este es el número %d No hay límite de reintentos."
+msgstr "Este es el intento número %d No hay límite de reintentos."
 
 #: python/dialogs.py:283
 msgid "_Retry Now"
@@ -571,12 +567,12 @@ msgstr "Derechos de autor %s Stephen Fairchild y otros."
 
 #: python/__init__.py.in.in:104
 msgid "Released under the GNU General Public License V2.0+."
-msgstr "Publicado bajo la GNU General Public License V2.0 +."
+msgstr "Publicado bajo la GNU General Public License V2.0+."
 
 #. TC: IRC message subcategory, triggers on new track announcements.
 #: python/irc.py:82
 msgid "Track announce"
-msgstr "Seguimiento de anunciar"
+msgstr "Anunciar pista"
 
 #. TC: IRC message subcategory, triggered by a timer.
 #: python/irc.py:84
@@ -625,11 +621,11 @@ msgstr "Nombre de DJ"
 
 #: python/irc.py:96 python/sourceclientgui.py:1784
 msgid "Listen URL"
-msgstr "Escuchar URL"
+msgstr "URL de Escuchar"
 
 #: python/irc.py:96
 msgid "Source URI"
-msgstr "Fuente URI"
+msgstr "URI Fuente"
 
 #. TC: Popup menu item for a GTK text entry widget.
 #: python/irc.py:139
@@ -639,12 +635,12 @@ msgstr "Inserte Atributo o Código de color"
 #. TC: Text formatting style.
 #: python/irc.py:176
 msgid "<b>Bold</b>"
-msgstr "<b> negrita </ ​​b>"
+msgstr "<b>Negrita</​b>"
 
 #. TC: Text formatting style.
 #: python/irc.py:178
 msgid "<u>Underline</u>"
-msgstr "<u> subrayado </ u>"
+msgstr "<u>Subrayado</u>"
 
 #. TC: Text formatting style.
 #: python/irc.py:180
@@ -657,7 +653,7 @@ msgstr "Colores"
 
 #: python/irc.py:403
 msgid "Optional data entry field for information only."
-msgstr "Campo de entrada de datos opcional para sólo información."
+msgstr "Campo de entrada de datos opcional sólo para información."
 
 #. TC: Tab heading text.
 #: python/irc.py:406
@@ -670,7 +666,7 @@ msgstr "Inicio manual"
 
 #: python/irc.py:420
 msgid "Off when restarting IDJC and off initially."
-msgstr "Off al reiniciar IDJC y fuera inicialmente."
+msgstr "Apagado al reiniciar IDJC y apagado inicialmente."
 
 #. TC: The IRC network e.g. EFnet.
 #: python/irc.py:444
@@ -694,7 +690,7 @@ msgstr "Nombre de usuario"
 
 #: python/irc.py:450 python/songdb.py:343 python/sourceclientgui.py:271
 msgid "Password"
-msgstr "Clave"
+msgstr "Contraseña"
 
 #. TC: Second choice of IRC nickname.
 #: python/irc.py:454
@@ -704,7 +700,7 @@ msgstr "Segunda elección"
 #. TC: Third choice of IRC nickname.
 #: python/irc.py:456
 msgid "Third choice"
-msgstr "Tercera opción"
+msgstr "Tercera elección"
 
 #. TC: The IRC user's 'real' name.
 #: python/irc.py:458
@@ -714,7 +710,7 @@ msgstr "Nombre real"
 #. TC: The NickServ password.
 #: python/irc.py:460
 msgid "NickServ p/w"
-msgstr "NickServ p / w"
+msgstr "NickServ p/w"
 
 #. TC: Tooltip to IRC 'User name' field.
 #: python/irc.py:465
@@ -732,11 +728,7 @@ msgid ""
 "IRC nicknames are cycled through, then twice again after appending an "
 "additional underscore until giving up. This gives IDJC a maximum of nine IRC "
 "nicknames to try."
-msgstr ""
-"Cuando un apodo está en uso en la red IRC objetivo, durante la conexión "
-"estos apodos se reciclan a través de IRC, después dos veces de nuevo después "
-"añadiendo un subrayado adicional hasta que darse por vencido. Este IDJC da "
-"un máximo de nueve apodos IRC a intentarlo."
+msgstr "Cuando un apodo está en uso en la red objetivo de IRC, durante la conexión estos apodos IRC se reciclan, después dos veces de nuevo después de añadir un subrayado adicional hasta que darse por vencido. Este IDJC da un máximo de nueve apodos IRC para probar."
 
 #: python/irc.py:480
 msgid ""
@@ -781,7 +773,7 @@ msgstr ""
 #. TC: An IRC channel #chan or user name entry box label.
 #: python/irc.py:559
 msgid "Channels/Users"
-msgstr "Canales / Usuarios"
+msgstr "Canales/Usuarios"
 
 #: python/irc.py:563
 msgid ""
@@ -822,7 +814,7 @@ msgstr ""
 #. TC: Dialog window title text.
 #: python/irc.py:673
 msgid "IRC track announce"
-msgstr "Pista IRC anunciar"
+msgstr "Anunciar pista IRC"
 
 #. TC: Spinbutton label for a delay value.
 #: python/irc.py:680
@@ -885,7 +877,7 @@ msgstr "Esta función requiere la instalación de python-irc."
 #. TC: Indicator text: We used a password.
 #: python/irc.py:1058
 msgid "PASSWORD"
-msgstr "CLAVE"
+msgstr "CONTRASEÑA"
 
 #. TC: Indicator text: We interact with NickServ.
 #: python/irc.py:1061
@@ -900,12 +892,12 @@ msgstr "MANUAL"
 #. TC: Dialog title text.
 #: python/irc.py:1089
 msgid "IRC stream up message"
-msgstr "IRC stream arriba mensaje"
+msgstr "Mensaje IRC de stream activo"
 
 #. TC: Dialog title text.
 #: python/irc.py:1091
 msgid "IRC stream down message"
-msgstr "Tráfico de IRC por mensaje"
+msgstr "Mensaje IRC de stream inactivo"
 
 #. TC: Dialog title text.
 #: python/irc.py:1093
@@ -944,7 +936,7 @@ msgstr "Texto Disparador"
 
 #: python/jingles.py:350
 msgid "No Name"
-msgstr "Nombre no"
+msgstr "Sin Nombre"
 
 #: python/jingles.py:357
 msgid "Level adjustment (dB)"
@@ -956,9 +948,7 @@ msgstr "Volumen de los efectos."
 
 #: python/jingles.py:439
 msgid "Player headroom that is applied when an effect is playing."
-msgstr ""
-"Espacio para la cabeza del reproductor que se aplica cuando un efecto está "
-"reproduciéndose."
+msgstr "Altura libre del reproductor que se aplica cuando un efecto está reproduciéndose."
 
 #: python/jingles.py:502
 msgid "Alternative"
@@ -966,7 +956,7 @@ msgstr "Alternativa"
 
 #: python/jingles.py:503
 msgid "Default"
-msgstr "Defecto"
+msgstr "Predeterminado"
 
 #: python/jingles.py:548
 msgid "Effects"
@@ -975,7 +965,7 @@ msgstr "Efectos"
 #: python/jingles.py:591
 #, python-format
 msgid "Effects %d"
-msgstr "%d"
+msgstr "Efectos %d"
 
 #: python/jingles.py:599 python/maingui.py:189
 msgid "Background Tracks"
@@ -1139,7 +1129,7 @@ msgstr ""
 
 #: python/maingui.py:703
 msgid "The amount of headroom required (dB)"
-msgstr "La cantidad de espacio libre requerido (dB)"
+msgstr "La cantidad de altura libre requerido (dB)"
 
 #: python/maingui.py:712
 msgid "This button will flash as a reminder to close"
@@ -1459,7 +1449,7 @@ msgstr "R"
 
 #: python/maingui.py:3514
 msgid "Move the crossfader fully right."
-msgstr "Mueva el crossfader totalmente correcto."
+msgstr "Mueva el crossfader totalmente a la derecha."
 
 #. TC: Describes a mid point.
 #: python/maingui.py:3523 python/maingui.py:3525
@@ -1816,7 +1806,7 @@ msgstr "Reproductor de Izquierda"
 
 #: python/midicontrols.py:162
 msgid "Right player"
-msgstr "Reproductor"
+msgstr "Reproductor de derecha"
 
 #: python/midicontrols.py:163
 msgid "Background player"
@@ -1828,7 +1818,7 @@ msgstr "Reproductor Focused"
 
 #: python/midicontrols.py:165
 msgid "Fadered player"
-msgstr "Reproductor Fadered"
+msgstr "Reproductor Fundido"
 
 #: python/midicontrols.py:169
 msgid "Effects bank 1"
@@ -2069,7 +2059,7 @@ msgstr "álbum"
 
 #: python/mutagentagger.py:220
 msgid "track/total"
-msgstr "pista / total de"
+msgstr "pista/total de"
 
 #: python/mutagentagger.py:221
 msgid "genre"
@@ -2102,7 +2092,7 @@ msgstr ""
 #. TC: Remaining textual ID3 data is show below this heading.
 #: python/mutagentagger.py:366
 msgid " Additional Text Frames "
-msgstr " Marcos Adicionales texto "
+msgstr " Marcos Adicionales de Texto "
 
 #. TC: The album track number.
 #: python/mutagentagger.py:376 python/songdb.py:906 python/songdb.py:1295
@@ -2133,7 +2123,7 @@ msgstr "Nativo"
 
 #: python/songdb.py:177
 msgid "Connecting"
-msgstr "Conexión"
+msgstr "Conectando"
 
 #: python/songdb.py:188
 #, python-format
@@ -2142,11 +2132,11 @@ msgstr "Error de conexión %d"
 
 #: python/songdb.py:199
 msgid "Connected: autocommit mode failed"
-msgstr "Conectado: El modo de confirmación automática no"
+msgstr "Conectado: Falló el modo de confirmación automática"
 
 #: python/songdb.py:201
 msgid "Connected: autocommit mode set"
-msgstr "Conjunto modalidad de confirmación automática: Conectado"
+msgstr "Conectado: modo de confirmación automática establecido"
 
 #: python/songdb.py:202
 msgid "Connected"
@@ -2154,7 +2144,7 @@ msgstr "Conectado"
 
 #: python/songdb.py:210
 msgid "Job dropped"
-msgstr "Cayó Trabajo"
+msgstr "Se cayó el trabajo"
 
 #: python/songdb.py:220 python/songdb.py:431
 msgid "Disconnected"
@@ -2162,7 +2152,7 @@ msgstr "Desconectado"
 
 #: python/songdb.py:233
 msgid "Problem dropping connection"
-msgstr "Problema caer conexión"
+msgstr "Problema terminando la conexión"
 
 #: python/songdb.py:235
 msgid "Connection dropped"
@@ -2266,11 +2256,11 @@ msgstr "Árbol fallo en la descarga"
 
 #: python/songdb.py:1085
 msgid "Fetch Failed!"
-msgstr "Fetch Error!"
+msgstr "Fallo de descarga!"
 
 #: python/songdb.py:1098
 msgid "Populating"
-msgstr "Rellenar"
+msgstr "Rellenando"
 
 #: python/songdb.py:1224
 #, python-format
@@ -2290,7 +2280,7 @@ msgstr "Búsqueda borrosa"
 #. TC: WHERE is an SQL keyword.
 #: python/songdb.py:1264
 msgid "WHERE"
-msgstr "DONDE"
+msgstr "WHERE"
 
 #: python/songdb.py:1277
 msgid "Search"
@@ -2339,7 +2329,7 @@ msgstr "Pelar Path"
 
 #: python/songdb.py:1737
 msgid "N/A"
-msgstr "N / A"
+msgstr "N/A"
 
 #: python/songdb.py:1918
 msgid "Failed to create FULLTEXT index"
@@ -2364,12 +2354,12 @@ msgstr "Cuesheet lista de reproducción"
 #. TC: Column heading, the track number.
 #: python/playergui.py:302
 msgid "Trk"
-msgstr "Trk"
+msgstr "Pta"
 
 #. TC: Column heading, the index number.
 #: python/playergui.py:305
 msgid "Ind"
-msgstr "Indiana"
+msgstr "Ind"
 
 #: python/playergui.py:414
 msgid "External Playlist"
@@ -2382,7 +2372,7 @@ msgstr "Activo"
 
 #: python/playergui.py:435
 msgid "Choose a playlist file"
-msgstr "Elija un archivo de lista de reproducción"
+msgstr "Elija un archivo de la lista de reproducción"
 
 #: python/playergui.py:440
 msgid "Choose a media directory"
@@ -2394,7 +2384,7 @@ msgstr "Elija un archivo de lista de reproducción."
 
 #: python/playergui.py:455
 msgid "Choose a folder/directory of music."
-msgstr "Elija una carpeta / directorio de música."
+msgstr "Elija una carpeta/directorio de música."
 
 #: python/playergui.py:522
 msgid "Create a new announcement"
@@ -2412,7 +2402,7 @@ msgstr "Anuncio"
 #. TC: The time format as minutes and seconds.
 #: python/playergui.py:556
 msgid "mm:ss"
-msgstr "mm: ss"
+msgstr "mm:ss"
 
 #. TC: Alongside the name of the next track.
 #: python/playergui.py:609
@@ -2429,20 +2419,20 @@ msgstr "Lista de reproducción M3U"
 
 #: python/playergui.py:934
 msgid "M3U8 playlist"
-msgstr "M3U8 lista de reproducción"
+msgstr "lista de reproducción M3U8"
 
 #: python/playergui.py:935
 msgid "XSPF playlist"
-msgstr "XSPF lista de reproducción"
+msgstr "lista de reproducción XSPF"
 
 #: python/playergui.py:935
 msgid "PLS playlist"
-msgstr "PLS lista de reproducción"
+msgstr "lista de reproducción PLS"
 
 #: python/playergui.py:1007
 #, python-format
 msgid "%d Audio Tracks"
-msgstr "%d pistas de audio"
+msgstr "%d Pistas de Audio"
 
 #. TC: Missing metadata text.
 #: python/playergui.py:1017
@@ -2455,7 +2445,7 @@ msgstr "(Hoja Cue)"
 
 #: python/playergui.py:1058
 msgid "Bad Tag"
-msgstr "Mala Tag"
+msgstr "Tag Mala"
 
 #: python/playergui.py:1890 python/playergui.py:4271
 msgid "Manual"
@@ -2526,7 +2516,7 @@ msgstr "Añadir música de fondo"
 #. TC: File filter text.
 #: python/playergui.py:2566
 msgid "Supported Media Formats"
-msgstr "Formatos de los medios de comunicación"
+msgstr "Formatos Admitidos de los Medios"
 
 #. TC: Expander text "Select File Type (.pls)" for the pls file type.
 #: python/playergui.py:2628
@@ -2590,7 +2580,7 @@ msgstr "Ir al inicio"
 #. TC: Playlist control.
 #: python/playergui.py:3816 python/playergui.py:4470
 msgid "Stop streaming"
-msgstr "Pare el streaming"
+msgstr "Detener el streaming"
 
 #. TC: Playlist control.
 #: python/playergui.py:3821 python/playergui.py:4478
@@ -2640,12 +2630,12 @@ msgstr "Desde el %s"
 #: python/playergui.py:3965
 #, python-format
 msgid "Total number of tracks %d"
-msgstr "Número total de %d"
+msgstr "Número total de pistas %d"
 
 #: python/playergui.py:3969 python/playergui.py:3971
 #, python-format
 msgid "Total play duration %s"
-msgstr "Duración total de %s"
+msgstr "Duración total de reproducción %s"
 
 #: python/playergui.py:4021
 msgid ""
@@ -2691,7 +2681,7 @@ msgstr ""
 
 #: python/playergui.py:4185
 msgid "This sets the playback speed back to normal."
-msgstr "Ajusta la velocidad de reproducción volver a la normalidad."
+msgstr "Esta reestablece la velocidad de reproducción a la normalidad."
 
 #: python/playergui.py:4202
 msgid "Previous track."
@@ -2812,7 +2802,7 @@ msgstr "Hacer salida de este reproductor audible para el DJ."
 
 #: python/playergui.py:4345
 msgid "Force"
-msgstr "Fuerza"
+msgstr "Forzar"
 
 #: python/playergui.py:4351
 msgid ""
@@ -2828,7 +2818,7 @@ msgstr ""
 #. TC: Insert playlist control.
 #: python/playergui.py:4364
 msgid "Insert control"
-msgstr "Inserte el control"
+msgstr "Inserte control"
 
 #. TC: The Item submenu.
 #: python/playergui.py:4373
@@ -2862,7 +2852,7 @@ msgstr "Meta Tag"
 #. TC: Menu Item. Duplicates the selected track in the playlist.
 #: python/playergui.py:4497
 msgid "Duplicate"
-msgstr "Duplicado"
+msgstr "Duplicar"
 
 #. TC: Menu Item. Remove the selected track.
 #: python/playergui.py:4504
@@ -2877,7 +2867,7 @@ msgstr "Esta"
 #. TC: Submenu Item. Parent menu item is Remove.
 #: python/playergui.py:4522 python/preferences.py:1237
 msgid "All"
-msgstr "Todas"
+msgstr "Todos"
 
 #. TC: Submenu Item. Parent menu item is Remove.
 #: python/playergui.py:4529
@@ -2897,7 +2887,7 @@ msgstr "Añadir Música"
 #. TC: Submenu Item. Parent menu is Playlist.
 #: python/playergui.py:4556
 msgid "Save"
-msgstr "Ahorrar"
+msgstr "Guardar"
 
 #. TC: Submenu Item. Parent menu is Playlist.
 #: python/playergui.py:4567
@@ -3046,7 +3036,7 @@ msgstr "El modo de procesamiento de señales."
 #. TC: A frame heading. The channel opener is selected within.
 #: python/preferences.py:468
 msgid "Channel Opener"
-msgstr "Canal Abridor"
+msgstr "Abridor de Canal"
 
 #: python/preferences.py:471
 msgid ""
@@ -3124,7 +3114,7 @@ msgstr "Controles básicos"
 
 #: python/preferences.py:564 python/preferences.py:619
 msgid "Boost/Cut (dB)"
-msgstr "Boost / Cut (dB)"
+msgstr "Boost/Cut (dB)"
 
 #: python/preferences.py:585
 msgid "High Pass Filter"
@@ -3182,9 +3172,7 @@ msgstr "Limite superior"
 #: python/preferences.py:625
 msgid ""
 "A look-ahead brick-wall limiter. Audio signals are capped at the upper limit."
-msgstr ""
-"Un limitador de ladrillo de la pared de preanálisis. Las señales de audio "
-"tienen un límite en el límite superior."
+msgstr "Un limitador \"pared de ladrillo\" de preanálisis. Las señales de audio tienen un límite en el límite superior."
 
 #: python/preferences.py:628
 msgid "Noise Gate"
@@ -3680,11 +3668,11 @@ msgstr "Shoutcast Maestro"
 
 #: python/sourceclientgui.py:141
 msgid "Icecast 2 Stats/Relay"
-msgstr "Icecast 2 Stats / Relay"
+msgstr "Icecast 2 Estadísticas/Relay"
 
 #: python/sourceclientgui.py:141
 msgid "Shoutcast Stats/Relay"
-msgstr "Shoutcast Stats / Relay"
+msgstr "Shoutcast Estadísticas/Relay"
 
 #: python/sourceclientgui.py:144
 msgid "Enter new server connection details"
@@ -3747,7 +3735,7 @@ msgstr "Cert cliente"
 
 #: python/sourceclientgui.py:556
 msgid "Encoder Format Not Set/Compatible"
-msgstr "Formato Encoder No Configurado / Compatible"
+msgstr "Formato del Codificador No Configurado/Incompatible"
 
 #. TC: Connection button text when no details have been entered.
 #: python/sourceclientgui.py:559
@@ -3768,7 +3756,7 @@ msgstr ""
 
 #: python/sourceclientgui.py:777
 msgid "Hostname/IP address"
-msgstr "Nombre de host / dirección IP"
+msgstr "Nombre de host/dirección IP"
 
 #. TC: Mount point is a technical term in relation to icecast servers.
 #: python/sourceclientgui.py:790
@@ -3804,9 +3792,7 @@ msgstr "Cadena de agente de usuario personalizada"
 msgid ""
 "Set this on the occasion that the server or its firewall specifically "
 "refuses to allow libshout based clients."
-msgstr ""
-"Establezca este motivo que el servidor o su firewall niega específicamente "
-"para permitir a los clientes basados ​​libshout."
+msgstr "Establezca este cuando el servidor o su firewall niega específicamente para permitir a los clientes basados ​​en libshout."
 
 #: python/sourceclientgui.py:1114
 msgid "If the connection breaks reconnect to the server"
@@ -4216,7 +4202,7 @@ msgstr "Desconectar"
 
 #: python/sourceclientgui.py:2236
 msgid "Kick Sources"
-msgstr "Fuentes Kick"
+msgstr "Patear Fuentes"
 
 #: python/sourceclientgui.py:2245
 msgid "Metadata:"
@@ -4409,9 +4395,8 @@ msgstr ""
 "metadatos."
 
 #: python/format.py:542
-#, fuzzy
 msgid "Unsupported"
-msgstr "Medios admitidos"
+msgstr "No compatible"
 
 #: python/format.py:543 python/format.py:555
 msgid ""
@@ -4818,7 +4803,7 @@ msgstr "AAC"
 
 #: python/format.py:1107
 msgid "AAC+ v2"
-msgstr "AAC + v2"
+msgstr "AAC+ v2"
 
 #. TC: Codec family e.g. Xiph/Ogg, MPEG etc.
 #: python/format.py:1185
@@ -4827,12 +4812,12 @@ msgstr "Familia"
 
 #: python/format.py:1186
 msgid "WebM"
-msgstr ""
+msgstr "WebM"
 
 #. TC: Xiph.org Ogg container format.
 #: python/format.py:1188
 msgid "Xiph/Ogg"
-msgstr "Xiph / Ogg"
+msgstr "Xiph/Ogg"
 
 #: python/format.py:1189
 msgid "MPEG"
