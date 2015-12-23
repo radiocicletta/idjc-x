@@ -122,13 +122,13 @@ class NewProfileDialog(gtk.Dialog):
 
         labels = (
                 # TC: data entry dialog label text.
-                "Profile name",
+                _("Profile name"),
                 # TC: data entry dialog label text.
-                "Icon",
+                _("Icon"),
                 # TC: data entry dialog label text.
-                "Nickname",
+                _("Nickname"),
                 # TC: data entry dialog label text.
-                "Description")
+                _("Description"))
         names = ("profile_entry", "icon_button", "nickname_entry",
                                                         "description_entry")
         widgets = (ProfileEntry(), IconChooserButton(self._icon_dialog),

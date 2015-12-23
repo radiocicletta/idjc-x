@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: idjc 0.8.16_development\n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
-"POT-Creation-Date: 2015-12-21 17:54+0000\n"
+"POT-Creation-Date: 2015-12-23 12:09+0000\n"
 "PO-Revision-Date: 2015-12-23 02:55-0600\n"
 "Last-Translator: Blank Frank <frank@rhizomatica.org>\n"
 "Language-Team: English <team@example.com>\n"
@@ -24,8 +24,10 @@ msgid ""
 "the sub-commands for example: \"%(prog)s run --help\" shows the help for the "
 "run command"
 msgstr ""
-"mostrar este mensaje de ayuda y termina -- ayuda adicional está disponible en \n"
-"cada uno de los sub-comandos, por ejemplo: \"%(prog)s run --help\" muestra la ayuda \n"
+"mostrar este mensaje de ayuda y termina -- ayuda adicional está disponible "
+"en \n"
+"cada uno de los sub-comandos, por ejemplo: \"%(prog)s run --help\" muestra "
+"la ayuda \n"
 "para el comando run"
 
 #. TC: a command line option help string.
@@ -148,12 +150,16 @@ msgstr ""
 msgid ""
 "At start-up do not make any JACK connections. This option delegates all "
 "control over restored connections to the session handler."
-msgstr "Al arranque no se realice ninguna conexión JACK. Esta opción delega todo control sobre las conexiones restauradas al manejador de sesión."
+msgstr ""
+"Al arranque no se realice ninguna conexión JACK. Esta opción delega todo "
+"control sobre las conexiones restauradas al manejador de sesión."
 
 #: python/prelims/__init__.py:181
 msgid ""
 "No JACK ports will be connected except those listed in the session file."
-msgstr "Ningúnos puertos JACK se conectarán a excepción de los enumerados en el archivo de sesión."
+msgstr ""
+"Ningúnos puertos JACK se conectarán a excepción de los enumerados en el "
+"archivo de sesión."
 
 #: python/prelims/__init__.py:184
 msgid "user interface settings"
@@ -346,7 +352,8 @@ msgstr "El perfil %s está activo."
 #: python/prelims/__init__.py:791
 #, python-brace-format
 msgid "Cannot rename profile {0} to {1}, {1} currently exists."
-msgstr "No se puede cambiar el nombre de perfil {0} a {1}, {1} actualmente existe."
+msgstr ""
+"No se puede cambiar el nombre de perfil {0} a {1}, {1} actualmente existe."
 
 #: python/prelims/__init__.py:795
 #, python-brace-format
@@ -483,6 +490,33 @@ msgstr "Nuevo perfil en base %s"
 msgid "New profile details"
 msgstr "Nuevos detalles del perfil"
 
+#. TC: data entry dialog label text.
+#: python/prelims/profiledialog.py:125
+#, fuzzy
+msgid "Profile name"
+msgstr "profile_name"
+
+#. TC: data entry dialog label text.
+#: python/prelims/profiledialog.py:127 python/maingui.py:682
+msgid "Icon"
+msgstr "Icono"
+
+#. TC: data entry dialog label text.
+#. TC: column heading. The profile nicknames.
+#. TC: IRC nickname data entry label.
+#: python/prelims/profiledialog.py:129 python/prelims/profiledialog.py:285
+#: python/irc.py:452
+msgid "Nickname"
+msgstr "Apodo"
+
+#. TC: data entry dialog label text.
+#. TC: column heading.
+#. TC: Station description.
+#: python/prelims/profiledialog.py:131 python/prelims/profiledialog.py:288
+#: python/irc.py:96 python/playergui.py:307 python/sourceclientgui.py:1786
+msgid "Description"
+msgstr "Descripción"
+
 #. TC: profile dialog window title text.
 #: python/prelims/profiledialog.py:243
 msgid "IDJC Profile Manager"
@@ -491,19 +525,6 @@ msgstr "IDJC Profile Manager"
 #: python/prelims/profiledialog.py:277
 msgid "Profile"
 msgstr "Perfil"
-
-#. TC: column heading. The profile nicknames.
-#. TC: IRC nickname data entry label.
-#: python/prelims/profiledialog.py:285 python/irc.py:452
-msgid "Nickname"
-msgstr "Apodo"
-
-#. TC: column heading.
-#. TC: Station description.
-#: python/prelims/profiledialog.py:288 python/irc.py:96
-#: python/playergui.py:307 python/sourceclientgui.py:1786
-msgid "Description"
-msgstr "Descripción"
 
 #. TC: column heading. The time a particular profile has been running.
 #: python/prelims/profiledialog.py:292
@@ -547,7 +568,8 @@ msgid ""
 "A reconnection attempt will be made in {countdown} seconds.\n"
 "This is attempt number {attempt} of {maxtries}."
 msgstr ""
-"<span weight=\"bold\" size=\"12000\">La conexión con el servidor en la pestaña {servertab} ha fallado.</span>\n"
+"<span weight=\"bold\" size=\"12000\">La conexión con el servidor en la "
+"pestaña {servertab} ha fallado.</span>\n"
 "Un intento de reconexión se hará en {countdown} segundos.\n"
 "Este es el intento número {attempt} de {maxtries}."
 
@@ -728,7 +750,11 @@ msgid ""
 "IRC nicknames are cycled through, then twice again after appending an "
 "additional underscore until giving up. This gives IDJC a maximum of nine IRC "
 "nicknames to try."
-msgstr "Cuando un apodo está en uso en la red objetivo de IRC, durante la conexión estos apodos IRC se reciclan, después dos veces de nuevo después de añadir un subrayado adicional hasta que darse por vencido. Este IDJC da un máximo de nueve apodos IRC para probar."
+msgstr ""
+"Cuando un apodo está en uso en la red objetivo de IRC, durante la conexión "
+"estos apodos IRC se reciclan, después dos veces de nuevo después de añadir "
+"un subrayado adicional hasta que darse por vencido. Este IDJC da un máximo "
+"de nueve apodos IRC para probar."
 
 #: python/irc.py:480
 msgid ""
@@ -921,7 +947,7 @@ msgstr "Repetir"
 msgid "Configure"
 msgstr "Configurar"
 
-#: python/jingles.py:327 python/playergui.py:4138
+#: python/jingles.py:327 python/playergui.py:4144
 msgid "Supported media"
 msgstr "Medios admitidos"
 
@@ -948,7 +974,9 @@ msgstr "Volumen de los efectos."
 
 #: python/jingles.py:439
 msgid "Player headroom that is applied when an effect is playing."
-msgstr "Altura libre del reproductor que se aplica cuando un efecto está reproduciéndose."
+msgstr ""
+"Altura libre del reproductor que se aplica cuando un efecto está "
+"reproduciéndose."
 
 #: python/jingles.py:502
 msgid "Alternative"
@@ -1108,10 +1136,6 @@ msgstr "Texto"
 msgid "The opener button's text."
 msgstr "El texto del botón de apertura."
 
-#: python/maingui.py:682
-msgid "Icon"
-msgstr "Icono"
-
 #: python/maingui.py:690
 msgid "The opener button's icon."
 msgstr "Icono del botón de apertura."
@@ -1185,12 +1209,12 @@ msgid "'%s' control"
 msgstr "%s de control'"
 
 #. TC: Insert playlist control to stop the player.
-#: python/maingui.py:745 python/playergui.py:4396
+#: python/maingui.py:745 python/playergui.py:4404
 msgid "Player Stop"
 msgstr "Detener Reproductor"
 
 #. TC: Insert playlist control to stop the player.
-#: python/maingui.py:746 python/playergui.py:4403
+#: python/maingui.py:746 python/playergui.py:4411
 msgid "Player Stop 2"
 msgstr "Detener Reproductor 2"
 
@@ -1361,13 +1385,13 @@ msgstr "Pistas Reproducidas"
 msgid "Monitor Mix"
 msgstr "Mezcla de Monitor"
 
-#: python/maingui.py:3407 python/maingui.py:3424 python/playergui.py:4337
+#: python/maingui.py:3407 python/maingui.py:3424 python/playergui.py:4345
 msgid "DJ"
 msgstr "DJ"
 
 #. TC: binding editor, action pane, first row, toplevel menu.
 #: python/maingui.py:3410 python/maingui.py:3424 python/midicontrols.py:155
-#: python/midicontrols.py:1507 python/playergui.py:4329
+#: python/midicontrols.py:1507 python/playergui.py:4337
 #: python/sourceclientgui.py:2882
 msgid "Stream"
 msgstr "Stream"
@@ -1393,12 +1417,12 @@ msgid "Metadata Source"
 msgstr "Fuente de los Metadatos"
 
 #. TC: The chosen source of track metadata.
-#: python/maingui.py:3441 python/playergui.py:4047
+#: python/maingui.py:3441 python/playergui.py:4053
 msgid "Playlist 1"
 msgstr "Lista de Reproducción 1"
 
 #. TC: The chosen source of track metadata.
-#: python/maingui.py:3443 python/playergui.py:4048
+#: python/maingui.py:3443 python/playergui.py:4054
 msgid "Playlist 2"
 msgstr "Lista de Reproducción 2"
 
@@ -1414,12 +1438,12 @@ msgstr "Crossfader"
 
 #. TC: The chosen source of track metadata. In this case no metadata.
 #. TC: Fade time is zero. No fade, none.
-#: python/maingui.py:3449 python/playergui.py:4312
+#: python/maingui.py:3449 python/playergui.py:4320
 msgid "None"
 msgstr "Ninguna"
 
 #. TC: The chosen source of track metadata. In this case no metadata.
-#: python/maingui.py:3451
+#: python/maingui.py:3451 python/playergui.py:4054
 msgid "Playlist 3"
 msgstr "Lista de Reproducción 3"
 
@@ -1560,7 +1584,7 @@ msgstr "reproducir/pausa del Reproductor"
 
 #. TC: Control method. Please keep it as Target:Action.
 #. TC: Playlist control.
-#: python/midicontrols.py:56 python/playergui.py:3801
+#: python/midicontrols.py:56 python/playergui.py:3807
 msgid "Player stop"
 msgstr "Parada del reproductor"
 
@@ -2395,7 +2419,7 @@ msgid "Modify or Delete this announcement"
 msgstr "Modificar o Eliminar este anuncio"
 
 #. TC: Embed a DJ announcement text into the playlist.
-#: python/playergui.py:528 python/playergui.py:4433
+#: python/playergui.py:528 python/playergui.py:4441
 msgid "Announcement"
 msgstr "Anuncio"
 
@@ -2447,197 +2471,199 @@ msgstr "(Hoja Cue)"
 msgid "Bad Tag"
 msgstr "Tag Mala"
 
-#: python/playergui.py:1890 python/playergui.py:4271
+#: python/playergui.py:1892 python/playergui.py:4280
 msgid "Manual"
 msgstr "Manual"
 
-#: python/playergui.py:1894 python/playergui.py:4268
+#. TC: playlist modes
+#: python/playergui.py:1896 python/playergui.py:4279
 msgid "Play All"
 msgstr "Reproducir Todo"
 
-#: python/playergui.py:1902 python/playergui.py:1911 python/playergui.py:4269
+#: python/playergui.py:1904 python/playergui.py:1913 python/playergui.py:4279
 msgid "Loop All"
 msgstr "Repetir Todo"
 
-#: python/playergui.py:1902 python/playergui.py:4272
+#: python/playergui.py:1904 python/playergui.py:4280
 msgid "Cue Up"
 msgstr "Avanzar Hasta"
 
-#: python/playergui.py:1903 python/playergui.py:4276
+#: python/playergui.py:1905 python/playergui.py:4284
 msgid "Fade Over"
 msgstr "Desteñirse"
 
-#: python/playergui.py:1915 python/playergui.py:1986 python/playergui.py:4270
+#: python/playergui.py:1917 python/playergui.py:1992 python/playergui.py:4279
 msgid "Random"
 msgstr "Al azar"
 
-#: python/playergui.py:1955 python/playergui.py:4273
+#: python/playergui.py:1961 python/playergui.py:4280
 msgid "External"
 msgstr "Externo"
 
-#: python/playergui.py:1967 python/playergui.py:1983 python/playergui.py:4275
+#. TC: yet more playlist modes these ones for the main players only
+#: python/playergui.py:1973 python/playergui.py:1989 python/playergui.py:4284
 msgid "Alternate"
 msgstr "Alternar"
 
-#: python/playergui.py:1967 python/playergui.py:1985 python/playergui.py:4277
+#: python/playergui.py:1973 python/playergui.py:1991 python/playergui.py:4284
 msgid "Random Hop"
 msgstr "Salto al Azar"
 
 #. TC: The remaining playlist time.
-#: python/playergui.py:2141 python/playergui.py:2147
+#: python/playergui.py:2147 python/playergui.py:2153
 msgid "Remaining"
 msgstr "Restante"
 
 #. TC: The estimated finish time of the playlist.
 #. TC: The estimated finish time of the playlist (ETA).
-#: python/playergui.py:2143 python/playergui.py:2147 python/playergui.py:2161
+#: python/playergui.py:2149 python/playergui.py:2153 python/playergui.py:2167
 msgid "Finish"
 msgstr "Termina"
 
 #. TC: The play duration of the block of audio tracks.
-#: python/playergui.py:2148 python/playergui.py:2159
+#: python/playergui.py:2154 python/playergui.py:2165
 msgid "Block size"
 msgstr "Tamaño de bloque"
 
 #. TC: File dialog title text.
-#: python/playergui.py:2549
+#: python/playergui.py:2555
 msgid "Add music to left playlist"
 msgstr "Añadir a la lista de reproducción de música a la izquierda"
 
 #. TC: File dialog title text.
-#: python/playergui.py:2552
+#: python/playergui.py:2558
 msgid "Add music to right playlist"
 msgstr "Añadir a la lista de reproducción de música derecha"
 
-#: python/playergui.py:2554
+#: python/playergui.py:2560
 msgid "Add background music"
 msgstr "Añadir música de fondo"
 
 #. TC: File filter text.
-#: python/playergui.py:2566
+#: python/playergui.py:2572
 msgid "Supported Media Formats"
 msgstr "Formatos Admitidos de los Medios"
 
 #. TC: Expander text "Select File Type (.pls)" for the pls file type.
-#: python/playergui.py:2628
+#: python/playergui.py:2634
 msgid "Select File Type"
 msgstr "Seleccione Tipo de archivo"
 
-#: python/playergui.py:3386
+#: python/playergui.py:3392
 msgid "Save left playlist"
 msgstr "Guardar lista de reproducción izquierda"
 
-#: python/playergui.py:3388
+#: python/playergui.py:3394
 msgid "Save right playlist"
 msgstr "Guardar lista de reproducción a la derecha"
 
-#: python/playergui.py:3390
+#: python/playergui.py:3396
 msgid "Save background playlist"
 msgstr "Guardar lista de reproducción de fondo"
 
-#: python/playergui.py:3408
+#: python/playergui.py:3414
 msgid "File Type"
 msgstr "Tipo de archivo"
 
-#: python/playergui.py:3413
+#: python/playergui.py:3419
 msgid "Extension"
 msgstr "Extensión"
 
 #. TC: Playlist control.
 #. TC: Insert playlist control to do a ten second fade to the next track.
-#: python/playergui.py:3777 python/playergui.py:4444
+#: python/playergui.py:3783 python/playergui.py:4452
 msgid "Fade 10s"
 msgstr "Desteñirse 10s"
 
 #. TC: Playlist control.
 #. TC: Insert playlist control to do a five second fade to the next track.
-#: python/playergui.py:3783 python/playergui.py:4451
+#: python/playergui.py:3789 python/playergui.py:4459
 msgid "Fade 5s"
 msgstr "Desteñirse 5s"
 
 #. TC: Playlist control.
 #. TC: Insert playlist control to not do a fade to the next track.
-#: python/playergui.py:3788 python/playergui.py:4458
+#: python/playergui.py:3794 python/playergui.py:4466
 msgid "No Fade"
 msgstr "Sin Desteñirse"
 
 #. TC: Playlist control.
-#: python/playergui.py:3796
+#: python/playergui.py:3802
 msgid ">> Normal Speed <<"
 msgstr ">> Velocidad normal <<"
 
 #. TC: Playlist control.
-#: python/playergui.py:3806
+#: python/playergui.py:3812
 msgid "Player stop 2"
 msgstr "Parada Reproductor 2"
 
 #. TC: Playlist control.
 #. TC: Insert playlist control to jump to the top of the playlist.
-#: python/playergui.py:3811 python/playergui.py:4410
+#: python/playergui.py:3817 python/playergui.py:4418
 msgid "Jump To Top"
 msgstr "Ir al inicio"
 
 #. TC: Playlist control.
-#: python/playergui.py:3816 python/playergui.py:4470
+#: python/playergui.py:3822 python/playergui.py:4478
 msgid "Stop streaming"
 msgstr "Detener el streaming"
 
 #. TC: Playlist control.
-#: python/playergui.py:3821 python/playergui.py:4478
+#: python/playergui.py:3827 python/playergui.py:4486
 msgid "Stop recording"
 msgstr "Para de grabar"
 
-#: python/playergui.py:3854
+#: python/playergui.py:3860
 msgid "Announcement:"
 msgstr "Anuncio:"
 
 #. TC: Playlist control.
-#: python/playergui.py:3860
+#: python/playergui.py:3866
 msgid ">>> Transfer across >>>"
 msgstr ">>> Transferencia través >>>"
 
 #. TC: Playlist control.
-#: python/playergui.py:3863
+#: python/playergui.py:3869
 msgid "<<< Transfer across <<<"
 msgstr "<<< Transferencia través <<<"
 
 #. TC: Playlist control.
-#: python/playergui.py:3868
+#: python/playergui.py:3874
 msgid ">>> Fade across >>>"
 msgstr ">>> Fundido través >>>"
 
 #. TC: Playlist control.
-#: python/playergui.py:3871
+#: python/playergui.py:3877
 msgid "<<< Fade across <<<"
 msgstr "<<< Fundido través <<<"
 
 #. TC: Playlist control.
-#: python/playergui.py:3877
+#: python/playergui.py:3883
 msgid "Ignored playlist control"
 msgstr "Control de lista de reproducción Ignorado"
 
-#: python/playergui.py:3945
+#: python/playergui.py:3951
 #, python-brace-format
 msgid "Playing track {0} of {1}"
 msgstr "Reproducción de la pista {0} de {1}"
 
 #. TC: Previous line: Playing track {0} of {1}
-#: python/playergui.py:3958
+#: python/playergui.py:3964
 #, python-format
 msgid "From the album, %s"
 msgstr "Desde el %s"
 
-#: python/playergui.py:3965
+#: python/playergui.py:3971
 #, python-format
 msgid "Total number of tracks %d"
 msgstr "Número total de pistas %d"
 
-#: python/playergui.py:3969 python/playergui.py:3971
+#: python/playergui.py:3975 python/playergui.py:3977
 #, python-format
 msgid "Total play duration %s"
 msgstr "Duración total de reproducción %s"
 
-#: python/playergui.py:4021
+#: python/playergui.py:4027
 msgid ""
 "Left click toggles between showing the amount of time elapsed or remaining "
 "on the current track being played."
@@ -2645,7 +2671,7 @@ msgstr ""
 "Alterna clic izquierdo entre mostrar la cantidad de tiempo transcurrido o "
 "restante de la pista actual que se está reproduciendo."
 
-#: python/playergui.py:4039
+#: python/playergui.py:4045
 msgid ""
 "This slider acts as both a play progress indicator and as a means for "
 "seeking within the currently playing track."
@@ -2654,15 +2680,15 @@ msgstr ""
 "y como un medio para buscar dentro de la pista que se está reproduciendo."
 
 #. TC: File filter text.
-#: python/playergui.py:4128
+#: python/playergui.py:4134
 msgid "All file types"
 msgstr "Todos los tipos de archivo"
 
-#: python/playergui.py:4133
+#: python/playergui.py:4139
 msgid "Playlist types"
 msgstr "Tipos de reproducción"
 
-#: python/playergui.py:4148
+#: python/playergui.py:4154
 msgid ""
 "'Block size' indicates the amount of time that it will take to play from the "
 "currently selected track to the next stop.\n"
@@ -2674,44 +2700,44 @@ msgstr ""
 "'Restante' es la cantidad de tiempo hasta la siguiente parada.\n"
 "'Acabado' Es la hora calculado cuando las pistas se terminarán."
 
-#: python/playergui.py:4171
+#: python/playergui.py:4177
 msgid "This adjusts the playback speed anywhere from 25% to 400%."
 msgstr ""
 "Ajusta la velocidad de reproducción en cualquier lugar del 25% al ​​400%."
 
-#: python/playergui.py:4185
+#: python/playergui.py:4191
 msgid "This sets the playback speed back to normal."
 msgstr "Esta reestablece la velocidad de reproducción a la normalidad."
 
-#: python/playergui.py:4202
+#: python/playergui.py:4208
 msgid "Previous track."
 msgstr "Pista anterior."
 
-#: python/playergui.py:4214
+#: python/playergui.py:4220
 msgid "Play."
 msgstr "Reproducir."
 
-#: python/playergui.py:4224
+#: python/playergui.py:4230
 msgid "Pause."
 msgstr "Pausa."
 
-#: python/playergui.py:4234
+#: python/playergui.py:4240
 msgid "Stop."
 msgstr "Deténgase."
 
-#: python/playergui.py:4244
+#: python/playergui.py:4250
 msgid "Next track."
 msgstr "Siguiente pista."
 
-#: python/playergui.py:4256
+#: python/playergui.py:4262
 msgid "Add tracks to the playlist."
 msgstr "Añadir pistas a la lista de reproducción."
 
-#: python/playergui.py:4263 python/preferences.py:71
+#: python/playergui.py:4269 python/preferences.py:71
 msgid "Playlist Mode"
 msgstr "Modo de reproducción"
 
-#: python/playergui.py:4282
+#: python/playergui.py:4290
 msgid ""
 "This sets the playlist mode which defines player behaviour after a track has "
 "finished playing.\n"
@@ -2780,31 +2806,31 @@ msgstr ""
 "reproducción."
 
 #. TC: Fade time heading.
-#: python/playergui.py:4306 python/preferences.py:72
+#: python/playergui.py:4314 python/preferences.py:72
 msgid "Fade"
 msgstr "Desteñirse"
 
-#: python/playergui.py:4318
+#: python/playergui.py:4326
 msgid "This controls the amount of fade between tracks."
 msgstr "Esto controla la cantidad de fundido entre las pistas."
 
-#: python/playergui.py:4325
+#: python/playergui.py:4333
 msgid "Audio Feed"
 msgstr "Audio RSS"
 
-#: python/playergui.py:4335
+#: python/playergui.py:4343
 msgid "Make output from this player available for streaming."
 msgstr "Hacer salida de este reproductor disponible para streaming."
 
-#: python/playergui.py:4343
+#: python/playergui.py:4351
 msgid "Make output from this player audible to the DJ."
 msgstr "Hacer salida de este reproductor audible para el DJ."
 
-#: python/playergui.py:4345
+#: python/playergui.py:4353
 msgid "Force"
 msgstr "Forzar"
 
-#: python/playergui.py:4351
+#: python/playergui.py:4359
 msgid ""
 "When selected this player will be treated like a main player.\n"
 "It will be affected by microphone ducking and won't mute when a main player "
@@ -2816,122 +2842,122 @@ msgstr ""
 "reproductor principal está en funcionamiento."
 
 #. TC: Insert playlist control.
-#: python/playergui.py:4364
+#: python/playergui.py:4372
 msgid "Insert control"
 msgstr "Inserte control"
 
 #. TC: The Item submenu.
-#: python/playergui.py:4373
+#: python/playergui.py:4381
 msgid "Item"
 msgstr "Ítem"
 
 #. TC: The Playlist submenu.
-#: python/playergui.py:4378
+#: python/playergui.py:4386
 msgid "Playlist"
 msgstr "Lista de reproducción"
 
 #. TC: Insert playlist control to set playback speed to normal.
-#: python/playergui.py:4389
+#: python/playergui.py:4397
 msgid "Normal Speed"
 msgstr "Velocidad normal"
 
 #. TC: Submenu Item. Parent menu is Playlist.
-#: python/playergui.py:4418 python/playergui.py:4572
+#: python/playergui.py:4426 python/playergui.py:4580
 msgid "Transfer"
 msgstr "Transferir"
 
-#: python/playergui.py:4426
+#: python/playergui.py:4434
 msgid "Crossfade"
 msgstr "Crossfade"
 
 #. TC: Menu item. Opens the metadata tagger on the selected track.
-#: python/playergui.py:4491
+#: python/playergui.py:4499
 msgid "Meta Tag"
 msgstr "Meta Tag"
 
 #. TC: Menu Item. Duplicates the selected track in the playlist.
-#: python/playergui.py:4497
+#: python/playergui.py:4505
 msgid "Duplicate"
 msgstr "Duplicar"
 
 #. TC: Menu Item. Remove the selected track.
-#: python/playergui.py:4504
+#: python/playergui.py:4512
 msgid "Remove"
 msgstr "Eliminar"
 
 #. TC: Submenu Item. Parent menu item is Remove.
-#: python/playergui.py:4515
+#: python/playergui.py:4523
 msgid "This"
 msgstr "Esta"
 
 #. TC: Submenu Item. Parent menu item is Remove.
-#: python/playergui.py:4522 python/preferences.py:1237
+#: python/playergui.py:4530 python/preferences.py:1237
 msgid "All"
 msgstr "Todos"
 
 #. TC: Submenu Item. Parent menu item is Remove.
-#: python/playergui.py:4529
+#: python/playergui.py:4537
 msgid "From Here"
 msgstr "De aquí"
 
 #. TC: Submenu Item. Parent menu item is Remove.
-#: python/playergui.py:4536
+#: python/playergui.py:4544
 msgid "To Here"
 msgstr "Hacia aqui"
 
 #. TC: Open the file dialog for adding music to the chosen playlist.
-#: python/playergui.py:4549
+#: python/playergui.py:4557
 msgid "Add Music"
 msgstr "Añadir Música"
 
 #. TC: Submenu Item. Parent menu is Playlist.
-#: python/playergui.py:4556
+#: python/playergui.py:4564
 msgid "Save"
 msgstr "Guardar"
 
 #. TC: Submenu Item. Parent menu is Playlist.
-#: python/playergui.py:4567
+#: python/playergui.py:4575
 msgid "Copy"
 msgstr "Copia"
 
-#: python/playergui.py:4578
+#: python/playergui.py:4586
 msgid "Exchange"
 msgstr "Intercambiar"
 
 #. TC: Submenu Item. Parent menu is Playlist.
-#: python/playergui.py:4585
+#: python/playergui.py:4593
 msgid "Empty"
 msgstr "Vacío"
 
 #. TC: Submenu Item. Parent menus are Playlist->Copy.
 #. TC: Submenu Item. Parent menus are Playlist->Transfer.
-#: python/playergui.py:4599 python/playergui.py:4638
+#: python/playergui.py:4607 python/playergui.py:4646
 msgid "Append"
 msgstr "Añadir"
 
 #. TC: Submenu Item. Parent menus are Playlist->Copy.
 #. TC: Submenu Item. Parent menus are Playlist->Transfer.
-#: python/playergui.py:4606 python/playergui.py:4645
+#: python/playergui.py:4614 python/playergui.py:4653
 msgid "Prepend"
 msgstr "Anteponer"
 
 #. TC: Submenu Item. Parent menus are Playlist->Copy.
-#: python/playergui.py:4617
+#: python/playergui.py:4625
 msgid "Append Cursor"
 msgstr "Anexar Cursor"
 
 #. TC: Submenu Item. Parent menus are Playlist->Copy.
-#: python/playergui.py:4624
+#: python/playergui.py:4632
 msgid "Prepend Cursor"
 msgstr "Anteponer Cursor"
 
 #. TC: Submenu Item. Parent menus are Playlist->Transfer.
-#: python/playergui.py:4656
+#: python/playergui.py:4664
 msgid "Append at Cursor"
 msgstr "Anexar en el Cursor"
 
 #. TC: Submenu Item. Parent menus are Playlist->Transfer.
-#: python/playergui.py:4663
+#: python/playergui.py:4671
 msgid "Prepend at Cursor"
 msgstr "Anteponer al cursor"
 
@@ -3172,7 +3198,9 @@ msgstr "Limite superior"
 #: python/preferences.py:625
 msgid ""
 "A look-ahead brick-wall limiter. Audio signals are capped at the upper limit."
-msgstr "Un limitador \"pared de ladrillo\" de preanálisis. Las señales de audio tienen un límite en el límite superior."
+msgstr ""
+"Un limitador \"pared de ladrillo\" de preanálisis. Las señales de audio "
+"tienen un límite en el límite superior."
 
 #: python/preferences.py:628
 msgid "Noise Gate"
@@ -3626,11 +3654,11 @@ msgstr "Colaboradores"
 msgid "Translators"
 msgstr "Traductores"
 
-#: python/preferences.py:1574
+#: python/preferences.py:1575
 msgid "Build Info"
 msgstr "Versión de SW"
 
-#: python/preferences.py:1591
+#: python/preferences.py:1592
 msgid "About"
 msgstr "Acerca de"
 
@@ -3792,7 +3820,9 @@ msgstr "Cadena de agente de usuario personalizada"
 msgid ""
 "Set this on the occasion that the server or its firewall specifically "
 "refuses to allow libshout based clients."
-msgstr "Establezca este cuando el servidor o su firewall niega específicamente para permitir a los clientes basados ​​en libshout."
+msgstr ""
+"Establezca este cuando el servidor o su firewall niega específicamente para "
+"permitir a los clientes basados ​​en libshout."
 
 #: python/sourceclientgui.py:1114
 msgid "If the connection breaks reconnect to the server"
