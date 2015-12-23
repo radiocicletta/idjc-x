@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: idjc 0.8.16_development\n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
 "POT-Creation-Date: 2015-12-23 12:09+0000\n"
-"PO-Revision-Date: 2015-12-23 02:55-0600\n"
+"PO-Revision-Date: 2015-12-23 11:19-0600\n"
 "Last-Translator: Blank Frank <frank@rhizomatica.org>\n"
 "Language-Team: English <team@example.com>\n"
 "Language: es\n"
@@ -254,7 +254,7 @@ msgstr "falló en crear el perfil: %s"
 #: python/prelims/__init__.py:424
 #, python-format
 msgid "failed to delete profile: %s"
-msgstr "fracasado en eliminar el %s"
+msgstr "falló en eliminar el perfil: %s"
 
 #: python/prelims/__init__.py:431
 #, python-format
@@ -309,9 +309,7 @@ msgstr "sin perfil se ajusta"
 msgid ""
 "failed to grab bus name -- another session by the same name appears to be "
 "running"
-msgstr ""
-"no logró agarrar nombre de bus - otra sesión con el mismo nombre parece "
-"estar funcionando"
+msgstr "no logró agarrar nombre de bus -- otra sesión con el mismo nombre parece estar funcionando"
 
 #. TC: text appears in the title bar when in session mode.
 #: python/prelims/__init__.py:590
@@ -322,7 +320,7 @@ msgstr "session={type}:{name}"
 #: python/prelims/__init__.py:630
 #, python-format
 msgid "specified profile is not valid %s"
-msgstr "perfil especificado no es %s"
+msgstr "perfil especificado no es válido %s"
 
 #: python/prelims/__init__.py:633
 #, python-format
@@ -332,7 +330,7 @@ msgstr "perfil especificado no existe: %s"
 #: python/prelims/__init__.py:664
 #, python-format
 msgid "unknown session type: %s: must be one of %s"
-msgstr "desconocido tipo de sesión: %s debe ser uno %s"
+msgstr "desconocido tipo de sesión: %s debe ser uno de %s"
 
 #: python/prelims/__init__.py:677
 #, python-format
@@ -949,12 +947,12 @@ msgstr "Configurar"
 
 #: python/jingles.py:327 python/playergui.py:4144
 msgid "Supported media"
-msgstr "Medios admitidos"
+msgstr "Medios compatibles"
 
 #: python/jingles.py:334
 #, python-format
 msgid "Effect %d Config"
-msgstr "%d Config"
+msgstr "Config Efecto %d"
 
 #: python/jingles.py:349
 msgid "Trigger text"
@@ -1001,7 +999,7 @@ msgstr "Pistas de fondo"
 
 #: python/jingles.py:618
 msgid "Background Tracks volume."
-msgstr "Volumen de las Pistas del Fondo."
+msgstr "Volumen de las Pistas de Fondo."
 
 #: python/maingui.py:93
 msgid "Show a JACK freewheel control on the main panel"
@@ -1145,11 +1143,7 @@ msgid ""
 "The headroom is the amount by which to reduce player volume when this opener "
 "is active. Note that the actual amount will be the largest value of all the "
 "currently open buttons."
-msgstr ""
-"La altura libre es la cantidad en que para reducir el volumen del "
-"reproductor cuando este primer partido está activo. Tenga en cuenta que la "
-"cantidad real será el valor más grande de todos los botones abiertos "
-"actualmente."
+msgstr "La altura libre es la cantidad en que se reduce el volumen del reproductor cuando este primer botón está activo. Tenga en cuenta que la cantidad real será el valor más grande de todos los botones abiertos actualmente."
 
 #: python/maingui.py:703
 msgid "The amount of headroom required (dB)"
