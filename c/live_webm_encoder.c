@@ -44,6 +44,7 @@ static const struct timespec time_delay = { .tv_nsec = 10 };
 typedef struct WebMState {
     AVStream *st;
     int64_t next_pts;
+    int64_t serial_samples;
     int samples_count;
     AVFrame *frame;
     AVFrame *tmp_frame;
@@ -182,6 +183,7 @@ static AVFrame *get_audio_frame(struct encoder *encoder)
         encoder_ip_data_free(id);
         frame->pts = self->next_pts;
         self->next_pts += frame->nb_samples;
+        self->serial_samples += frame->nb_samples;
         return frame;
     }
 
@@ -269,7 +271,7 @@ static int write_packet(void *opaque, uint8_t *buf, int buf_size)
     packet.header.flags = PF_WEBM | self->packet_flags;
     packet.header.data_size = buf_size;
     packet.header.serial = encoder->oggserial;
-    packet.header.timestamp = encoder->timestamp = self->next_pts / (double)encoder->target_samplerate;
+    packet.header.timestamp = encoder->timestamp = self->serial_samples / (double)encoder->target_samplerate;
     packet.data = buf;
     encoder_write_packet_all(encoder, &packet);
     self->packet_flags &= ~PF_INITIAL;
@@ -283,6 +285,7 @@ static int write_header(struct encoder *encoder)
     int ret;
     
     ++encoder->oggserial;
+    self->serial_samples = 0;
     self->packet_flags = PF_HEADER | PF_INITIAL;
     ret = avformat_write_header(self->oc, NULL);
     self->packet_flags &= ~PF_HEADER;
