@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: idjc 0.8.16_development\n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
 "POT-Creation-Date: 2015-12-21 17:54+0000\n"
-"PO-Revision-Date: 2015-12-23 02:39-0600\n"
+"PO-Revision-Date: 2015-12-23 02:55-0600\n"
 "Last-Translator: Blank Frank <frank@rhizomatica.org>\n"
 "Language-Team: English <team@example.com>\n"
 "Language: es\n"
@@ -59,7 +59,7 @@ msgstr "-- sub-comando: nuevo -- hacer un nuevo perfil"
 #. TC: a command line option help string.
 #: python/prelims/__init__.py:127
 msgid "remove profile(s)"
-msgstr "eliminar el perfil (s)"
+msgstr "eliminar perfil(es)"
 
 #. TC: do not translate the word rm.
 #: python/prelims/__init__.py:129
@@ -243,7 +243,7 @@ msgstr "el perfil para hacer automática"
 #: python/prelims/__init__.py:417
 #, python-format
 msgid "failed to create profile: %s"
-msgstr "falló en crear el perfil%s"
+msgstr "falló en crear el perfil: %s"
 
 #: python/prelims/__init__.py:424
 #, python-format
@@ -276,12 +276,12 @@ msgstr "nombre del perfil es malo"
 #: python/prelims/__init__.py:476 python/prelims/__init__.py:744
 #, python-format
 msgid "profile %s does not exist"
-msgstr "%s no existe"
+msgstr "perfil %s no existe"
 
 #: python/prelims/__init__.py:479
 #, python-format
 msgid "profile %s is already running"
-msgstr "%s ya está funcionando"
+msgstr "perfil %s ya está funcionando"
 
 #: python/prelims/__init__.py:492
 #, python-format
