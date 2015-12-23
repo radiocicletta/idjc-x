@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: idjc 0.8.16_development\n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
 "POT-Creation-Date: 2015-12-21 17:54+0000\n"
-"PO-Revision-Date: 2015-12-23 02:33-0600\n"
+"PO-Revision-Date: 2015-12-23 02:39-0600\n"
 "Last-Translator: Blank Frank <frank@rhizomatica.org>\n"
 "Language-Team: English <team@example.com>\n"
 "Language: es\n"
@@ -4395,9 +4395,8 @@ msgstr ""
 "metadatos."
 
 #: python/format.py:542
-#, fuzzy
 msgid "Unsupported"
-msgstr "Medios admitidos"
+msgstr "No compatible"
 
 #: python/format.py:543 python/format.py:555
 msgid ""
@@ -4804,7 +4803,7 @@ msgstr "AAC"
 
 #: python/format.py:1107
 msgid "AAC+ v2"
-msgstr "AAC + v2"
+msgstr "AAC+ v2"
 
 #. TC: Codec family e.g. Xiph/Ogg, MPEG etc.
 #: python/format.py:1185
@@ -4813,12 +4812,12 @@ msgstr "Familia"
 
 #: python/format.py:1186
 msgid "WebM"
-msgstr ""
+msgstr "WebM"
 
 #. TC: Xiph.org Ogg container format.
 #: python/format.py:1188
 msgid "Xiph/Ogg"
-msgstr "Xiph / Ogg"
+msgstr "Xiph/Ogg"
 
 #: python/format.py:1189
 msgid "MPEG"
