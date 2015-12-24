@@ -306,26 +306,6 @@ static int write_trailer(struct encoder *encoder)
 }
     
 
-static void update_metadata(struct encoder *encoder)
-{
-    WebMState *self = encoder->encoder_private;
-    
-    pthread_mutex_lock(&encoder->metadata_mutex);
-    encoder->new_metadata = FALSE;
-
-    if (encoder->custom_meta[0] && encoder->use_metadata) {
-        av_dict_set(&self->oc->metadata, "TITLE", encoder->custom_meta, 0);
-        av_dict_set(&self->oc->metadata, "ARTIST", NULL, 0);
-        av_dict_set(&self->oc->metadata, "ALBUM", NULL, 0);
-    } else {
-        av_dict_set(&self->oc->metadata, "TITLE", encoder->title, 0);
-        av_dict_set(&self->oc->metadata, "ARTIST", encoder->artist, 0);
-        av_dict_set(&self->oc->metadata, "ALBUM", encoder->album, 0);
-    }
-    pthread_mutex_unlock(&encoder->metadata_mutex);
-}
-
-
 static int setup(struct encoder *encoder)
 {
     WebMState *self = encoder->encoder_private;
