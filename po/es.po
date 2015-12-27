@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: idjc 0.8.16_development\n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
 "POT-Creation-Date: 2015-12-23 12:09+0000\n"
-"PO-Revision-Date: 2015-12-27 15:48-0600\n"
+"PO-Revision-Date: 2015-12-27 16:02-0600\n"
 "Last-Translator: Blank Frank <frank@rhizomatica.org>\n"
 "Language-Team: English <team@example.com>\n"
 "Language: es\n"
@@ -1178,7 +1178,7 @@ msgstr ""
 
 #: python/maingui.py:732
 msgid "This button will automatically cancel JACK freewheel mode"
-msgstr "Este botón, se cancelará automáticamente el modo de rueda libre JACK"
+msgstr "Este botón, se cancelará automáticamente el modo de freewheel de JACK"
 
 #: python/maingui.py:734
 msgid ""
