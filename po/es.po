@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: idjc 0.8.16_development\n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
 "POT-Creation-Date: 2015-12-23 12:09+0000\n"
-"PO-Revision-Date: 2015-12-27 16:15-0600\n"
+"PO-Revision-Date: 2015-12-27 16:27-0600\n"
 "Last-Translator: Blank Frank <frank@rhizomatica.org>\n"
 "Language-Team: English <team@example.com>\n"
 "Language: es\n"
@@ -1226,17 +1226,15 @@ msgstr "Shell de comandos"
 #: python/maingui.py:771
 msgid ""
 "Mostly useful issuing 'amixer' commands, in particular for setting capture."
-msgstr ""
-"Mayormente útil emisión 'amixer' comandos, en particular, para el "
-"establecimiento de la captura."
+msgstr "Mayormente útil emitiendo comandos 'amixer' en particular, para el establecimiento de la captura."
 
 #: python/maingui.py:791
 msgid "On open"
-msgstr "En abierta"
+msgstr "Al abrir"
 
 #: python/maingui.py:792
 msgid "On close"
-msgstr "En estrecha"
+msgstr "Al cierre"
 
 #: python/maingui.py:836
 msgid "Main Panel Opener Buttons"
@@ -1248,13 +1246,11 @@ msgstr "Indique los números de los botones y números de los canales asociados"
 
 #: python/maingui.py:850
 msgid "A useful feature to have switched on while allocating channel openers."
-msgstr ""
-"Una característica útil de haber encendido mientras que la asignación de "
-"apertura del canal."
+msgstr "Una característica útil de haber encendido mientras se asigna los abridores de canal."
 
 #: python/maingui.py:856
 msgid "Status Indicator Appearance"
-msgstr "Indicador de estado Apariencia"
+msgstr "Aparencia del Indicador de estado"
 
 #: python/maingui.py:859
 msgid ""
@@ -1283,7 +1279,7 @@ msgstr "Recordar"
 #. TC: A placeholder text for when there are no opener buttons.
 #: python/maingui.py:1065
 msgid "No Channel Opener Buttons"
-msgstr "No hay canal Abridor Botones"
+msgstr "No Hay Botones Abridores de Canal"
 
 #: python/maingui.py:1354
 msgid ""
@@ -1326,11 +1322,11 @@ msgstr "Todas las grabaciones activas cesarán."
 #. TC: Popup menu item, wipes away the tracks played history text.
 #: python/maingui.py:2921 python/maingui.py:3353
 msgid "Remove Contents"
-msgstr "Retire Contenido"
+msgstr "Eliminar Contenido"
 
 #: python/maingui.py:3076
 msgid "Renameable Labels"
-msgstr "Etiquetas renameable"
+msgstr "Etiquetas Renombrables"
 
 #: python/maingui.py:3100
 msgid "Main Players"
