@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: idjc 0.8.16_development\n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
 "POT-Creation-Date: 2015-12-23 12:09+0000\n"
-"PO-Revision-Date: 2015-12-27 05:47-0600\n"
+"PO-Revision-Date: 2015-12-27 15:26-0600\n"
 "Last-Translator: Blank Frank <frank@rhizomatica.org>\n"
 "Language-Team: English <team@example.com>\n"
 "Language: es\n"
@@ -1558,7 +1558,7 @@ msgstr ""
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:48
 msgid "Tooltips enable"
-msgstr "Activar tooltips (información sobre herramientas)"
+msgstr "Tooltips activar"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:50
@@ -1568,7 +1568,7 @@ msgstr "Mezcla-DJ monitor"
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:52
 msgid "Panning load from presets"
-msgstr "Toma panorámica carga de predeterminadas"
+msgstr "Panorámica carga de predeterminadas"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:54
