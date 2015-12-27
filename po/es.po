@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: idjc 0.8.16_development\n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
 "POT-Creation-Date: 2015-12-23 12:09+0000\n"
-"PO-Revision-Date: 2015-12-27 16:02-0600\n"
+"PO-Revision-Date: 2015-12-27 16:15-0600\n"
 "Last-Translator: Blank Frank <frank@rhizomatica.org>\n"
 "Language-Team: English <team@example.com>\n"
 "Language: es\n"
@@ -1568,7 +1568,7 @@ msgstr "Mezcla-DJ monitor"
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:52
 msgid "Panning load from presets"
-msgstr "Panorámica carga de predeterminadas"
+msgstr "Paneo carga de predeterminadas"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:54
@@ -1973,7 +1973,7 @@ msgstr "Comando XChat"
 #. TC: User is expected to edit a control binding.
 #: python/midicontrols.py:1542
 msgid "Edit control binding"
-msgstr "Editar las asignaciónes de control"
+msgstr "Editar las vinculaciones de control"
 
 #. TC: After clicking this button the binding editor will be listening
 #. TC: for a key press or midi control surface input.
@@ -2026,7 +2026,7 @@ msgid ""
 "\n"
 "Input selection can be done manually or with the help of the '%s' option."
 msgstr ""
-"La primera mitad de la asignación es la entrada que viene en la forma de la activación de una tecla del teclado o de un evento desde un dispositivo MIDI. \n"
+"La primera mitad de la vinculación es la entrada que viene en la forma de la activación de una tecla del teclado o de un evento desde un dispositivo MIDI. \n"
 "\n"
 "La selección de entrada se puede hacer manualmente o con la ayuda de la opción '%s'."
 
@@ -3077,7 +3077,7 @@ msgstr "Abierto"
 
 #: python/preferences.py:517
 msgid "Stereo Panning"
-msgstr "Estéreo Toma panorámica"
+msgstr "Paneo Estéreo"
 
 #. TC: A set of controls that perform audio signal matching.
 #: python/preferences.py:530
