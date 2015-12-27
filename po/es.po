@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: idjc 0.8.16_development\n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
 "POT-Creation-Date: 2015-12-23 12:09+0000\n"
-"PO-Revision-Date: 2015-12-27 15:26-0600\n"
+"PO-Revision-Date: 2015-12-27 15:48-0600\n"
 "Last-Translator: Blank Frank <frank@rhizomatica.org>\n"
 "Language-Team: English <team@example.com>\n"
 "Language: es\n"
@@ -1190,7 +1190,7 @@ msgstr ""
 
 #: python/maingui.py:737
 msgid "Button Open Triggers"
-msgstr "Activadores abiertos Button"
+msgstr "Abrir botón dispara"
 
 #: python/maingui.py:744
 msgid "Playlist advance button"
