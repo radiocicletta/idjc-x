@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: idjc 0.8.16_development\n"
 "Report-Msgid-Bugs-To: putidjcinthesubjectline@bethere.co.uk\n"
 "POT-Creation-Date: 2015-12-23 12:09+0000\n"
-"PO-Revision-Date: 2015-12-23 11:19-0600\n"
+"PO-Revision-Date: 2015-12-27 05:47-0600\n"
 "Last-Translator: Blank Frank <frank@rhizomatica.org>\n"
 "Language-Team: English <team@example.com>\n"
 "Language: es\n"
@@ -490,9 +490,8 @@ msgstr "Nuevos detalles del perfil"
 
 #. TC: data entry dialog label text.
 #: python/prelims/profiledialog.py:125
-#, fuzzy
 msgid "Profile name"
-msgstr "profile_name"
+msgstr "Nombre de perfil"
 
 #. TC: data entry dialog label text.
 #: python/prelims/profiledialog.py:127 python/maingui.py:682
@@ -1559,33 +1558,33 @@ msgstr ""
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:48
 msgid "Tooltips enable"
-msgstr "La información sobre herramientas permiten"
+msgstr "Activar tooltips (información sobre herramientas)"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:50
 msgid "DJ-mix monitor"
-msgstr "Monitor de DJ-mix"
+msgstr "Mezcla-DJ monitor"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:52
 msgid "Panning load from presets"
-msgstr "Toma panorámica de carga de presets"
+msgstr "Toma panorámica carga de predeterminadas"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:54
 msgid "Player play/pause"
-msgstr "reproducir/pausa del Reproductor"
+msgstr "Reproductor reproducir/pausa"
 
 #. TC: Control method. Please keep it as Target:Action.
 #. TC: Playlist control.
 #: python/midicontrols.py:56 python/playergui.py:3807
 msgid "Player stop"
-msgstr "Parada del reproductor"
+msgstr "Reproductor detener"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:58
 msgid "Player advance"
-msgstr "Avance del reproductor"
+msgstr "Reproductor avanzar"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:60
@@ -1600,7 +1599,7 @@ msgstr "Reproductor reproducir siguiente"
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:64
 msgid "Player play selected from start"
-msgstr "Reproductor reproducir seleccionado de inicio"
+msgstr "Reproductor reproducir seleccionado desde inicio"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:66
@@ -1615,157 +1614,157 @@ msgstr "Reproductor Seleccione Siguiente"
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:70
 msgid "Player stream output enable"
-msgstr "Salida de stream Reproductor permiten"
+msgstr "Reproductor activar salida de stream"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:72
 msgid "Player DJ output enable"
-msgstr "Reproductor DJ habilitación de salida"
+msgstr "Reproductor activar salida DJ"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:74
 msgid "Player DJ-only switch"
-msgstr "Reproductor DJ de sólo interruptor"
+msgstr "Reproductor activar solo DJ"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:76
 msgid "Player set volume"
-msgstr "Volumen determinado reproductor"
+msgstr "Reproductor ajustar volumen"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:78
 msgid "Player set gain"
-msgstr "Conjunto de ganancia del reproductor"
+msgstr "Reproductor ajustar ganancia"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:80
 msgid "Player set balance"
-msgstr "Balance de conjunto del reproductor"
+msgstr "Reproductor ajustar balance"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:82
 msgid "Player set pitchbend"
-msgstr "Conjunto Reproductor pitchbend"
+msgstr "Reproductor ajustar pitchbend"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:85
 msgid "Playlist edit tags"
-msgstr "Editar las etiquetas de reproducción"
+msgstr "Lista de reproducción editar las etiquetas"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:87
 msgid "Playlist insert stop"
-msgstr "Parada inserto lista de reproducción"
+msgstr "Lista de reproducción insertar parada"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:89
 msgid "Playlist insert stop 2"
-msgstr "Lista de Reproducción 2 inserto Parada"
+msgstr "Lista de Reproducción 2 insertar parada"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:91
 msgid "Playlist insert announce"
-msgstr "Lista de Reproducción Inserto anunciar"
+msgstr "Lista de Reproducción inserto anuncio"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:93
 msgid "Playlist insert transfer"
-msgstr "Transferencia de inserción de reproducción"
+msgstr "Lista de reproducción insertar transferencia"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:95
 msgid "Playlist insert crossfade"
-msgstr "Crossfade inserto lista de reproducción"
+msgstr "Lista de reproducción insertar crossfade"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:97
 msgid "Playlist insert pitchunbend"
-msgstr "Pitchunbend inserto lista de reproducción"
+msgstr "Lista de reproducción insertar Pitchunbend"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:99
 msgid "Playlist insert jump to top"
-msgstr "Lista de Reproducción inserto salto a la parte superior"
+msgstr "Lista de Reproducción insertar salto a la parte superior"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:102
 msgid "Players set crossfade"
-msgstr "reproductores crossfade set"
+msgstr "Reproductores ajustar crossfade"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:104
 msgid "Players pass crossfade"
-msgstr "Los reproductores pasan crossfade"
+msgstr "Reproductores pasan crossfade"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:106
 msgid "Players set focus"
-msgstr "Los reproductores se centran en establecer"
+msgstr "Reproductores se enfocan"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:108
 msgid "Players show pitchbend"
-msgstr "Los reproductores muestran pitchbend"
+msgstr "Reproductores muestran pitchbend"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:110
 msgid "Players advance"
-msgstr "Los reproductores avanzan"
+msgstr "Reproductores avanzan"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:113
 msgid "Channel output enable"
-msgstr "Salida del canal permite"
+msgstr "Salida del canal activar"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:115
 msgid "Channel set volume"
-msgstr "Volumen conjunto de canales"
+msgstr "Canal ajustar volumen"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:117
 msgid "Channel set gain"
-msgstr "Ganancia conjunto Channel"
+msgstr "Canal ajustar ganancia"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:119
 msgid "Channel set balance"
-msgstr "Equilibrio conjunto de canales"
+msgstr "Canal ajustar balance"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:122
 msgid "VoIP output enable"
-msgstr "Salida VoIP permiten"
+msgstr "Salida VoIP activar"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:124
 msgid "VoIP DJ-only switch"
-msgstr "VoIP DJ de sólo interruptor"
+msgstr "VoIP solo DJ activar"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:126
 msgid "VoIP set volume"
-msgstr "Volumen conjunto de VoIP"
+msgstr "VoIP ajustar volumen"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:128
 msgid "VoIP set mixback"
-msgstr "VoIP establece mixback"
+msgstr "VoIP ajustar mezcla"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:130
 msgid "VoIP set gain"
-msgstr "Ganancia conjunto VoIP"
+msgstr "VoIP ajustar ganancia"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:132
 msgid "VoIP set balance"
-msgstr "Equilibrio conjunto VoIP"
+msgstr "VoIP ajustar balance"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:135
 msgid "Effect play from start"
-msgstr "Reproducir Efecto desde principio"
+msgstr "Efecto Reproducir desde inicio"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:138
@@ -1775,22 +1774,22 @@ msgstr "Efectos paran muchos"
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:140
 msgid "Effects set volume"
-msgstr "Efectos volumen establecido"
+msgstr "Efectos ajustar volumen"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:142
 msgid "Effects set headroom"
-msgstr "Efectos establecer la altura libre"
+msgstr "Efectos ajustar la altura libre"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:145
 msgid "Stream set connected"
-msgstr "Conjunto Stream conectado"
+msgstr "Stream activarar conectado"
 
 #. TC: Control method. Please keep it as Target:Action.
 #: python/midicontrols.py:148
 msgid "Recorder set recording"
-msgstr "Grabación conjunto Grabadora"
+msgstr "Grabadora activarar grabando"
 
 #. TC: binding editor, action pane, first row, toplevel menu.
 #: python/midicontrols.py:152 python/midicontrols.py:1493
@@ -1840,11 +1839,11 @@ msgstr "Reproductor Fundido"
 
 #: python/midicontrols.py:169
 msgid "Effects bank 1"
-msgstr "Banco Efectos 1"
+msgstr "Banco 1 de efectos"
 
 #: python/midicontrols.py:170
 msgid "Effects bank 2"
-msgstr "Banco Efectos 2"
+msgstr "Banco 2 de efectos"
 
 #: python/midicontrols.py:171
 msgid "All effects"
@@ -1858,17 +1857,17 @@ msgstr "Retroceso"
 #. TC: binding editor, action pane, third row, heading text.
 #: python/midicontrols.py:1469
 msgid "Use value"
-msgstr "El valor de uso"
+msgstr "Usar valor"
 
 #. TC: binding editor, action pane, third row, heading text.
 #: python/midicontrols.py:1471
 msgid "Act if"
-msgstr "Ley si"
+msgstr "Actuar si"
 
 #. TC: binding editor, action pane, third row, heading text.
 #: python/midicontrols.py:1473
 msgid "Set to"
-msgstr "Ajustado a"
+msgstr "Ajustar a"
 
 #. TC: binding editor, action pane, third row, heading text.
 #: python/midicontrols.py:1475
@@ -1918,7 +1917,7 @@ msgstr "Efecto individual"
 #. TC: binding editor, action pane, first row, toplevel menu.
 #: python/midicontrols.py:1505
 msgid "Effects bank"
-msgstr "Banco Efectos"
+msgstr "Banco de efectos"
 
 #. TC: binding editor, action pane, first row, toplevel menu.
 #: python/midicontrols.py:1509
@@ -1928,22 +1927,22 @@ msgstr "Grabadora de Stream"
 #. TC: binding editor, action pane, second row, dropdown text.
 #: python/midicontrols.py:1514
 msgid "Direct fader/held button"
-msgstr "Botón de fader Directo / celebrada"
+msgstr "Botón de fader directo/fijo"
 
 #. TC: binding editor, action pane, second row, dropdown text.
 #: python/midicontrols.py:1516
 msgid "One-shot/toggle button"
-msgstr "Botón One-shot / conmutación"
+msgstr "Botón disparo/conmutación"
 
 #. TC: binding editor, action pane, second row, dropdown text.
 #: python/midicontrols.py:1518
 msgid "Set value"
-msgstr "Valor seleccionado"
+msgstr "Ajustar valor"
 
 #. TC: binding editor, action pane, second row, dropdown text.
 #: python/midicontrols.py:1520
 msgid "Alter value"
-msgstr "Valor Alter"
+msgstr "Alterar valor"
 
 #. TC: binding editor, input pane, second row, dropdown text.
 #: python/midicontrols.py:1525
@@ -1958,7 +1957,7 @@ msgstr "Nota MIDI"
 #. TC: binding editor, input pane, second row, dropdown text.
 #: python/midicontrols.py:1529
 msgid "MIDI pitch-wheel"
-msgstr "MIDI pitch ruedas"
+msgstr "Rueda de tono MIDI"
 
 #. TC: binding editor, input pane, second row, dropdown text.
 #: python/midicontrols.py:1531
@@ -1974,7 +1973,7 @@ msgstr "Comando XChat"
 #. TC: User is expected to edit a control binding.
 #: python/midicontrols.py:1542
 msgid "Edit control binding"
-msgstr "Editar control de la unión"
+msgstr "Editar las asignaciónes de control"
 
 #. TC: After clicking this button the binding editor will be listening
 #. TC: for a key press or midi control surface input.
@@ -1982,7 +1981,7 @@ msgstr "Editar control de la unión"
 #: python/midicontrols.py:1557 python/midicontrols.py:1638
 #: python/midicontrols.py:1737
 msgid "Listen for input..."
-msgstr "Preste atención a la entrada ..."
+msgstr "Esperando la entrada..."
 
 #. TC: The input source.
 #: python/midicontrols.py:1565
@@ -1998,7 +1997,7 @@ msgstr "Interacción"
 #. TC: e.g. On target [Left player]
 #: python/midicontrols.py:1590
 msgid "On target"
-msgstr "El objetivo"
+msgstr "Al objetivo"
 
 #. TC: Checkbutton text.
 #. TC: Use reverse scale and invert the meaning of button presses.
@@ -2008,7 +2007,7 @@ msgstr "Invertida"
 
 #: python/midicontrols.py:1599
 msgid "Pressed"
-msgstr "Presionado"
+msgstr "Activado"
 
 #: python/midicontrols.py:1601
 msgid "Released"
@@ -2027,12 +2026,9 @@ msgid ""
 "\n"
 "Input selection can be done manually or with the help of the '%s' option."
 msgstr ""
-"La primera mitad de la unión es la entrada que viene en la forma de la "
-"activación de una tecla del teclado o de un evento desde un dispositivo "
-"MIDI. \n"
+"La primera mitad de la asignación es la entrada que viene en la forma de la activación de una tecla del teclado o de un evento desde un dispositivo MIDI. \n"
 "\n"
-"La selección de entrada se puede hacer manualmente o con la ayuda de la "
-"opción '%s'."
+"La selección de entrada se puede hacer manualmente o con la ayuda de la opción '%s'."
 
 #. TC: Tree column heading for actions e.g. Player stop.
 #: python/midicontrols.py:1671 python/midicontrols.py:1677
@@ -2048,7 +2044,7 @@ msgstr "El %s panel' determina cómo se maneja la entrada, y en qué sentido."
 
 #: python/midicontrols.py:1733
 msgid "Listening for input"
-msgstr "Escuchar para la entrada"
+msgstr "Escuchando la entrada"
 
 #. TC: Refers to key modifiers including Ctrl, Alt, Shift, ....
 #: python/midicontrols.py:1754
@@ -2085,7 +2081,7 @@ msgstr "género"
 
 #: python/mutagentagger.py:221
 msgid "record date"
-msgstr "grabar fecha"
+msgstr "fecha de grabación"
 
 #: python/mutagentagger.py:360
 msgid ""
@@ -2128,7 +2124,7 @@ msgstr "Año"
 #. TC: Window title.
 #: python/mutagentagger.py:688
 msgid "IDJC Tagger"
-msgstr "IDJC Tagger"
+msgstr "Etiquetador IDJC"
 
 #: python/mutagentagger.py:700 python/mutagentagger.py:704
 #: python/mutagentagger.py:708
@@ -2146,7 +2142,7 @@ msgstr "Conectando"
 #: python/songdb.py:188
 #, python-format
 msgid "Connection failed (try %d)"
-msgstr "Error de conexión %d"
+msgstr "Falló la conexión (intenta %d)"
 
 #: python/songdb.py:199
 msgid "Connected: autocommit mode failed"
@@ -2178,7 +2174,7 @@ msgstr "Conexión cayó"
 
 #: python/songdb.py:326
 msgid "Hostname[:Port]"
-msgstr "Nombre de host [: puerto]"
+msgstr "Nombre de host[:Puerto]"
 
 #: python/songdb.py:331
 msgid "User Name"
@@ -2190,7 +2186,7 @@ msgstr "Base de datos"
 
 #: python/songdb.py:389
 msgid "Prokyon3 or Ampache (song title) Database"
-msgstr "Prokyon3 o Ampache (título de la canción) Base de Datos"
+msgstr "Base de datos Prokyon3 o Ampache (título de la canción)"
 
 #: python/songdb.py:390
 msgid ""
@@ -2215,7 +2211,7 @@ msgstr "No Reproducido"
 
 #: python/songdb.py:878
 msgid "Reload the database."
-msgstr "Actualizar la base de datos."
+msgstr "Recargar la base de datos."
 
 #: python/songdb.py:883
 msgid "Expand entire tree."
@@ -2254,7 +2250,7 @@ msgstr "Nombre del archivo"
 #. TC: Directory path to a file.
 #: python/songdb.py:913 python/songdb.py:1299
 msgid "Path"
-msgstr "Camino"
+msgstr "Ruta"
 
 #: python/songdb.py:918
 msgid "Artist - Album - Title"
@@ -2270,7 +2266,7 @@ msgstr "Atractivo"
 
 #: python/songdb.py:1084
 msgid "Tree fetch failed"
-msgstr "Árbol fallo en la descarga"
+msgstr "Fallo en la descarga de árbol"
 
 #: python/songdb.py:1085
 msgid "Fetch Failed!"
@@ -2331,7 +2327,7 @@ msgstr "Nombre"
 
 #: python/songdb.py:1617
 msgid "Catalog Path"
-msgstr "Catálogo Camino"
+msgstr "Ruta del Catálogo"
 
 #: python/songdb.py:1618
 msgid "Prepend Path"
@@ -2343,7 +2339,7 @@ msgstr "Última Escala Reproducido"
 
 #: python/songdb.py:1658
 msgid "Path Peel"
-msgstr "Pelar Path"
+msgstr "Pelar Ruta"
 
 #: python/songdb.py:1737
 msgid "N/A"
@@ -3035,13 +3031,13 @@ msgstr "Entrada básica"
 #. TC: Microphone mode combobox text.
 #: python/preferences.py:278
 msgid "Processed input"
-msgstr "Entrada Procesado"
+msgstr "Entrada Procesada"
 
 #. TC: Microphone mode combobox text.
 #: python/preferences.py:280
 #, python-format
 msgid "Partnered with channel %s"
-msgstr "En conjunto con el %s"
+msgstr "En conjunto con canal %s"
 
 #: python/preferences.py:432
 msgid "A label so you may describe briefly the role of this audio channel."
@@ -3069,7 +3065,7 @@ msgstr ""
 #. TC: Spinbutton label text.
 #: python/preferences.py:478
 msgid "Main Panel Button"
-msgstr "Botón Panel Principal"
+msgstr "Botón de Panel Principal"
 
 #: python/preferences.py:495
 msgid "This:"
@@ -3086,15 +3082,13 @@ msgstr "Estéreo Toma panorámica"
 #. TC: A set of controls that perform audio signal matching.
 #: python/preferences.py:530
 msgid "Signal Matching"
-msgstr "De coincidencia de señal"
+msgstr "De coincidencia de señales"
 
 #: python/preferences.py:531
 msgid ""
 "These controls are provided to obtain a decent match between the two "
 "microphones."
-msgstr ""
-"Estos controles se proporcionan para obtener un partido decente entre los "
-"dos micrófonos."
+msgstr "Estos controles se proporcionan para obtener una pareja decente entre los dos micrófonos."
 
 #: python/preferences.py:540
 msgid "Relative Gain (dB)"
@@ -3117,16 +3111,14 @@ msgstr ""
 #. TC: Control whether to mix microphone audio to the DJ mix.
 #: python/preferences.py:554
 msgid "In The DJ's Mix"
-msgstr "En mezcla del DJ"
+msgstr "En la mezcla del DJ"
 
 #: python/preferences.py:555 python/preferences.py:577
 #: python/preferences.py:677
 msgid ""
 "Make the microphone audio audible in the DJ mix. This may not always be "
 "desirable."
-msgstr ""
-"Hacer que el audio del micrófono audible en la mezcla de DJ. Esto no siempre "
-"es deseable."
+msgstr "Hacer audible el audio del micrófono en la mezcla de DJ. Esto no siempre es deseable."
 
 #: python/preferences.py:563
 msgid "Basic Controls"
@@ -3134,7 +3126,7 @@ msgstr "Controles básicos"
 
 #: python/preferences.py:564 python/preferences.py:619
 msgid "Boost/Cut (dB)"
-msgstr "Boost/Cut (dB)"
+msgstr "Refuerzo/Corte (dB)"
 
 #: python/preferences.py:585
 msgid "High Pass Filter"
@@ -3198,12 +3190,12 @@ msgstr ""
 
 #: python/preferences.py:628
 msgid "Noise Gate"
-msgstr "Noise Gate"
+msgstr "Puerta de Ruido"
 
 #. TC: noise gate triggers at this level.
 #: python/preferences.py:630
 msgid "Threshold"
-msgstr "Límite"
+msgstr "Umbral"
 
 #. TC: negative gain when the noise gate is active.
 #. TC: The de-esser attenuation in ess-detected state.
@@ -3226,7 +3218,7 @@ msgstr "De-esser"
 #. TC: Bias has a numeric setting.
 #: python/preferences.py:641
 msgid "Bias"
-msgstr "Parcialidad"
+msgstr "Polarización"
 
 #: python/preferences.py:646
 msgid ""
@@ -3245,7 +3237,7 @@ msgstr "Ducker"
 
 #: python/preferences.py:652
 msgid "Release"
-msgstr "Lanzamiento"
+msgstr "Relajación"
 
 #: python/preferences.py:655
 msgid "Hold"
@@ -3256,10 +3248,7 @@ msgid ""
 "The ducker automatically reduces the level of player audio when the DJ "
 "speaks. These settings allow you to adjust the timings of that audio "
 "reduction."
-msgstr ""
-"El ducker reduce automáticamente el nivel de reproductor de audio cuando el "
-"DJ habla. Estos ajustes le permiten ajustar los tiempos de que la reducción "
-"de audio."
+msgstr "El pisador reduce automáticamente el nivel de reproductor de audio cuando el DJ habla. Estos ajustes le permiten ajustar los tiempos de que la reducción de audio."
 
 #: python/preferences.py:662
 msgid "Other options"
@@ -3267,7 +3256,7 @@ msgstr "Otras opciones"
 
 #: python/preferences.py:669
 msgid "Phase Rotator"
-msgstr "Fase de los rotadores"
+msgstr "Rotador de Fase"
 
 #: python/preferences.py:672
 msgid ""
@@ -3340,11 +3329,11 @@ msgstr "Mejor"
 
 #: python/preferences.py:996 python/format.py:521
 msgid "Medium"
-msgstr "Medio"
+msgstr "Mediana"
 
 #: python/preferences.py:1005
 msgid "Fast"
-msgstr "Ayunar"
+msgstr "Rápido"
 
 #. TC: the set of features - section heading.
 #: python/preferences.py:1020
@@ -3408,7 +3397,7 @@ msgstr "Streams simultánea(s)"
 
 #: python/preferences.py:1117
 msgid "Simultaneous recording(s)"
-msgstr "Grabación simultánea (s)"
+msgstr "Grabación(es) simultánea(s)"
 
 #: python/preferences.py:1171
 msgid "Fill channel meter void space"
@@ -3420,7 +3409,7 @@ msgstr "Reproductor de sonoridad Normalización"
 
 #: python/preferences.py:1194
 msgid "Indicate which tracks have loudness metadata"
-msgstr "Indique que rastrea tienen metadatos de sonoridad"
+msgstr "Indique cuales pistas tienen metadatos de volumen"
 
 #: python/preferences.py:1195
 msgid ""
@@ -3446,10 +3435,7 @@ msgstr "R128"
 msgid ""
 "It may not be desirable to use the default level since it is rather quiet. "
 "This should be set 4 or 5 dB higher than the ReplayGain setting."
-msgstr ""
-"Puede que no sea conveniente utilizar el nivel predeterminado, ya que es "
-"bastante tranquilo. Esto se debe establecer 4 o 5 dB más alto que el ajuste "
-"ReplayGain."
+msgstr "Puede que no sea conveniente utilizar el nivel predeterminado, ya que es bastante tranquilo. Esto se debe establecer 4 o 5 dB más alto que el ajuste ReplayGain."
 
 #: python/preferences.py:1219
 msgid "ReplayGain"
@@ -3481,7 +3467,7 @@ msgstr "Un control de nivel maestro para los reproductores multimedia."
 
 #: python/preferences.py:1252
 msgid "Recorder Filename (excluding the file extension)"
-msgstr "Grabadora Nombre (excluyendo la extensión del archivo)"
+msgstr "Nombre del Archivo de la Grabadora (excluyendo la extensión del archivo)"
 
 #: python/preferences.py:1253
 msgid ""
@@ -3509,8 +3495,7 @@ msgstr "Pistas finales que contienen largos pasajes de silencio"
 
 #: python/preferences.py:1291
 msgid "Enable the main-player speed/pitch controls"
-msgstr ""
-"Habilitar los controles de velocidad/tono de los principales reproductores"
+msgstr "Activar los controles de velocidad/tono de los principales reproductores"
 
 #: python/preferences.py:1295
 msgid ""
@@ -3581,7 +3566,7 @@ msgstr ""
 
 #: python/preferences.py:1338
 msgid "Enable tooltips"
-msgstr "Habilitar información sobre herramientas"
+msgstr "Activar información sobre herramientas"
 
 #: python/preferences.py:1342
 msgid ""
@@ -4036,9 +4021,7 @@ msgstr ""
 msgid ""
 "Metadata normally updates only on song title changes but you can force an "
 "immediate update here."
-msgstr ""
-"Metadatos actualiza normalmente sólo en los cambios de título de la canción, "
-"pero se puede forzar una actualización inmediata aquí."
+msgstr "Los metadatos se actualizan normalmente sólo en los cambios de título de la canción, pero se puede forzar una actualización inmediata aquí."
 
 #: python/sourceclientgui.py:1730
 msgid "Configuration"
@@ -4111,10 +4094,7 @@ msgid ""
 "This is for kick and stats on Shoutcast master servers that have an "
 "administrator password. For those that don't leave this blank (the source "
 "password is sufficient for those)."
-msgstr ""
-"Esto es para patear y Estadísticas de servidores maestros Shoutcast que "
-"tienen una contraseña de administrador. Para aquellos que no deje este "
-"espacio en blanco (la contraseña fuente es suficiente para aquellos)."
+msgstr "Esto es para patear y estadísticas de servidores maestros Shoutcast que tienen una contraseña de administrador. Para aquellos que no dejen este espacio en blanco (la contraseña de la fuente es suficiente para aquellos)."
 
 #: python/sourceclientgui.py:1812
 msgid "Contact Details"
@@ -4138,7 +4118,7 @@ msgstr "IRC"
 
 #: python/sourceclientgui.py:1826
 msgid "AIM"
-msgstr "OBJETIVO"
+msgstr "AIM"
 
 #: python/sourceclientgui.py:1827
 msgid "ICQ"
@@ -4214,7 +4194,7 @@ msgstr ""
 
 #: python/sourceclientgui.py:2199
 msgid "Perform operations on multiple servers in unison."
-msgstr "Realizar operaciones en varios servidores al unísono."
+msgstr "Realizar operaciones en varios servidores al unisono."
 
 #: python/sourceclientgui.py:2211
 msgid "Connect"
@@ -4273,17 +4253,14 @@ msgstr "Desconecte Grupo"
 #. TC: Window title bar text.
 #: python/sourceclientgui.py:2863
 msgid "IDJC Output"
-msgstr "IDJC salida"
+msgstr "Salida IDJC"
 
 #: python/sourceclientgui.py:2879
 msgid ""
 "Each one of these tabs represents a separate stream recorder. The LED "
 "indicator colours represent the following: Clear=Stopped Yellow=Paused "
 "Red=Recording."
-msgstr ""
-"Cada una de estas fichas representa una grabadora de stream separada. Los "
-"colores indicador LED representan lo siguiente: Borrar = Detenido Amarillo = "
-"En pausa Rojo = grabación."
+msgstr "Cada una de estas pestañas representa una grabadora de stream distinta. Los colores indicador LED representan lo siguiente: Transparente=Detenido Amarillo=En pausa Rojo=Grabando."
 
 #: python/sourceclientgui.py:2887
 msgid ""
@@ -4291,11 +4268,7 @@ msgid ""
 "indicator colours represent the following: Clear=No connection "
 "Yellow=Awaiting authentication. Green=Connected. Flashing=Packet loss due to "
 "a bad connection."
-msgstr ""
-"Cada una de estas fichas representa una serpentina de radio independiente. "
-"Los colores indicador LED representan lo siguiente: Borrar = No hay conexión "
-"Amarillo = En espera de la autenticación. = Verdes conectados. Intermitente "
-"= pérdida de paquetes debido a una mala conexión."
+msgstr "Cada una de estas pestañas representa una streamer de radio independiente. Los colores indicador LED representan lo siguiente: Borrar = No hay conexión Amarillo = En espera de la autenticación. = Verdes conectados. Intermitente = pérdida de paquetes debido a una mala conexión."
 
 #: python/sourceclientgui.py:2905
 msgid " Stream "
