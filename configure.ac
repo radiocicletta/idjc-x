@@ -290,6 +290,7 @@ AC_SUBST(EXT,[png])
 
 PKG_CHECK_MODULES([SHOUTIDJC], [shout-idjc])
 AC_CHECK_HEADERS([shoutidjc/shout.h])
+AC_CHECK_LIB([shout-idjc], [shout_set_meta], :, AC_MSG_ERROR([required function not detected]))
 AC_CHECK_LIB([shout-idjc], [shout_set_tls], AC_SUBST(HAVE_SHOUT_TLS, 1), AC_SUBST(HAVE_SHOUT_TLS, 0))
 
 if test x$DYNAMIC = "x1" ; then
