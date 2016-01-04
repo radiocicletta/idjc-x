@@ -33,6 +33,7 @@ import collections
 import json
 import uuid
 import ctypes
+from binascii import hexlify, unhexlify
 
 import dbus
 import dbus.service
@@ -271,7 +272,6 @@ class JackMenu(MenuMixin):
         set_tip(self.resetmenu_i,
                 _('Reset the JACK port connections to the default settings.'))
         
-        
     def _reset_confirm_dialog(self, menuitem):
         dialog = ConfirmationDialog("",
             _('<span size="12000" weight="bold">Reset all JACK port connections?</span>\n\n'
@@ -281,7 +281,6 @@ class JackMenu(MenuMixin):
         dialog.set_transient_for(self.menu.get_toplevel())
         dialog.ok.connect("clicked", lambda w: self._reset_port_connections())
         dialog.show_all()
-
 
     def _reset_port_connections(self):
         for port in self.ports:
@@ -323,12 +322,12 @@ class JackMenu(MenuMixin):
         else:
             for destport in reply:
                 self.build(menu, use_underline=False)(
-                (("targetport", destport.lstrip("@")),), how=gtk.CheckMenuItem)
+                (("targetport", unhexlify(destport[1:])),), how=gtk.CheckMenuItem)
                 mi = getattr(self, "targetportmenu_i")
                 if destport.startswith("@"):
                     mi.set_active(True)
                 mi.connect(
-                    "activate", self.cb_activate, port, destport.lstrip("@"))
+                    "activate", self.cb_activate, port, unhexlify(destport[1:]))
 
 
     def cb_activate(self, mi, local, dest):
@@ -342,10 +341,10 @@ class JackMenu(MenuMixin):
         reply = ""
         while not reply.startswith("jackports="):
             reply = self.read()
-            
-        pbports = len([x for x in reply[10:].strip().split()
-                                        if x.startswith("system:playback_")])
-        return pbports
+
+        match = "-" + hexlify("system:playback_")
+        pbports = [x for x in reply[10:-1].split() if x.startswith(match)]
+        return len(pbports)
 
         
     def standard_save(self):
@@ -382,7 +381,7 @@ class JackMenu(MenuMixin):
             while not reply.startswith("jackports="):
                 reply = self.read()
             
-            element.append([x.lstrip("@") for x in reply[10:].rstrip().split()
+            element.append([unhexlify(x.lstrip("@-")) for x in reply[10:-1].split()
                                                         if x.startswith("@")])
             total.append(element)
         return total

@@ -1015,13 +1015,27 @@ int mixer_healthcheck()
     return TRUE;
     }
 
+static int fputshex(const char *in, FILE *fp)
+    {
+    static const char * const table = "0123456789abcdef";
+        
+    for(; *in; ++in)
+        {
+        fputc(table[*in >> 4 & 0xF], fp);
+        fputc(table[*in & 0xF], fp);
+        }
+    if (ferror(fp))
+        return EOF;
+    return 0;
+    }
+
 static void jackportread(const char *portname, const char *filter)
     {
     unsigned long flags = 0;
     const char *type = JACK_DEFAULT_AUDIO_TYPE;
     const char **ports, **cons;
     const jack_port_t *port = jack_port_by_name(g.client, portname);
-    int i, j;
+    int i, j, conn;
 
     if (!strcmp(filter, "inputs"))
         flags = JackPortIsInput;
@@ -1044,18 +1058,22 @@ static void jackportread(const char *portname, const char *filter)
         for (i = 0; ports[i]; ++i)
             {
             if (i)
-                fputs(" ", g.out);
+                fputc(' ', g.out);
                 
-            /* connected ports are prefaced with an @ character */
+            /* connected ports are prefaced with an @ character else - */
+            conn = FALSE;
             if (cons)
                 for (j = 0; cons[j]; ++j)
                     if (!(strcmp(cons[j], ports[i])))
                         {
-                        fputc('@', g.out);
+                        conn = TRUE;
                         break;
                         }
-            
-            fputs(ports[i], g.out);
+            fputc(conn ? '@' : '-', g.out);
+
+            /* hex encode to prevent clash with formatting characters.
+             * if jack port names contain spaces "@,\n" it won't break here */
+            fputshex(ports[i], g.out);
             }
 
     fputc('\n', g.out);
