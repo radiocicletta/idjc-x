@@ -1,5 +1,7 @@
 * Changes in version 0.8.16 *
 
+Enabled drag and drop for multiple folders of audio.
+
 Fixed Random Hop traceback triggered by an empty opposite playlist.
 
 Added Spanish translation with credit to: Blank Frank <frank@rhizomatica.org>

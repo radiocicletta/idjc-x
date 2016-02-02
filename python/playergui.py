@@ -2891,6 +2891,13 @@ class IDJC_Media_Player:
                 return self.get_elements_from_xspf(pathnames[0])
             elif os.path.isdir(pathnames[0]):
                 return self.get_elements_from_directory(pathnames[0], 2)
+
+        for each in pathnames:
+            if not os.path.isdir(each):
+                break
+        else:
+            return self.get_elements_from_directories(pathnames)
+
         return self.get_elements_from_chosen(pathnames)
 
     def get_elements_from_chosen(self, chosenfiles):
@@ -2911,6 +2918,11 @@ class IDJC_Media_Player:
         else:
             if any(pathnames):
                 yield cuesheet_entry
+
+    def get_elements_from_directories(self, dirpaths):
+        for chosendir in dirpaths:
+            for element in self.get_elements_from_directory(chosendir, 2):
+                yield element
 
     def get_elements_from_directory(self, chosendir, depth=1, visited=None):
         depth -= 1
