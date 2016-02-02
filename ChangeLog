@@ -1,5 +1,7 @@
 * Changes in version 0.8.16 *
 
+Added a button to permit the user to suspend the adding of tracks. It appears 4 seconds into the process.
+
 Enabled drag and drop for multiple folders of audio.
 
 Fixed Random Hop traceback triggered by an empty opposite playlist.

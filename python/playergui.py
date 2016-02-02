@@ -99,6 +99,24 @@ CueSheetTrack = namedtuple("CueSheetTrack",
     "pathname play tracknum index performer title offset duration replaygain album")
 
 
+class FillStopper(gtk.Button):
+    def __init__(self):
+        gtk.Button.__init__(self, _("Click to stop adding tracks!"))
+        self.set_border_width(4)
+        self._reg = {}
+        self.connect("clicked", self._on_clicked)
+        
+    def register(self, iterator):
+        self._reg[iterator] = True
+        
+    def check(self, iterator):
+        return iterator in self._reg
+
+    def _on_clicked(self, button):
+        self._reg.clear()
+        self.hide()
+
+
 class IndexingIterator(object):
     def __init__(self, iteree):
         self.index = 0
@@ -2599,18 +2617,7 @@ class IDJC_Media_Player:
         if response_id != gtk.RESPONSE_ACCEPT:
             return
         gen = self.filter_allowed_controls(self.get_elements_from(chosenfiles))
-        idle_add(self.file_response_idle, iter(gen)) 
-
-    @threadslock
-    def file_response_idle(self, iterator):
-        if self.no_more_files:
-            self.no_more_files = False
-        else:
-            for element in iterator:
-                self.liststore.append(element)
-                return True
-
-        return False
+        idle_add(self.drag_data_received_data_idle, self.liststore, None, gen) 
 
     def filter_allowed_controls(self, items):
         """Interlude playlist must not contain certain playlist controls."""
@@ -3176,13 +3183,14 @@ class IDJC_Media_Player:
                 elements = self.get_elements_from([urllib.unquote(t[7:])
                                     for t in dragged.data.strip().splitlines() 
                                     if t.startswith("file://")])
+                model = treeview.get_model()
                 try:
                     path, pos = treeview.get_dest_row_at_pos(x, y)
                 except (ValueError, TypeError):
-                    idle_add(self.file_response_idle, elements)
+                    idle_add(self.drag_data_received_data_idle, model, None,
+                                                                    elements)
                 else:
                     for element in elements:
-                        model = treeview.get_model()
                         iter_ = model.get_iter(path)
                         if pos in (gtk.TREE_VIEW_DROP_BEFORE,
                                             gtk.TREE_VIEW_DROP_INTO_OR_BEFORE):
@@ -3212,17 +3220,35 @@ class IDJC_Media_Player:
         return True
 
     @threadslock
-    def drag_data_received_data_idle(self, model, iter_, elements):
+    def drag_data_received_data_idle(self, model, iter_, elements,
+                                                timestamp=None, reselect=True):
+        if timestamp is not False:
+            if timestamp is not None:
+                if time.time() > timestamp + 4:
+                    self.fill_stopper.show()
+                    timestamp = False
+            else:
+                timestamp = time.time()
+                self.fill_stopper.register(elements)
+            
         if self.no_more_files:
             self.no_more_files = False
         else:
             for element in elements:
-                iter_ = model.insert_after(iter_, element)
-                idle_add(self.drag_data_received_data_idle,
-                                                        model, iter_, elements)
+                if iter_ is None:
+                    iter_ = model.append(element)
+                    reselect = False
+                else:
+                    iter_ = model.insert_after(iter_, element)
+
+                if not self.fill_stopper.check(elements):
+                    elements = []
+                    
+                idle_add(self.drag_data_received_data_idle, model, iter_,
+                                                elements, timestamp, reselect)
                 break
             else:
-                self.reselect_please = True
+                self.reselect_please = reselect
 
         return False
 
@@ -4170,6 +4196,9 @@ class IDJC_Media_Player:
         " playing."))
 
         pbox.pack_start(plframe, True, True, 0)
+
+        self.fill_stopper = FillStopper()
+        pbox.pack_start(self.fill_stopper, False)
 
         # A box for the playback speed controls
         self.pbspeedbox = gtk.HBox(False, 0)
