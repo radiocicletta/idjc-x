@@ -109,6 +109,15 @@ class FillStopper(gtk.Button):
     def register(self, iterator):
         self._reg[iterator] = True
         
+    def unregister(self, iterator):
+        try:
+            del self._reg[iterator]
+        except KeyError:
+            pass
+            
+        if not self._reg:
+            self.hide()
+        
     def check(self, iterator):
         return iterator in self._reg
 
@@ -3248,6 +3257,7 @@ class IDJC_Media_Player:
                                                 elements, timestamp, reselect)
                 break
             else:
+                self.fill_stopper.unregister(elements)
                 self.reselect_please = reselect
 
         return False
