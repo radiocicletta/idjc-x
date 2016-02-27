@@ -95,9 +95,10 @@ static void live_avcodec_encoder_main(struct encoder *encoder)
         c->sample_rate = encoder->target_samplerate;
         c->channels = encoder->n_channels;
         c->sample_fmt = AV_SAMPLE_FMT_FLT;
-        if (s->pkt_flags & (PF_AAC | PF_AACP2))
+        if (s->pkt_flags & PF_AAC)
             c->profile = FF_PROFILE_AAC_LOW;
-
+        if (s->pkt_flags & PF_AACP2)
+            c->profile = FF_PROFILE_AAC_HE;
         // start the codec preferably with float inputs else signed 16 bit integer inputs
         while (pthread_mutex_trylock(&g.avc_mutex))
             nanosleep(&time_delay, NULL);
@@ -296,7 +297,7 @@ static AVCodec *aac_codec()
 
 static AVCodec *aacplus_codec()
 {
-    return avcodec_find_encoder_by_name("libaacplus");
+    return avcodec_find_encoder_by_name("libfdk_aac");
 }
 
 int live_avcodec_encoder_init(struct encoder *encoder, struct encoder_vars *ev)

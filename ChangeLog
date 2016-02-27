@@ -1,5 +1,7 @@
 * Changes in version 0.8.16 *
 
+Changed AAC+ support to use libfdk via ffmpeg rather than libaacplus (upstream support is scheduled for removal)
+
 Added a button to permit the user to suspend the adding of tracks. It appears 4 seconds into the process.
 
 Enabled drag and drop for multiple folders of audio.
