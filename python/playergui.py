@@ -1627,7 +1627,9 @@ class IDJC_Media_Player:
                     if self.is_paused:
                         self.pause.set_active(False)
                 else:
-                    print "suppressed the toggle off of the play button"
+                    print "scrolling the playlist window to the current track"
+                    path = self.model_playing.get_path(self.iter_playing)
+                    self.treeview.scroll_to_cell(path)
             else:
                 self.is_playing = True
                 self.new_title = False
