@@ -1,5 +1,9 @@
 * Changes in version 0.8.16 *
 
+VoIP documentation update for Skype IDJC integration.
+
+Copyright year bump.
+
 Clicking play while playing results in the playlist window scrolling to show the current track.
 
 Changed AAC+ support to use libfdk via ffmpeg rather than libaacplus (upstream support is scheduled for removal)

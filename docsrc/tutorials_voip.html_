@@ -4,59 +4,11 @@ ui('Tutorials: Setting up VoIP', 'tutorials-voip-nav')
 
 <h4>Aims</h4>
 
-<p>In this section I'm going to explain how to set up ALSA and Skype to use the VoIP feature and then explain how
-VoIP works within IDJC. VoIP clients that have explicit support for JACK should present little difficulty in
-connecting to IDJC. For Skype a little more work is required.</p>
+<p>In this section I'm going to provide a link to explain how to set up PulseAudio and Skype to use the VoIP feature and then explain how
+VoIP works within IDJC.</p>
 
-<h4>ALSA configuration</h4>
-
-<p>ALSA supports virtual devices called plugins that can form audio pipelines from descriptions in a configuration file.
-With them you can change sample rates, mix audio, apply audio effects, and so on.
-For the purpose of getting sound into IDJC from an ALSA source the following can be specified
-in the appropriate configuration file <i>~/.asoundrc</i> which may need to be created.</p>
-
-<pre title="~/.asoundrc additional contents"># VoIP plugin for the IDJC default profile.
-pcm.idjcvoip {
-   type plug
-   slave.pcm {
-      type jack
-      playback_ports {
-         0 idjc_default:voip_in_l
-         1 idjc_default:voip_in_r
-      }
-      capture_ports {
-         0 idjc_default:voip_out_l
-         1 idjc_default:voip_out_r
-      }
-   }
-}</pre>
-
-<p>For the changes to take effect you need to log out. On logging back into your desktop failure may have occurred
- for the following two reasons.</p>
-
-<ol style="font-size:12px;">
-<li>The ALSA component <i>alsa-plugins</i> is not installed.</li>
-<li>alsa-plugins is installed but not its module for JACK Audio Connection Kit.</li>
-</ol>
-
-<p>Fixing reason 1 seems easy. Just install it using the package manager
-(possibly under the name <i>libasound2-plugins</i>)
-however after doing so there may still be reason 2 to contend with.</p>
-
-<p>A simple test for JACK plugin support.</p>
-<pre title="No problem here.">$ find /usr/lib/alsa-lib | grep jack
-/usr/lib/alsa-lib/libasound_module_pcm_jack.so
-/usr/lib/alsa-lib/libasound_module_pcm_jack.la
-</pre>
-
-<p>If these two files are both missing there is no option but to install unofficial software.
-<a href="ftp://ftp.alsa-project.org/pub/plugins/">Source</a> and
-<a href="http://packages.debian.org/squeeze/libasound2-plugins">binary</a>. This is intended
-as a replacement for the current <i>alsa-plugins</i> package so remove the old version first.</p>
-
-<h4>Skype/Pulseaudio configuration</h4>
-<p>Lots of messing about ever since Skype forced the use of Pulseaudio. Official JACK documentation <a href="http://jackaudio.org/faq/pulseaudio_and_jack.html
-">here</a>. Once you have Pulseaudio ports in JACK they will require connection to the IDJC VoIP JACK ports.</p>
+<h4>Skype/PulseAudio configuration</h4>
+<p><a href="https://we.riseup.net/nikgnomic/ubuntu-studio-qjackctl-and-pulseaudio-for-idjc">External Link</a></p>
 
 <h4>Testing</h4>
 
