@@ -155,6 +155,10 @@ class PathStr(str, metaclass=PathStrMeta):
         return PathStr(os.path.join(str(self), other))
 
 
+    def __truediv__(self, other):
+        return PathStr(os.path.join(str(self), other))
+
+
     def __add__(self, other):
         return PathStr(str.__add__(self, other))
 

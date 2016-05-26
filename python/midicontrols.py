@@ -25,9 +25,12 @@ import collections
 import gettext
 import functools
 
-import gobject
-import gtk
-import pango
+from gi.repository import GObject
+from gi.repository import Gtk
+from gi.repository import Gdk
+from gi.repository import GdkPixbuf
+from gi.repository import Pango
+from .generictreemodel import GenericTreeModel
 import dbus
 import dbus.service
 
@@ -382,7 +385,7 @@ class Binding(tuple):
     #
     @staticmethod
     def key_to_str(k):
-        name= gtk.gdk.keyval_name(k)
+        name= Gdk.keyval_name(k)
         if name is None:
             return '<%04X>' % k
         return name
@@ -404,13 +407,13 @@ class Binding(tuple):
         if s.lower()=='backspace':
             # TC: The name of the backspace key.
             s= _('BackSpace')
-        n= gtk.gdk.keyval_from_name(s)
+        n= Gdk.keyval_from_name(s)
         if n==0:
-            n= gtk.gdk.keyval_from_name(s.lower())
+            n= Gdk.keyval_from_name(s.lower())
         if n==0:
-            n= gtk.gdk.keyval_from_name(s.title())
+            n= Gdk.keyval_from_name(s.title())
         if n==0:
-            n= gtk.gdk.keyval_from_name(s[:1].upper()+s[1:].lower())
+            n= Gdk.keyval_from_name(s[:1].upper()+s[1:].lower())
         return n
 
     # Note names. Convert to/from MIDI note/octave format.
@@ -440,15 +443,15 @@ class Binding(tuple):
     # a simple 0..127 range, for easy use in a SpinButton.
     #
     MODIFIERS= (
-        (gtk.gdk.SHIFT_MASK, '\u21D1'),
-        (gtk.gdk.CONTROL_MASK, '^'),
-        (gtk.gdk.MOD1_MASK, '\u2020'), # alt/option
-        (gtk.gdk.MOD5_MASK, '\u2021'), # altgr/option
-        (gtk.gdk.META_MASK, '\u25C6'),
-        (gtk.gdk.SUPER_MASK, '\u2318'), # win/command
-        (gtk.gdk.HYPER_MASK, '\u25CF'),
+        (Gdk.ModifierType.SHIFT_MASK, '\u21D1'),
+        (Gdk.ModifierType.CONTROL_MASK, '^'),
+        (Gdk.ModifierType.MOD1_MASK, '\u2020'), # alt/option
+        (Gdk.ModifierType.MOD5_MASK, '\u2021'), # altgr/option
+        #(Gdk.EventMask.META_MASK, '\u25C6'),
+        #(Gdk.EventMask.SUPER_MASK, '\u2318'), # win/command
+        #(Gdk.EventMask.HYPER_MASK, '\u25CF'),
     )
-    MODIFIERS_MASK= sum(m for m, c in MODIFIERS)
+    MODIFIERS_MASK= (int(m) for m, c in MODIFIERS)
 
     @staticmethod
     def modifier_to_str(m):
@@ -680,8 +683,8 @@ class Controls(dbus.service.Object):
         # and include only relevant modifier flags.
         #
         if not(0xFFE1<=event.keyval<0xFFEF or 0xFE01<=event.keyval<0xFE35):
-            state= event.state&Binding.MODIFIERS_MASK
-            v= 0x7F if event.type==gtk.gdk.KEY_PRESS else 0
+            state= event.get_state() #&Binding.MODIFIERS_MASK
+            v= 0x7F if event.type==Gdk.EventType.KEY_PRESS else 0
             self.input('k%x.%x' % (state, event.keyval), v)
 
     # Utility for p_ control methods
@@ -1336,27 +1339,28 @@ def treeview_selectnext(treeview):
 
 # Simple value+text-based combo box with optional icon
 #
-class LookupComboBox(gtk.ComboBox):
+class LookupComboBox(Gtk.ComboBox):
    def __init__(self, values, texts, icons= None):
       self._values = values
       if icons is not None:
-          model = gtk.ListStore(str, bool, gtk.gdk.Pixbuf)
+          model = Gtk.ListStore(str, bool, GdkPixbuf.Pixbuf)
       else:
-          model = gtk.ListStore(str, bool)
+          model = Gtk.ListStore(str, bool)
       for valuei, value in enumerate(values):
          if icons is not None:
             model.append((texts[value], True, icons[value]))
          else:
             model.append((texts[value], True))
-      gtk.ComboBox.__init__(self, model)
+      GObject.GObject.__init__(self)
+      self.set_model(model)
 
       if icons is not None:
-         cricon= gtk.CellRendererPixbuf()
+         cricon= Gtk.CellRendererPixbuf()
          self.pack_start(cricon, False)
-         self.set_attributes(cricon, pixbuf= 2)
-      crtext= gtk.CellRendererText()
+         #self.set_attributes(cricon, pixbuf= 2)
+      crtext= Gtk.CellRendererText()
       self.pack_start(crtext, False)
-      self.set_attributes(crtext, text= 0, sensitive= 1)
+      #self.set_attributes(crtext, text= 0, sensitive= 1)
 
    def get_value(self):
       active = self.get_active()
@@ -1368,11 +1372,11 @@ class LookupComboBox(gtk.ComboBox):
 
 # Combo box with simple 1-level grouping and insensitive group headings
 #
-class GroupedComboBox(gtk.ComboBox):
+class GroupedComboBox(Gtk.ComboBox):
     def __init__(self, groups, groupnames, values, valuenames, valuegroups):
         self._values= values
         self._lookup= {}
-        model= gtk.TreeStore(int, str, bool)
+        model= Gtk.TreeStore(int, str, bool)
         group_rows= {}
         for group in groups:
             group_rows[group]= model.append(
@@ -1381,11 +1385,11 @@ class GroupedComboBox(gtk.ComboBox):
             iter= model.append(group_rows[valuegroups[i]],
                                             [i, valuenames[values[i]], True])
             self._lookup[values[i]]= model.get_path(iter)
-        gtk.ComboBox.__init__(self, model)
+        GObject.GObject.__init__(self, model=model)
 
-        cr= gtk.CellRendererText()
+        cr= Gtk.CellRendererText()
         self.pack_start(cr, True)
-        self.set_attributes(cr, text= 1, sensitive= 2)
+        #self.set_attributes(cr, text= 1, sensitive= 2)
 
     def get_value(self):
         iter= self.get_active_iter()
@@ -1414,9 +1418,9 @@ try:
 except ImportError:
     ctypes= None
 
-class CustomSpinButton(gtk.SpinButton):
+class CustomSpinButton(Gtk.SpinButton):
     def __init__(self, adjustment, climb_rate= 0.0, digits= 0):
-        gtk.SpinButton.__init__(self, adjustment, climb_rate, digits)
+        GObject.GObject.__init__(self, adjustment=adjustment, climb_rate=climb_rate, digits=digits)
         self._value = adjustment.get_value()
         self._iscustom = ctypes is not None
         if self._iscustom:
@@ -1447,13 +1451,13 @@ class CustomSpinButton(gtk.SpinButton):
 
     def set_adjustment(self, adjustment):
         v= self.get_adjustment().get_value()
-        gtk.SpinButton.set_adjustment(self, adjustment)
+        Gtk.SpinButton.set_adjustment(self, adjustment)
         if v!=adjustment.get_value():
             adjustment.set_value(v)
         else:
             adjustment.emit('value-changed')
 
-class CustomAdjustment(gtk.Adjustment):
+class CustomAdjustment(Gtk.Adjustment):
     def read_input(self, text):
         return float(text)
     def write_output(self, value):
@@ -1464,7 +1468,7 @@ class CustomAdjustment(gtk.Adjustment):
 
 # Binding editor popup _______________________________________________________
 
-class BindingEditor(gtk.Dialog):
+class BindingEditor(Gtk.Dialog):
     binding_values= {
         # TC: binding editor, action pane, third row, heading text.
         'd': _('Use value'),
@@ -1537,15 +1541,16 @@ class BindingEditor(gtk.Dialog):
 
     def __init__(self, owner):
         self.owner= owner
-        gtk.Dialog.__init__(self,
+        GObject.GObject.__init__(self)
             # TC: Dialog window title text.
             # TC: User is expected to edit a control binding.
-            _('Edit control binding'), owner.owner.owner.prefs_window.window,
-            gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_NO_SEPARATOR |
-            gtk.DIALOG_MODAL, (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-            gtk.STOCK_OK, gtk.RESPONSE_OK))
+        self.set_title(_('Edit control binding'))
+        self.set_parent(owner.owner.owner.prefs_window.window)
+        self.set_modal(True)
+        self.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OK, Gtk.ResponseType.OK)
 
-        gtk.Dialog.set_resizable(self, False)
+        Gtk.Dialog.set_resizable(self, False)
         owner.owner.owner.window_group.add_window(self)
         self.connect('delete_event', self.on_delete)
         self.connect('close', self.on_close)
@@ -1555,7 +1560,7 @@ class BindingEditor(gtk.Dialog):
         #
         # TC: After clicking this button the binding editor will be listening
         # TC: for a key press or midi control surface input.
-        self.learn_button= gtk.ToggleButton(_('Listen for input...'))
+        self.learn_button= Gtk.ToggleButton(_('Listen for input...'))
         self.learn_button.connect('toggled', self.on_learn_toggled)
         self.learn_timer= None
 
@@ -1563,14 +1568,14 @@ class BindingEditor(gtk.Dialog):
                                 self.control_sources, self.owner.source_icons)
         self.source_field.connect('changed', self.on_source_changed)
         # TC: The input source.
-        self.source_label= gtk.Label(_('Source'))
+        self.source_label= Gtk.Label(label=_('Source'))
 
         # TC: The midi channel.
-        self.channel_label= gtk.Label(_('Channel'))
+        self.channel_label= Gtk.Label(label=_('Channel'))
         self.channel_field= ModifierSpinButton(ChannelAdjustment())
 
-        self.control_label= gtk.Label(self.binding_controls['c'])
-        self.control_field= CustomSpinButton(gtk.Adjustment(0, 0, 127, 1))
+        self.control_label= Gtk.Label(label=self.binding_controls['c'])
+        self.control_field= CustomSpinButton(Gtk.Adjustment(0, 0, 127, 1))
 
         # Control editing
         #
@@ -1582,23 +1587,23 @@ class BindingEditor(gtk.Dialog):
         self.method_field.connect('changed', self.on_method_changed)
 
         # TC: The manner in which the input is interpreted.
-        self.mode_label= gtk.Label(_('Interaction'))
+        self.mode_label= Gtk.Label(label=_('Interaction'))
         self.mode_field= LookupComboBox(Binding.MODES, self.control_modes)
         self.mode_field.connect('changed', self.on_mode_changed)
 
         # TC: The effect of the control can be directed upon a specific target.
         # TC: e.g. On target [Left player]
-        self.target_label= gtk.Label(_('On target'))
+        self.target_label= Gtk.Label(label=_('On target'))
         self.target_field= CustomSpinButton(TargetAdjustment('p'))
 
-        self.value_label= gtk.Label(self.binding_values[Binding.MODE_SET])
+        self.value_label= Gtk.Label(label=self.binding_values[Binding.MODE_SET])
         self.value_field_scale= ValueSnapHScale(0, -127, 127)
         dummy= ValueSnapHScale(0, -127, 127)
         # TC: Checkbutton text.
         # TC: Use reverse scale and invert the meaning of button presses.
-        self.value_field_invert= gtk.CheckButton(_('Reversed'))
-        self.value_field_pulse_noinvert= gtk.RadioButton(None, _('Pressed'))
-        self.value_field_pulse_inverted=gtk.RadioButton(
+        self.value_field_invert= Gtk.CheckButton(_('Reversed'))
+        self.value_field_pulse_noinvert= Gtk.RadioButton(None, label=_('Pressed'))
+        self.value_field_pulse_inverted=Gtk.RadioButton(
                                 self.value_field_pulse_noinvert, _('Released'))
 
         # Layout
@@ -1608,28 +1613,28 @@ class BindingEditor(gtk.Dialog):
             label.set_width_chars(10)
             label.set_alignment(0, 0.5)
 
-        sg= gtk.SizeGroup(gtk.SIZE_GROUP_VERTICAL)
+        sg= Gtk.SizeGroup(Gtk.SizeGroupMode.VERTICAL)
 
-        row0, row1, row2, row3= gtk.HBox(spacing= 4), gtk.HBox(spacing= 4), \
-                                gtk.HBox(spacing= 4), gtk.HBox(spacing= 4)
-        row0.pack_start(self.learn_button)
-        row1.pack_start(self.source_label, False, False)
-        row1.pack_start(self.source_field)
-        row2.pack_start(self.channel_label, False, False)
-        row2.pack_start(self.channel_field)
-        row3.pack_start(self.control_label, False, False)
-        row3.pack_start(self.control_field)
+        row0, row1, row2, row3= Gtk.HBox(spacing= 4), Gtk.HBox(spacing= 4), \
+                                Gtk.HBox(spacing= 4), Gtk.HBox(spacing= 4)
+        row0.pack_start(self.learn_button, True, True, 0)
+        row1.pack_start(self.source_label, False, False, 0)
+        row1.pack_start(self.source_field, True, True, 0)
+        row2.pack_start(self.channel_label, False, False, 0)
+        row2.pack_start(self.channel_field, True, True, 0)
+        row3.pack_start(self.control_label, False, False,0 )
+        row3.pack_start(self.control_field, True, True, 0)
         sg.add_widget(row2)
 
-        input_pane= gtk.VBox(homogeneous= True, spacing= 2)
+        input_pane= Gtk.VBox(homogeneous= True, spacing= 2)
         input_pane.set_border_width(8)
-        input_pane.pack_start(row0, False, False)
-        input_pane.pack_start(row1, False, False)
-        input_pane.pack_start(row2, False, False)
-        input_pane.pack_start(row3, False, False)
+        input_pane.pack_start(row0, False, False, 0)
+        input_pane.pack_start(row1, False, False, 0)
+        input_pane.pack_start(row2, False, False, 0)
+        input_pane.pack_start(row3, False, False, 0)
         input_pane.show_all()
 
-        input_frame= gtk.Frame(" %s " % _('Input'))
+        input_frame= Gtk.Frame(label=" %s " % _('Input'))
         input_frame.set_border_width(4)
         input_frame.add(input_pane)
         input_pane.show()
@@ -1638,10 +1643,10 @@ class BindingEditor(gtk.Dialog):
         "midi device.\n\nInput selection can be done manually or with the help"
         " of the '%s' option." % _("Listen for input...")))
 
-        self.value_field_pulsebox= gtk.HBox()
-        self.value_field_pulsebox.pack_start(self.value_field_pulse_noinvert)
-        self.value_field_pulsebox.pack_start(self.value_field_pulse_inverted)
-        self.value_field_pulsebox.foreach(gtk.Widget.show)
+        self.value_field_pulsebox= Gtk.HBox()
+        self.value_field_pulsebox.pack_start(self.value_field_pulse_noinvert, True, True, 0)
+        self.value_field_pulsebox.pack_start(self.value_field_pulse_inverted, True, True, 0)
+        self.value_field_pulsebox.foreach(Gtk.Widget.show)
 
         sg.add_widget(self.value_field_scale)
         sg.add_widget(self.value_field_invert)
@@ -1649,27 +1654,27 @@ class BindingEditor(gtk.Dialog):
         sg.add_widget(dummy)
         dummy.show()
 
-        row0, row1, row2, row3= gtk.HBox(spacing= 4), gtk.HBox(spacing= 4), \
-                                gtk.HBox(spacing= 4), gtk.HBox(spacing= 4)
-        row0.pack_start(self.method_field)
-        row1.pack_start(self.mode_label, False, False)
-        row1.pack_start(self.mode_field)
-        row2.pack_start(self.value_label, False, False)
-        row2.pack_start(self.value_field_scale)
-        row2.pack_start(self.value_field_invert)
-        row2.pack_start(self.value_field_pulsebox)
-        row3.pack_start(self.target_label, False, False)
-        row3.pack_start(self.target_field)
+        row0, row1, row2, row3= Gtk.HBox(spacing= 4), Gtk.HBox(spacing= 4), \
+                                Gtk.HBox(spacing= 4), Gtk.HBox(spacing= 4)
+        row0.pack_start(self.method_field, True, True, 0)
+        row1.pack_start(self.mode_label, False, False, 0)
+        row1.pack_start(self.mode_field, True, True, 0)
+        row2.pack_start(self.value_label, False, False, 0)
+        row2.pack_start(self.value_field_scale, True, True, 0)
+        row2.pack_start(self.value_field_invert, True, True, 0)
+        row2.pack_start(self.value_field_pulsebox, True, True, 0)
+        row3.pack_start(self.target_label, False, False, 0)
+        row3.pack_start(self.target_field, True, True, 0)
 
-        action_pane= gtk.VBox(homogeneous= True, spacing= 2)
+        action_pane= Gtk.VBox(homogeneous= True, spacing= 2)
         action_pane.set_border_width(8)
-        action_pane.pack_start(row0, False, False)
-        action_pane.pack_start(row1, False, False)
-        action_pane.pack_start(row2, False, False)
-        action_pane.pack_start(row3, False, False)
+        action_pane.pack_start(row0, False, False, 0)
+        action_pane.pack_start(row1, False, False, 0)
+        action_pane.pack_start(row2, False, False, 0)
+        action_pane.pack_start(row3, False, False, 0)
         action_pane.show_all()
 
-        action_frame= gtk.Frame(" %s " % _('Action'))
+        action_frame= Gtk.Frame(label=" %s " % _('Action'))
         action_frame.set_border_width(4)
         action_frame.add(action_pane)
         action_pane.show()
@@ -1677,11 +1682,11 @@ class BindingEditor(gtk.Dialog):
         set_tip(action_pane, _("The '%s' pane determines how the input is "
                                 "handled, and to what effect." % _("Action")))
 
-        hbox= gtk.HBox(True, spacing= 4)
-        hbox.pack_start(input_frame)
-        hbox.pack_start(action_frame)
+        hbox= Gtk.HBox(True, spacing= 4)
+        hbox.pack_start(input_frame, True, True, 0)
+        hbox.pack_start(action_frame, True, True, 0)
         hbox.show_all()
-        self.get_content_area().pack_start(hbox)
+        self.get_content_area().pack_start(hbox, True, True, 0)
         hbox.show()
 
     def set_binding(self, binding):
@@ -1765,7 +1770,7 @@ class BindingEditor(gtk.Dialog):
         elif s==Binding.SOURCE_NOTE:
             self.control_field.set_adjustment(NoteAdjustment())
         else:
-            self.control_field.set_adjustment(gtk.Adjustment(0, 0, 127, 1))
+            self.control_field.set_adjustment(Gtk.Adjustment(0, 0, 127, 1))
         self.control_label.set_sensitive(s!=Binding.SOURCE_PITCHWHEEL)
         self.control_field.set_sensitive(s!=Binding.SOURCE_PITCHWHEEL)
 
@@ -1823,23 +1828,23 @@ class BindingEditor(gtk.Dialog):
 
 # A Compound HScale widget that supports snapping.
 #
-class ValueSnapHScale(gtk.HBox):
-    can_mark= all(hasattr(gtk.Scale, x) for x in ('add_mark', 'clear_marks'))
+class ValueSnapHScale(Gtk.HBox):
+    can_mark= all(hasattr(Gtk.Scale, x) for x in ('add_mark', 'clear_marks'))
 
     def __init__(self, *args, **kwds):
-        gtk.HBox.__init__(self)
+        GObject.GObject.__init__(self)
         self.set_spacing(2)
-        self.label= gtk.Label()
+        self.label= Gtk.Label()
         self.label.set_width_chars(4)
         self.label.set_alignment(1.0, 0.5)
-        self.pack_start(self.label, False)
-        self.hscale= gtk.HScale()
+        self.pack_start(self.label, False, False, 0)
+        self.hscale= Gtk.HScale()
         self.hscale.connect('change-value', self.on_change_value)
         self.hscale.connect('value-changed', self.on_value_changed)
         # We draw our own value so we can control the alignment.
         self.hscale.set_draw_value(False)
-        self.pack_start(self.hscale)
-        self.foreach(gtk.Widget.show)
+        self.pack_start(self.hscale, True, True, 0)
+        self.foreach(Gtk.Widget.show)
         if args:
             self.set_range(*args, **kwds)
         else:
@@ -1850,20 +1855,20 @@ class ValueSnapHScale(gtk.HBox):
         # Here snap also doubles as the boundary value.
         self.snap= snap
         if snap is not None:
-            policy= gtk.UPDATE_DISCONTINUOUS
-            adj= gtk.Adjustment(
+            #policy= Gtk.UPDATE_DISCONTINUOUS
+            adj= Gtk.Adjustment(
                     val, lower, upper + snap - 1, snap * 2, snap * 2, snap-1)
             adj.connect('notify::value', self.on_value_do_snap, lower, upper)
         else:
-            policy= gtk.UPDATE_CONTINUOUS
-            adj= gtk.Adjustment(val, lower, upper, 1, 6)
+            #policy= Gtk.UPDATE_CONTINUOUS
+            adj= Gtk.Adjustment(val, lower, upper, 1, 6)
         if self.can_mark:
             self.hscale.clear_marks()
             if not self.snap:
                 mark= lower + (upper - lower + 1) // 2
-                self.hscale.add_mark(mark, gtk.POS_BOTTOM, None)
+                self.hscale.add_mark(mark, Gtk.PositionType.BOTTOM, None)
         self.hscale.set_adjustment(adj)
-        self.hscale.set_update_policy(policy)
+        #self.hscale.set_update_policy(policy)
         adj.props.value= val
         self.hscale.emit('value-changed')
 
@@ -1970,18 +1975,18 @@ class ModifierSpinButton(CustomSpinButton):
 
 # Main UI binding list tab ___________________________________________________
 
-class ControlsUI(gtk.VBox):
+class ControlsUI(Gtk.VBox):
     """Controls main config interface, displayed in a tab by IDJCmixprefs
     """
     tooltip_coords = (0, 0)
 
     def __init__(self, owner):
-        gtk.VBox.__init__(self, spacing= 4)
+        GObject.GObject.__init__(self, spacing= 4)
         self.owner= owner
 
         self.source_icons= {}
         for ct in Binding.SOURCES:
-            self.source_icons[ct]= gtk.gdk.pixbuf_new_from_file(
+            self.source_icons[ct]= GdkPixbuf.Pixbuf.new_from_file(
                         FGlobs.pkgdatadir / ('control_' + ct + ".png"))
         self.editor= BindingEditor(self)
         self.editor.connect('response', self.on_editor_response)
@@ -1990,36 +1995,36 @@ class ControlsUI(gtk.VBox):
         # Control list
         #
         # TC: Tree column heading for Inputs e.g. Backspace, F1, S.
-        column_input= gtk.TreeViewColumn(_('Input'))
+        column_input= Gtk.TreeViewColumn(_('Input'))
         column_input.set_expand(True)
-        cricon= gtk.CellRendererPixbuf()
-        crtext= gtk.CellRendererText()
-        crtext.props.ellipsize= pango.ELLIPSIZE_END
+        cricon= Gtk.CellRendererPixbuf()
+        crtext= Gtk.CellRendererText()
+        crtext.props.ellipsize= Pango.EllipsizeMode.END
         column_input.pack_start(cricon, False)
         column_input.pack_start(crtext, True)
         column_input.set_attributes(cricon, pixbuf= 3, cell_background= 8)
         column_input.set_attributes(crtext, text= 4)
         column_input.set_sort_column_id(0)
-        craction= gtk.CellRendererText()
-        crmodifier= gtk.CellRendererText()
+        craction= Gtk.CellRendererText()
+        crmodifier= Gtk.CellRendererText()
         crmodifier.props.xalign= 1.0
         # TC: Tree column heading for actions e.g. Player stop.
-        column_action= gtk.TreeViewColumn(_('Action'))
+        column_action= Gtk.TreeViewColumn(_('Action'))
         column_action.pack_start(craction, True)
         column_action.pack_start(crmodifier, False)
         column_action.set_attributes(craction, text= 5)
         column_action.set_attributes(crmodifier, text= 6)
         column_action.set_sort_column_id(1)
-        column_action.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
+        column_action.set_sizing(Gtk.TreeViewColumnSizing.AUTOSIZE)
         # TC: Tree column heading for targets e.g. Channel 1, Stream 2
-        column_target= gtk.TreeViewColumn(
-                                _('Target'), gtk.CellRendererText(), text= 7)
+        column_target= Gtk.TreeViewColumn(
+                                _('Target'), Gtk.CellRendererText(), text= 7)
         column_target.set_sort_column_id(2)
 
         model= BindingListModel(self)
-        model_sort= gtk.TreeModelSort(model)
-        model_sort.set_sort_column_id(2, gtk.SORT_ASCENDING)
-        self.tree= gtk.TreeView(model_sort)
+        model_sort= Gtk.TreeModelSort(model)
+        model_sort.set_sort_column_id(2, Gtk.SortType.ASCENDING)
+        self.tree= Gtk.TreeView(model_sort)
         self.tree.connect('realize', model.on_realize, column_input, model_sort)
         self.tree.connect('cursor-changed', self.on_cursor_changed)
         self.tree.connect('key-press-event', self.on_tree_key)
@@ -2036,11 +2041,11 @@ class ControlsUI(gtk.VBox):
         # New/Edit/Remove buttons
         #
         # TC: User to create a new input binding.
-        self.new_button= gtk.Button(stock=gtk.STOCK_NEW)
+        self.new_button= Gtk.Button(stock=Gtk.STOCK_NEW)
         # TC: User to remove an input binding.
-        self.remove_button= gtk.Button(stock=gtk.STOCK_DELETE)
+        self.remove_button= Gtk.Button(stock=Gtk.STOCK_DELETE)
         # TC: User to modify an existing input binding.
-        self.edit_button= gtk.Button(stock=gtk.STOCK_EDIT)
+        self.edit_button= Gtk.Button(stock=Gtk.STOCK_EDIT)
         self.new_button.connect('clicked', self.on_new)
         self.remove_button.connect('clicked', self.on_remove)
         self.edit_button.connect('clicked', self.on_edit)
@@ -2048,21 +2053,21 @@ class ControlsUI(gtk.VBox):
 
         # Layout
         #
-        buttons= gtk.HButtonBox()
+        buttons= Gtk.HButtonBox()
         buttons.set_spacing(8)
-        buttons.set_layout(gtk.BUTTONBOX_END)
-        buttons.pack_start(self.edit_button, False, False)
-        buttons.pack_start(self.remove_button, False, False)
-        buttons.pack_start(self.new_button, False, False)
+        buttons.set_layout(Gtk.ButtonBoxStyle.END)
+        buttons.pack_start(self.edit_button, False, False, 0)
+        buttons.pack_start(self.remove_button, False, False, 0)
+        buttons.pack_start(self.new_button, False, False, 0)
         buttons.show_all()
         self.on_cursor_changed()
 
         self.set_border_width(4)
-        scroll= gtk.ScrolledWindow()
-        scroll.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
+        scroll= Gtk.ScrolledWindow()
+        scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scroll.add(self.tree)
-        self.pack_start(scroll, True, True)
-        self.pack_start(buttons, False, False)
+        self.pack_start(scroll, True, True, 0)
+        self.pack_start(buttons, False, False, 0)
         self.show_all()
 
     # Dynamic tooltip generation
@@ -2076,13 +2081,13 @@ class ControlsUI(gtk.VBox):
                                 *tv.convert_widget_to_bin_window_coords(x, y))
             if path is not None:
                 row = tv.get_model()[path[0]]
-                hbox = gtk.HBox()
+                hbox = Gtk.HBox()
                 hbox.set_spacing(3)
-                hbox.pack_start(gtk.image_new_from_pixbuf(row[3].copy()), False)
-                hbox.pack_start(gtk.Label(row[4]), False)
-                hbox.pack_start(gtk.Label("  " + row[5] + row[6]), False)
+                hbox.pack_start(Gtk.Image.new_from_pixbuf(row[3].copy(), True, True, 0), False)
+                hbox.pack_start(Gtk.Label(row[4], True, True, 0), False)
+                hbox.pack_start(Gtk.Label("  " + row[5] + row[6]), False, False, 0)
                 if row[7]:
-                    hbox.pack_start(gtk.Label("  " + row[7]), False)
+                    hbox.pack_start(Gtk.Label("  " + row[7]), False, False, 0)
                 hbox.show_all()
                 tooltip.set_custom(hbox)
                 return True
@@ -2145,7 +2150,7 @@ class ControlsUI(gtk.VBox):
         self.editor.show()
 
     def on_editor_response(self, _, response):
-        if response==gtk.RESPONSE_OK:
+        if response==Gtk.ResponseType.OK:
             model= self.tree.get_model().get_model()
             binding= self.editor.get_binding()
             if self.editing==None:
@@ -2159,11 +2164,12 @@ class ControlsUI(gtk.VBox):
         self.editor.hide()
 
 
-class BindingListModel(gtk.GenericTreeModel):
+class BindingListModel(GenericTreeModel):
     """TreeModel mapping the list of Bindings in Controls to a TreeView
     """
     def __init__(self, owner):
-        gtk.GenericTreeModel.__init__(self)
+        #GObject.GObject.__init__(self)
+        super(BindingListModel, self).__init__()
         self.owner= owner
         self.bindings= owner.owner.bindings
         self.highlights= owner.owner.highlights
@@ -2196,7 +2202,7 @@ class BindingListModel(gtk.GenericTreeModel):
         return True
 
     def on_get_flags(self):
-        return gtk.TREE_MODEL_LIST_ONLY|gtk.TREE_MODEL_ITERS_PERSIST
+        return Gtk.TreeModelFlags.LIST_ONLY|Gtk.TreeModelFlags.ITERS_PERSIST
     def on_get_n_columns(self):
         return len(BindingListModel.column_types)
     def on_get_column_type(self, index):
@@ -2234,7 +2240,7 @@ class BindingListModel(gtk.GenericTreeModel):
 
     # Make column data from binding objects
     #
-    column_types= [str, str, str, gtk.gdk.Pixbuf, str, str, str, str, str]
+    column_types= [str, str, str, GdkPixbuf.Pixbuf, str, str, str, str, str]
     def on_get_value(self, binding, i):
         if i<3: # invisible sort columns
             inputix= '%02x.%02x.%04x' % (Binding.SOURCES.index(binding.source),

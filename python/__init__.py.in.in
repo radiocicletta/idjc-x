@@ -23,9 +23,9 @@ import os
 import gettext
 import ctypes
 
-import pygtk
-pygtk.require("2.0")
-import glib
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import GLib
 
 from .utils import FixedAttributes
 from .utils import PolicedAttributes
@@ -86,7 +86,7 @@ _ = gettext.translation(FGlobs.package_name, FGlobs.localedir,
 class PGlobs(object, metaclass=PolicedAttributes):
     """Values which cannot be changed once they have been read."""
 
-    config_dir = PathStr(glib.get_user_config_dir()) / FGlobs.package_name
+    config_dir = PathStr(GLib.get_user_config_dir()) / FGlobs.package_name
     #config_dir = PathStr(os.path.expanduser("~")) / ("." + FGlobs.package_name)
     profile_dir = config_dir / "profiles"
     dbus_bus_basename = "net.sf." + FGlobs.package_name

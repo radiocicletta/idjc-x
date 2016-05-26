@@ -20,9 +20,10 @@
 import os
 import time
 
-import gtk
-import glib
-import pango
+from gi.repository import Gtk
+from gi.repository import GObject
+from gi.repository import GLib
+from gi.repository import Pango
 
 from idjc import FGlobs
 from idjc.prelims import ProfileManager
@@ -40,7 +41,7 @@ pm = ProfileManager()
 
 class dialog_group:
     """A mutually exclusive list of dialogs
-    
+
     Only one can be on screen at a time.
     The dialogs below can call the hide method to remove any other dialogs.
     """
@@ -54,23 +55,23 @@ class dialog_group:
             if each is not apartfrom:
                 each.hide()
 
-class disconnection_notification_dialog(gtk.Dialog):
+class disconnection_notification_dialog(Gtk.Dialog):
     """Used to show a dialog related to the failure of the server connection."""
 
 
     def window_attn(self, widget, event):
-        if event.new_window_state | gtk.gdk.WINDOW_STATE_ICONIFIED:
+        if event.new_window_state | Gdk.WindowState.ICONIFIED:
             widget.set_urgency_hint(True)
         else:
             widget.set_urgency_hint(False)
-    
+
     def respond(self, dialog, response):
-        if response in (gtk.RESPONSE_CLOSE, gtk.RESPONSE_DELETE_EVENT):
+        if response in (Gtk.ResponseType.CLOSE, Gtk.ResponseType.DELETE_EVENT):
             dialog.hide()
-    
+
     def present(self):
         self.dial_group.hide(self)
-        gtk.Dialog.present(self)
+        Gtk.Dialog.present(self)
 
     def __init__(self, dial_group = None, window_group = None,
                                             window_title = None, text = None):
@@ -78,10 +79,11 @@ class disconnection_notification_dialog(gtk.Dialog):
             window_title = pm.title_extra.strip()
         else:
             window_title += pm.title_extra
-        
-        gtk.Dialog.__init__(self, window_title, None,
-                                        gtk.DIALOG_DESTROY_WITH_PARENT,
-                                        (gtk.STOCK_CLOSE, gtk.RESPONSE_CLOSE))
+
+        GObject.GObject.__init__(self)
+        self.set_title(window_title)
+        #                                Gtk.DialogFlags.DESTROY_WITH_PARENT,
+        self.add_buttons(Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE)
         if window_group is not None:
             window_group.add_window(self)
         self.set_resizable(False)
@@ -90,26 +92,26 @@ class disconnection_notification_dialog(gtk.Dialog):
         self.connect("close", self.respond)
         self.connect("response", self.respond)
         self.connect("window-state-event", self.window_attn)
-        
-        hbox = gtk.HBox(False, 20)
+
+        hbox = Gtk.HBox(False, 20)
         hbox.set_spacing(12)
         self.get_content_area().pack_start(hbox, True, True, 0)
         hbox.show()
-        image = gtk.Image()
+        image = Gtk.Image()
         image.set_alignment(0.5, 0)
-        image.set_from_stock(gtk.STOCK_DISCONNECT, gtk.ICON_SIZE_DIALOG)
-        hbox.pack_start(image, False)
+        image.set_from_stock(Gtk.STOCK_DISCONNECT, Gtk.IconSize.DIALOG)
+        hbox.pack_start(image, False, False, 0)
         image.show()
-        vbox = gtk.VBox()
+        vbox = Gtk.VBox()
         hbox.pack_start(vbox, True, True, 0)
         vbox.show()
-        
+
         if text is not None:
             for each in text.splitlines():
-                label = gtk.Label(each)
+                label = Gtk.Label(label=each)
                 label.set_use_markup(True)
                 label.set_alignment(0.0, 0.5)
-                vbox.pack_start(label, False)
+                vbox.pack_start(label, False, False, 0)
                 label.show()
 
         if dial_group is not None:
@@ -119,64 +121,64 @@ class disconnection_notification_dialog(gtk.Dialog):
 
 
 
-class autodisconnection_notification_dialog(gtk.Dialog):
+class autodisconnection_notification_dialog(Gtk.Dialog):
     """Used to show when autodisconnection is imminent."""
 
 
     def window_attn(self, widget, event):
-        if event.new_window_state | gtk.gdk.WINDOW_STATE_ICONIFIED:
+        if event.new_window_state | Gdk.WindowState.ICONIFIED:
             widget.set_urgency_hint(True)
         else:
             widget.set_urgency_hint(False)
-    
+
     def respond(self, dialog, response, actionok = None, actioncancel = None):
-        if response == gtk.RESPONSE_OK or response == gtk.RESPONSE_DELETE_EVENT:
+        if response == Gtk.ResponseType.OK or response == Gtk.ResponseType.DELETE_EVENT:
             if actionok is not None:
                 actionok()
-        if response == gtk.RESPONSE_CANCEL:
+        if response == Gtk.ResponseType.CANCEL:
             if actioncancel is not None:
                 actioncancel()
         dialog.hide()
 
     def present(self):
         self.dial_group.hide(self)
-        gtk.Dialog.present(self)
+        Gtk.Dialog.present(self)
 
     def __init__(self, dial_group = None, window_group = None,
                                     window_title = "", additional_text = None,
                                     actionok = None, actioncancel = None):
 
-        gtk.Dialog.__init__(self, window_title, None,
-                        gtk.DIALOG_DESTROY_WITH_PARENT, (gtk.STOCK_CANCEL,
-                        gtk.RESPONSE_CANCEL, gtk.STOCK_OK, gtk.RESPONSE_OK))
+        GObject.GObject.__init__(self, window_title, None,
+                        Gtk.DialogFlags.DESTROY_WITH_PARENT, (Gtk.STOCK_CANCEL,
+                        Gtk.ResponseType.CANCEL, Gtk.STOCK_OK, Gtk.ResponseType.OK))
         if window_group is not None:
             window_group.add_window(self)
         self.set_resizable(False)
         self.connect("close", self.respond, actionok, actioncancel)
         self.connect("response", self.respond, actionok, actioncancel)
         self.connect("window-state-event", self.window_attn)
-        self.set_default_response(gtk.RESPONSE_OK)
-        
-        hbox = gtk.HBox(False, 20)
+        self.set_default_response(Gtk.ResponseType.OK)
+
+        hbox = Gtk.HBox(False, 20)
         hbox.set_border_width(20)
         self.vbox.pack_start(hbox, True, True, 0)
         hbox.show()
-        image = gtk.Image()
-        image.set_from_stock(gtk.STOCK_DIALOG_WARNING, gtk.ICON_SIZE_DIALOG)
+        image = Gtk.Image()
+        image.set_from_stock(Gtk.STOCK_DIALOG_WARNING, Gtk.IconSize.DIALOG)
         hbox.pack_start(image, True, True, 0)
         image.show()
-        vbox = gtk.VBox()
+        vbox = Gtk.VBox()
         vbox.set_spacing(8)
         hbox.pack_start(vbox, True, True, 0)
         vbox.show()
-        
+
         if additional_text is not None:
             if type(additional_text) is str:
                 additional_text = additional_text.splitlines()
             for each in additional_text:
-                label = gtk.Label()
-                attrlist = pango.AttrList()
-                attrlist.insert(pango.AttrSize(12500, 0, len(each)))
+                label = Gtk.Label()
+                attrlist = Pango.AttrList()
+                attrlist.insert(Pango.AttrSize(12500, 0, len(each)))
                 label.set_attributes(attrlist)
                 label.set_text(each)
                 vbox.add(label)
@@ -187,19 +189,19 @@ class autodisconnection_notification_dialog(gtk.Dialog):
 
 
 
-class ReconnectionDialog(gtk.Dialog):
+class ReconnectionDialog(Gtk.Dialog):
     """Displayed when a reconnection is scheduled.
-    
+
     User may expedite or cancel the reconnection operation using this widget.
     """
-    
+
     td = (0.0,)
     # TC: The contents of <> and {} must not be changed.
     lines = _('<span weight="bold" size="12000">The connection to the server '
         'in tab {servertab} has failed.</span>\nA reconnection attempt will'
         ' be made in {countdown} seconds.\nThis is attempt number {attempt}'
         ' of {maxtries}.').splitlines()
-    
+
     def update_countdown_text(self):
         remaining = self.remaining
         self.remaining = int(self.event_time - time.time())
@@ -208,28 +210,28 @@ class ReconnectionDialog(gtk.Dialog):
             if self.remaining == 0:
                 self.hide()
                 idle_add(self.reconnect_idle)
-                
+
     @threadslock
     def reconnect_idle(self):
         self.tab.server_connect.set_active(True)
         if self.tab.server_connect.get_active() == False:
             self.activate()
-    
+
     def run(self):
         if self.active:
             self.update_countdown_text()
-    
+
     def activate(self):
         if not self.tab.troubleshooting.automatic_reconnection.get_active():
             self.deactivate()
             self.tab.scg.disconnected_dialog.present()
             return
-        
+
         if self.active == False:
             self.trycount = 0
             self.td = []
             for each in \
-                    self.config.reconnection_times.child.get_text().split(","):
+                    self.config.reconnection_times.get_child().get_text().split(","):
                 try:
                     x = max(float(each), 5.0)
                 except:
@@ -238,7 +240,7 @@ class ReconnectionDialog(gtk.Dialog):
             self.active = True
         else:
             self.trycount += 1
-        
+
         repeat = self.config.reconnection_repeat.get_active()
 
         if not repeat and self.trycount >= len(self.td):
@@ -260,16 +262,16 @@ class ReconnectionDialog(gtk.Dialog):
             self.realize()
         else:
             self.present()
-    
+
     def deactivate(self):
         if self.active:
             self.hide()
             self.active = False
 
     def cb_response(self, dialog, response):
-        if response == gtk.RESPONSE_CANCEL:
+        if response == Gtk.ResponseType.CANCEL:
             self.deactivate()
-        if response == gtk.RESPONSE_OK:
+        if response == Gtk.ResponseType.OK:
             self.event_time = time.time() + 0.25
 
     def cb_delete(self, widget, event):
@@ -278,38 +280,40 @@ class ReconnectionDialog(gtk.Dialog):
 
     def __init__(self, tab):
         self.tab = tab
-        gtk.Dialog.__init__(self, pm.title_extra.strip(), None,
-                    gtk.DIALOG_DESTROY_WITH_PARENT, (gtk.STOCK_CANCEL,
-                    gtk.RESPONSE_CANCEL, _('_Retry Now'), gtk.RESPONSE_OK))
+        GObject.GObject.__init__(self)
+        self.set_title(pm.title_extra.strip())
+        #            Gtk.DialogFlags.DESTROY_WITH_PARENT
+        self.add_buttons(Gtk.STOCK_CANCEL,
+                    Gtk.ResponseType.CANCEL, _('_Retry Now'), Gtk.ResponseType.OK)
         self.set_modal(False)
         self.set_resizable(False)
         self.set_border_width(6)
         self.vbox.set_spacing(12)
-        
-        hbox = gtk.HBox()
+
+        hbox = Gtk.HBox()
         hbox.set_spacing(12)
-        self.get_content_area().pack_start(hbox, False)
+        self.get_content_area().pack_start(hbox, False, False, 0)
         hbox.show()
-        i = gtk.image_new_from_stock(gtk.STOCK_DISCONNECT, gtk.ICON_SIZE_DIALOG)
+        i = Gtk.Image.new_from_stock(Gtk.STOCK_DISCONNECT, Gtk.IconSize.DIALOG)
         i.set_alignment(0.5, 0)
-        hbox.pack_start(i, False)
+        hbox.pack_start(i, False, False, 0)
         i.show()
 
-        vbox = gtk.VBox()
+        vbox = Gtk.VBox()
         vbox.set_spacing(3)
-        hbox.pack_start(vbox, False)
-        self.label1 = gtk.Label(self.lines[0].format(
+        hbox.pack_start(vbox, False, False, 0)
+        self.label1 = Gtk.Label(label=self.lines[0].format(
                                         servertab = tab.numeric_id + 1) + "\n")
         self.label1.set_use_markup(True)
-        self.label2 = gtk.Label(self.lines[1].format(countdown = 0))
-        self.label3 = gtk.Label(self.lines[2].format(attempt = 1, maxtries = 1))
+        self.label2 = Gtk.Label(label=self.lines[1].format(countdown = 0))
+        self.label3 = Gtk.Label(label=self.lines[2].format(attempt = 1, maxtries = 1))
         for l in (self.label1, self.label2, self.label3):
             l.set_alignment(0.0, 0.5)
-            vbox.pack_start(l, False)
+            vbox.pack_start(l, False, False, 0)
             l.show()
-            
+
         vbox.show()
-            
+
         self.config = tab.troubleshooting
         self.active = False
 
