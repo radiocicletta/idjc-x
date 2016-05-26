@@ -19,12 +19,13 @@
 
 __all__ = ['LicenceWindow']
 
-import gtk
+from gi.repository import Gtk
+from gi.repository import GObject
 
 from idjc import FGlobs
 
 
-class LicenceWindow(gtk.ScrolledWindow):
+class LicenceWindow(Gtk.ScrolledWindow):
     gpl_text = """                        GNU GENERAL PUBLIC LICENSE
                               Version 2, June 1991
 
@@ -370,17 +371,17 @@ Public License instead of this License.
         self.hide()
         return True
     def __init__(self):
-        gtk.ScrolledWindow.__init__(self)
-        self.set_policy(gtk.POLICY_NEVER, gtk.POLICY_ALWAYS)
-        self.set_shadow_type(gtk.SHADOW_ETCHED_IN)
-        text_view = gtk.TextView()
-        text_view.set_wrap_mode(gtk.WRAP_WORD)
+        GObject.GObject.__init__(self)
+        self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.ALWAYS)
+        self.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        text_view = Gtk.TextView()
+        text_view.set_wrap_mode(Gtk.WrapMode.WORD)
         text_view.set_editable(False)
-        text_view.unset_flags(gtk.CAN_FOCUS)
+        #text_view.unset_flags(Gtk.CAN_FOCUS)
         text_view.set_left_margin(8)
         text_view.set_right_margin(8)
         self.add(text_view)
-        text_buffer = gtk.TextBuffer()
+        text_buffer = Gtk.TextBuffer()
         tag = text_buffer.create_tag()
         tag.set_property("font", "sans 8")
         text_buffer.insert_with_tags(text_buffer.get_start_iter(),

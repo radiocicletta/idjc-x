@@ -24,9 +24,9 @@ import string
 import re
 import gettext
 
-import gtk
-import pango
-import glib
+from gi.repository import Gtk
+from gi.repository import Pango
+from gi.repository import GLib
 import mutagen
 import mutagen.id3 as id3
 from mutagen.mp3 import MP3
@@ -47,47 +47,47 @@ pm = ProfileManager()
 
 
 
-class LeftLabel(gtk.HBox):
-    """Use in place of gtk.Label where left justification is needed."""
+class LeftLabel(Gtk.HBox):
+    """Use in place of Gtk.Label where left justification is needed."""
     
     def __init__(self, text):
-        gtk.HBox.__init__(self)
-        self.label = gtk.Label(text)
+        GObject.GObject.__init__(self)
+        self.label = Gtk.Label(label=text)
         self.pack_start(self.label, False, False, 0)
 
 
 
-class RightLabel(gtk.HBox):
-    """Use in place of gtk.Label where right justification is needed."""
+class RightLabel(Gtk.HBox):
+    """Use in place of Gtk.Label where right justification is needed."""
     
     def __init__(self, text):
-        gtk.HBox.__init__(self)
-        self.pack_end(gtk.Label(text), False, False, 0)
+        GObject.GObject.__init__(self)
+        self.pack_end(Gtk.Label(text, True, True, 0), False, False, 0)
 
 
 
-class FreeTagFrame(gtk.Frame):
+class FreeTagFrame(Gtk.Frame):
     def __init__(self):
-        gtk.Frame.__init__(self)
-        sw = gtk.ScrolledWindow()
+        GObject.GObject.__init__(self)
+        sw = Gtk.ScrolledWindow()
         sw.set_border_width(5)
-        sw.set_policy(gtk.POLICY_NEVER, gtk.POLICY_ALWAYS)
+        sw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.ALWAYS)
         self.add(sw)
         sw.show()
-        self.tb = gtk.TextBuffer()
-        tv = gtk.TextView(self.tb)
-        tv.set_wrap_mode(gtk.WRAP_CHAR)
-        tv.modify_font(pango.FontDescription('sans 12'))
+        self.tb = Gtk.TextBuffer()
+        tv = Gtk.TextView(self.tb)
+        tv.set_wrap_mode(Gtk.WrapMode.CHAR)
+        tv.modify_font(Pango.FontDescription('sans 12'))
         sw.add(tv)
         tv.show()
 
 
 
-class MutagenTagger(gtk.VBox):
+class MutagenTagger(Gtk.VBox):
     """Base class for ID3Tagger and NativeTagger."""
     
     def __init__(self, pathname):
-        gtk.VBox.__init__(self)
+        GObject.GObject.__init__(self)
         self.pathname = pathname
 
 
@@ -183,17 +183,17 @@ class WMATagger(MutagenTagger):
             self.tag = None
             return
             
-        hbox = gtk.HBox()
+        hbox = Gtk.HBox()
         hbox.set_border_width(5)
         hbox.set_spacing(8)
         self.pack_start(hbox, False, False, 0)
-        vbox_text = gtk.VBox()
+        vbox_text = Gtk.VBox()
         hbox.pack_start(vbox_text, False, False, 0)
-        vbox_entry = gtk.VBox()
+        vbox_entry = Gtk.VBox()
         hbox.pack_start(vbox_entry, True, True, 0)
         
         self.primary_line = []
-        for text, entry in ((x, gtk.Entry()) for x in self.primary_data):
+        for text, entry in ((x, Gtk.Entry()) for x in self.primary_data):
             self.primary_line.append((text, entry))
             vbox_text.add(LeftLabel(text))
             vbox_entry.add(entry)
@@ -336,20 +336,20 @@ class ID3Tagger(MutagenTagger):
                 self.tag = None
                 return
             
-        hbox = gtk.HBox()
+        hbox = Gtk.HBox()
         hbox.set_border_width(5)
         hbox.set_spacing(8)
         self.pack_start(hbox, False, False, 0)
-        vbox_frame = gtk.VBox()
+        vbox_frame = Gtk.VBox()
         hbox.pack_start(vbox_frame, False, False, 0)
-        vbox_text = gtk.VBox()
+        vbox_text = Gtk.VBox()
         hbox.pack_start(vbox_text, False, False, 0)
-        vbox_entry = gtk.VBox()
+        vbox_entry = Gtk.VBox()
         hbox.pack_start(vbox_entry, True, True, 0)
         
         self.primary_line = []
         for frame, text, entry in (
-                            (x, y, gtk.Entry()) for x, y in self.primary_data):
+                            (x, y, Gtk.Entry()) for x, y in self.primary_data):
             self.primary_line.append((frame, entry))
             vbox_frame.add(LeftLabel(frame))
             vbox_text.add(RightLabel(text))
@@ -442,18 +442,18 @@ class MP4Tagger(MutagenTagger):
             self.tag = None
             return
             
-        hbox = gtk.HBox()
+        hbox = Gtk.HBox()
         hbox.set_border_width(5)
         hbox.set_spacing(8)
         self.pack_start(hbox, False, False, 0)
-        vbox_text = gtk.VBox()
+        vbox_text = Gtk.VBox()
         hbox.pack_start(vbox_text, False, False, 0)
-        vbox_entry = gtk.VBox()
+        vbox_entry = Gtk.VBox()
         hbox.pack_start(vbox_entry, True, True, 0)
         
         self.primary_line = []
         for frame, text, entry in (
-                            (x, y, gtk.Entry()) for x, y in self.primary_data):
+                            (x, y, Gtk.Entry()) for x, y in self.primary_data):
             self.primary_line.append((frame, entry))
             vbox_text.add(LeftLabel(text))
             vbox_entry.add(entry)
@@ -640,7 +640,7 @@ class MutagenGUI:
 
     
     def destroy_and_quit(self, widget, data = None):
-        gtk.main_quit()
+        Gtk.main_quit()
         sys.exit(0)
 
     
@@ -680,7 +680,7 @@ class MutagenGUI:
             print("Tagger file extension", extension, "not supported.")
             return
         
-        self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         if idjcroot is not None:
             idjcroot.window_group.add_window(self.window)
         self.window.set_size_request(550, 450)
@@ -691,48 +691,48 @@ class MutagenGUI:
         self.window.set_resizable(True)
         if idjcroot == None:
             self.window.connect("destroy", self.destroy_and_quit)
-        vbox = gtk.VBox()
+        vbox = Gtk.VBox()
         self.window.add(vbox)
         vbox.show()
-        label = gtk.Label()
+        label = Gtk.Label()
         if idjcroot:
             if encoding is not None:
                 label.set_markup("<b>" + _('Filename:').decode("utf-8") + \
-                " " + glib.markup_escape_text(str(os.path.split(
+                " " + GLib.markup_escape_text(str(os.path.split(
                 pathname)[1], encoding).encode("utf-8", "replace")) + "</b>")
             else:
                 label.set_markup("<b>" + _('Filename:').decode("utf-8") + \
-                " " + glib.markup_escape_text(os.path.split(
+                " " + GLib.markup_escape_text(os.path.split(
                 pathname)[1]).encode("utf-8", "replace") + "</b>")
         else:
             label.set_markup("<b>" + _('Filename:').decode("utf-8") + " " + \
-            glib.markup_escape_text(str(os.path.split(
+            GLib.markup_escape_text(str(os.path.split(
             pathname)[1], "latin1").encode("utf-8", "replace")) + "</b>")
         vbox.pack_start(label, False, False, 6)
         label.show()
         
-        hbox = gtk.HBox()
+        hbox = Gtk.HBox()
         hbox.set_border_width(2)
-        apply_button = gtk.Button(None, gtk.STOCK_APPLY)
+        apply_button = Gtk.Button(None, Gtk.STOCK_APPLY)
         if idjcroot is not None:
             apply_button.connect_object_after("clicked", self.update_playlists,
                                                             pathname, idjcroot)
         hbox.pack_end(apply_button, False, False, 0)
         apply_button.show()
-        close_button = gtk.Button(None, gtk.STOCK_CLOSE)
-        close_button.connect_object("clicked", gtk.Window.destroy, self.window)
+        close_button = Gtk.Button(None, Gtk.STOCK_CLOSE)
+        close_button.connect_object("clicked", Gtk.Window.destroy, self.window)
         hbox.pack_end(close_button, False, False, 10)
         close_button.show()
-        reload_button = gtk.Button(None, gtk.STOCK_REVERT_TO_SAVED)
+        reload_button = Gtk.Button(None, Gtk.STOCK_REVERT_TO_SAVED)
         hbox.pack_start(reload_button, False, False, 10)
         reload_button.show()
         vbox.pack_end(hbox, False, False, 0)
         hbox.show()
-        hbox = gtk.HBox()
+        hbox = Gtk.HBox()
         vbox.pack_end(hbox, False, False, 2)
         hbox.show()
         
-        notebook = gtk.Notebook()
+        notebook = Gtk.Notebook()
         notebook.set_border_width(2)
         vbox.pack_start(notebook, True, True, 0)
         notebook.show()
@@ -758,14 +758,14 @@ class MutagenGUI:
             if self.id3 is not None and self.id3.tag is not None:
                 reload_button.connect("clicked", lambda x: self.id3.load_tag())
                 apply_button.connect("clicked", lambda x: self.id3.save_tag())
-                label = gtk.Label("ID3")
+                label = Gtk.Label(label="ID3")
                 notebook.append_page(self.id3, label)
                 self.id3.show()
             
             if self.ape is not None and self.ape.tag is not None:
                 reload_button.connect("clicked", lambda x: self.ape.load_tag())
                 apply_button.connect("clicked", lambda x: self.ape.save_tag())
-                label = gtk.Label("APE v2")
+                label = Gtk.Label(label="APE v2")
                 notebook.append_page(self.ape, label)
                 self.ape.show() 
             
@@ -774,7 +774,7 @@ class MutagenGUI:
                                             lambda x: self.native.load_tag())
                 apply_button.connect("clicked",
                                             lambda x: self.native.save_tag())
-                label = gtk.Label(_('Native') + " (" + self.ext2name[
+                label = Gtk.Label(label=_('Native') + " (" + self.ext2name[
                                                             extension] + ")")
                 notebook.append_page(self.native, label)
                 self.native.show()
@@ -782,7 +782,7 @@ class MutagenGUI:
             reload_button.clicked()
 
             apply_button.connect_object_after("clicked",
-                                            gtk.Window.destroy, self.window)
+                                            Gtk.Window.destroy, self.window)
             self.window.show()
         except IOError as e:
             print(e)

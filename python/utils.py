@@ -65,7 +65,7 @@ def _pa_rlock(func):
     @wraps(func)
     def _wrapper(cls, *args, **kwds):
         """Wrapper with locking feature. Performs rlock."""
-        
+
         rlock = type.__getattribute__(cls, "_rlock")
 
         try:
@@ -141,7 +141,7 @@ class PolicedAttributes(FixedAttributes):
 
 class PathStrMeta(type):
     """PathStr() returns None if called with None."""
-    
+
     def __call__(cls, arg):
         if arg is None:
             return None
@@ -158,6 +158,10 @@ class PathStr(str, metaclass=PathStrMeta):
 
 
     def __div__(self, other):
+        return PathStr(os.path.join(str(self), other))
+
+
+    def __truediv__(self, other):
         return PathStr(os.path.join(str(self), other))
 
 
@@ -202,10 +206,10 @@ class SlotObject(object):
 
     def __getattr__(self, what):
         """Universal getter for get_ prefix."""
-        
+
         def assign(value):
             """Returned by set_ prefix call. A setter function."""
-            
+
             self.value = value
 
         if what.startswith("get_"):
@@ -241,7 +245,7 @@ def string_multireplace(part, table):
 class LinkUUIDRegistry(dict, metaclass=Singleton):
     """Manage substitute hard links for data files."""
 
-    
+
     link_re = re.compile(
                     "\{[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}\}")
     link_dir = None
@@ -276,11 +280,11 @@ class LinkUUIDRegistry(dict, metaclass=Singleton):
 
     def _save(self, where, copy):
         """Write new hard links to the links directory.
-        
+
         Existing links are kept as they are. To unlink them could delete the
         only copy of the link source.
         """
-        
+
         # Create the links directory as needed.
         if not os.path.isdir(where):
             try:
@@ -307,9 +311,9 @@ class LinkUUIDRegistry(dict, metaclass=Singleton):
 
     def update(self, where, copy=False):
         """Update the hard links in the links directory."""
-        
+
         self._save(where, copy)
-        # Purge after save because the link source may just be in the 
+        # Purge after save because the link source may just be in the
         # links directory itself.
         self._purge(where)
         self.link_dir = where
@@ -317,7 +321,7 @@ class LinkUUIDRegistry(dict, metaclass=Singleton):
 
     def get_link_filename(self, uuid_):
         """Check in the links directory for a specific UUID filename."""
-        
+
         if self.link_dir is not None:
             matches = glob.glob(os.path.join(self.link_dir, "{%s}.*" % uuid_))
             if len(matches) == 1:

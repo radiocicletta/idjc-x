@@ -18,8 +18,8 @@
 __all__ = ['PopupWindow']
 
 
-import gobject
-import gtk
+from gi.repository import GObject
+from gi.repository import Gtk
 from .gtkstuff import threadslock, timeout_add, source_remove
 
 
@@ -28,26 +28,26 @@ class PopupWindow:
         if self.messages:
             print("PopupWindow:", text)
 
-        
+
     def set_messages(self, boolean):
         """Show status messages on the console when boolean = true."""
-        
+
 
         self.messages = boolean and True or False
-        
+
     def get_messages(self):
         return self.messages
-    
 
-    class new_popup_window(gtk.Window):
+
+    class new_popup_window(Gtk.Window):
         def __init__(self):
-            gtk.Window.__init__(self, gtk.WINDOW_POPUP)
-            gtk.Window.set_decorated(self, False)
-    
+            GObject.GObject.__init__(self, type=Gtk.WindowType.POPUP)
+            Gtk.Window.set_decorated(self, False)
+
 
     @threadslock
     def timeout_callback(self):
-        class bugout:
+        class bugout(BaseException):
             def __init__(self, parent, text):
                 if parent.popup_window is not None:
                     parent.popup_window.destroy()
@@ -90,7 +90,7 @@ class PopupWindow:
             return False
         else:
             return True
-    
+
     def handle_mouse(self, widget, event, data):
         self.timer_count = 0
         # Store absolute mouse x and y coordiates.
@@ -121,9 +121,9 @@ class PopupWindow:
                                                         and self.inside_widget:
             source_remove(self.timeout_id)
             self.message("timer removed")
-    
+
     def dummy(self): return False
-    
+
     def __init__(self, widget, popuptime, popdowntime, timeout, \
                                 winpopulate_callback, inhibit_callback = None):
         self.widget = widget

@@ -39,7 +39,7 @@ import dbus
 import dbus.service
 from dbus.mainloop.glib import DBusGMainLoop
 DBusGMainLoop(set_as_default=True)
-import glib
+from gi.repository import GLib
 
 from idjc import FGlobs
 from idjc import PGlobs
@@ -333,7 +333,7 @@ class DBusUptimeReporter(dbus.service.Object):
 
             self._interface_cache[profile] = interface
 
-        if glib.main_depth():
+        if GLib.main_depth():
             # asynchronous: more CPU efficient but requires event loop
             interface.get_uptime(reply_handler=rh, error_handler=eh)
             return self._uptime_cache[profile]
@@ -455,20 +455,26 @@ class ProfileManager(object, metaclass=Singleton):
             else:
                 dialog_selects = False
 
-            if args.profile is not None:
-                profile = args.profile[0]
-                dialog_selects = False
-                if not profile_name_valid(profile):
-                    ap.error(_("the specified profile name is not valid"))
+            try:
+                if args.profile is not None:
+                    profile = args.profile[0]
+                    dialog_selects = False
+                    if not profile_name_valid(profile):
+                        ap.error(_("the specified profile name is not valid"))
+            except AttributeError:
+                pass
 
-            if args.dialog is not None:
-                dialog_selects = args.dialog[0] == "true"
+            try:
+                if args.dialog is not None:
+                    dialog_selects = args.dialog[0] == "true"
+            except AttributeError:
+                pass
 
             if not dialog_selects and profile:
                 if not profile_name_valid(profile):
                     ap.error(_('profile name is bad'))
 
-                if profile not in os.walk(PGlobs.profile_dir).next()[1]:
+                if profile not in next(os.walk(PGlobs.profile_dir))[1]:
                     ap.error(_('profile %s does not exist') % profile)
 
                 if self._profile_has_owner(profile):
@@ -504,7 +510,7 @@ class ProfileManager(object, metaclass=Singleton):
                                                                 verbose=True)
             if self._profile is None:
                 ap.error(_("no profile is set"))
-                
+
         else:
             claim = "session." + self._session_name
             try:
@@ -550,14 +556,14 @@ class ProfileManager(object, metaclass=Singleton):
     @property
     def session_name(self):
         """The name of the session."""
-        
+
         return self._session_name
-        
-        
+
+
     @property
     def session_uuid(self):
         """When session is JACK this will be set to something."""
-        
+
         return self._session_uuid
 
 
@@ -596,7 +602,7 @@ class ProfileManager(object, metaclass=Singleton):
             return None
 
         try:
-            profiledirs = os.walk(PGlobs.profile_dir).next()[1]
+            profiledirs = next(os.walk(PGlobs.profile_dir))[1]
         except (EnvironmentError, StopIteration):
             return None
 
@@ -629,16 +635,19 @@ class ProfileManager(object, metaclass=Singleton):
                 ap.error(_('specified profile does not exist: %s') % \
                                                             args.profile[0])
 
-        if args.session is None:
-            # The None parameter below indicates profile mode is on and the
-            # profile will determine the save directory, otherwise we return
-            # the save directory instead.
+        try:
+            if args.session is None:
+                # The None parameter below indicates profile mode is on and the
+                # profile will determine the save directory, otherwise we return
+                # the save directory instead.
 
-            # L0 relates to Ladish [L0] mode which is an unmanaged session.
-            # The final return value is the save location of the JACK port
-            # connections file.
-            # Since it's not a pathname it goes in the standard save directory.
-            return "L0", None, "default", None
+                # L0 relates to Ladish [L0] mode which is an unmanaged session.
+                # The final return value is the save location of the JACK port
+                # connections file.
+                # Since it's not a pathname it goes in the standard save directory.
+                return "L0", None, "default", None
+        except AttributeError:
+                return "L0", None, "default", None
 
         if ":" in args.session[0]:
             session_type, rest = args.session[0].split(":", 1)
@@ -668,10 +677,10 @@ class ProfileManager(object, metaclass=Singleton):
 
         if session_dir is not None:
             session_dir = os.path.realpath(os.path.expanduser(session_dir))
-            
+
             if not os.path.isdir(session_dir):
                 ap.error(_('directory does not exist: %s') % session_dir)
-            
+
             # Use a subdir for the actual save path based on the mode and name.
             session_dir = os.path.join(session_dir, "idjc-%s-%s" % (
                                                 session_type, session_name))
@@ -687,13 +696,13 @@ class ProfileManager(object, metaclass=Singleton):
                     else:
                         # Perform copy of profile data.
                         try:
-                            shutil.copytree(PGlobs.profile_dir / 
+                            shutil.copytree(PGlobs.profile_dir /
                                                 args.profile[0], session_dir)
                         except EnvironmentError as e:
                             if e.errno != 17:
                                 ap.error("failed to copy data from the"
                                                 " profile directory: %s" % e)
-                    
+
             elif session_type != "JACK":
                 # Just make the empty session directory.
                 try:
@@ -706,7 +715,7 @@ class ProfileManager(object, metaclass=Singleton):
         if session_type == "JACK":
             if session_dir is None and args.profile is not None:
                 profile_check()
-                session_dir = PGlobs.profile_dir / args.profile[0] 
+                session_dir = PGlobs.profile_dir / args.profile[0]
             try:
                 session_uuid = uuid.UUID(args.jackserver[0])
             except TypeError:
@@ -743,7 +752,7 @@ class ProfileManager(object, metaclass=Singleton):
             if not os.path.exists(PGlobs.autoload_profile_pathname):
                 with open(PGlobs.autoload_profile_pathname, "w"):
                     pass
-            
+
             with open(PGlobs.autoload_profile_pathname, "r+") as f:
                 fcntl.flock(f, fcntl.LOCK_EX)
                 al_profile = f.readline().strip()
@@ -959,12 +968,12 @@ class ProfileManager(object, metaclass=Singleton):
         a = self._autoloadprofilename()
         d = PGlobs.profile_dir
         try:
-            profdirs = os.walk(d).next()[1]
+            profdirs = next(os.walk(d))[1]
         except (EnvironmentError, StopIteration):
             return
         for profname in profdirs:
             if profile_name_valid(profname):
-                files = os.walk(d / profname).next()[2]
+                files = next(os.walk(d / profname))[2]
                 rslt = {"profile": profname}
                 for each in self._optionals:
                     try:

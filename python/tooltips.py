@@ -15,7 +15,7 @@
 #   along with this program in the file entitled COPYING.
 #   If not, see <http://www.gnu.org/licenses/>.
 
-import gtk
+from gi.repository import Gtk
 
 
 
@@ -41,7 +41,7 @@ class TooltipsGroup:
 
 
     def cb_query_tooltip(self, widget, x, y, keyboard_mode, tooltip, tip_text):
-        label = gtk.Label(tip_text)
+        label = Gtk.Label(label=tip_text)
         label.set_line_wrap(True)
         tooltip.set_custom(label)
         label.show()

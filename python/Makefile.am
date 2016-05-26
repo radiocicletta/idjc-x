@@ -7,7 +7,7 @@ python_PYTHON = idjcmonitor.py
 idjcpkgpython_PYTHON = dialogs.py gtkstuff.py irc.py jingles.py licence_window.py \
 		maingui.py midicontrols.py mutagentagger.py songdb.py playergui.py \
 		popupwindow.py preferences.py sourceclientgui.py tooltips.py utils.py \
-		format.py
+		format.py generictreemodel.py
 
 nodist_idjcpkgpython_PYTHON = __init__.py
 
