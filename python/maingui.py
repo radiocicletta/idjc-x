@@ -187,7 +187,6 @@ class MainMenu(Gtk.MenuBar, MenuMixin):
 
         for each in ("streams", "recorders"):
             mi = getattr(self, each + "menu_i")
-            #m = self.submenu(mi, each)
             self.submenu(mi, each)
 
         self.submenu(self.viewmenu_i, "view")
@@ -592,9 +591,6 @@ class MicButton(Gtk.ToggleButton):
         self.flash_colour = opener_settings.reminder_colour.get_color()
         self.has_reminder_flash = opener_tab.has_reminder_flash.get_active
 
-        attrlist = Pango.AttrList()
-        #attrlist.insert(Pango.AttrSize(METER_TEXT_SIZE, 0, 100))
-
         hbox = Gtk.Box()
         hbox.set_spacing(4)
 
@@ -608,6 +604,14 @@ class MicButton(Gtk.ToggleButton):
             return ca
 
         self.ca1 = make_indicator()
+
+        attrlist = Pango.parse_markup(
+            '<span size="{}">{}</span>'.format(
+                METER_TEXT_SIZE,
+                ""
+            ),
+            -1,
+            "0")[1]
 
         lvbox = Gtk.VBox()
         hbox.pack_start(lvbox, False, False, 0)
@@ -1278,69 +1282,33 @@ class PaddedVBox(Gtk.VBox):
 
 def make_meter_scale():         # A logarithmic meter scale for a 'VU' meter
     scalebox = Gtk.VBox()
-    label = Gtk.Label(label="  0")
-    attrlist = Pango.AttrList()
-    #attrlist.insert(Pango.AttrSize(METER_TEXT_SIZE, 0, len(label.get_text())))
-    label.set_attributes(attrlist)
-    alignment = Gtk.Alignment.new(0, 0, 1, 1)
-    alignment.add(label)
-    label.show()
-    scalebox.add(alignment)
-    alignment.show()
-    label = Gtk.Label(label=" -6")
-    attrlist = Pango.AttrList()
-    #attrlist.insert(Pango.AttrSize(METER_TEXT_SIZE, 0, len(label.get_text())))
-    label.set_attributes(attrlist)
-    alignment = Gtk.Alignment.new(0, 0, 1, 1)
-    alignment.add(label)
-    label.show()
-    scalebox.add(alignment)
-    alignment.show()
-    label = Gtk.Label(label="-12")
-    attrlist = Pango.AttrList()
-    #attrlist.insert(Pango.AttrSize(METER_TEXT_SIZE, 0, len(label.get_text())))
-    label.set_attributes(attrlist)
-    alignment = Gtk.Alignment.new(0, 0.25, 1, 1)
-    alignment.add(label)
-    label.show()
-    scalebox.add(alignment)
-    alignment.show()
-    label = Gtk.Label(label="-18")
-    attrlist = Pango.AttrList()
-    #attrlist.insert(Pango.AttrSize(METER_TEXT_SIZE, 0, len(label.get_text())))
-    label.set_attributes(attrlist)
-    alignment = Gtk.Alignment.new(0, 0.5, 1, 1)
-    alignment.add(label)
-    label.show()
-    scalebox.add(alignment)
-    alignment.show()
-    label = Gtk.Label(label="-24")
-    attrlist = Pango.AttrList()
-    #attrlist.insert(Pango.AttrSize(METER_TEXT_SIZE, 0, len(label.get_text())))
-    label.set_attributes(attrlist)
-    alignment = Gtk.Alignment.new(0, 0.75, 1, 1)
-    alignment.add(label)
-    label.show()
-    scalebox.add(alignment)
-    alignment.show()
-    label = Gtk.Label(label="-30")
-    attrlist = Pango.AttrList()
-    #attrlist.insert(Pango.AttrSize(METER_TEXT_SIZE, 0, len(label.get_text())))
-    label.set_attributes(attrlist)
-    alignment = Gtk.Alignment.new(0, 1, 1, 1)
-    alignment.add(label)
-    label.show()
-    scalebox.add(alignment)
-    alignment.show()
-    label = Gtk.Label(label="-36")
-    attrlist = Pango.AttrList()
-    #attrlist.insert(Pango.AttrSize(METER_TEXT_SIZE, 0, len(label.get_text())))
-    label.set_attributes(attrlist)
-    alignment = Gtk.Alignment.new(0, 1, 1, 1)
-    alignment.add(label)
-    label.show()
-    scalebox.add(alignment)
-    alignment.show()
+
+    lbls = collections.OrderedDict([
+        ("  0", [0, 0, 1, 1]),
+        (" -6", [0, 0, 1, 1]),
+        ("-12", [0, 0.25, 1, 1]),
+        ("-18", [0, 0.5, 1, 1]),
+        ("-24", [0, 0.75, 1, 1]),
+        ("-30", [0, 1, 1, 1]),
+        ("-36", [0, 1, 1, 1])
+    ])
+
+    for lbl, align in lbls.items():
+        label = Gtk.Label(label=lbl)
+        attrlist = Pango.parse_markup(
+            '<span size="{}">{}</span>'.format(
+                METER_TEXT_SIZE,
+                lbl
+            ),
+            -1,
+            "0")[1]
+        label.set_attributes(attrlist)
+        alignment = Gtk.Alignment.new(*align)
+        alignment.add(label)
+        label.show()
+        scalebox.add(alignment)
+        alignment.show()
+
     return scalebox
 
 
@@ -1353,8 +1321,13 @@ def make_meter_unit(text, l_meter, r_meter):
     hbox.set_border_width(1)
     frame.add(hbox)
     label = Gtk.Label(label=text)
-    attrlist = Pango.AttrList()
-    #attrlist.insert(Pango.AttrSize(METER_TEXT_SIZE, 0, len(text)))
+    attrlist = Pango.parse_markup(
+        '<span size="{}">{}</span>'.format(
+            METER_TEXT_SIZE,
+            text
+        ),
+        -1,
+        "0")[1]
     label.set_attributes(attrlist)
     labelbox = Gtk.Box()
     labelbox.add(label)
@@ -1384,8 +1357,13 @@ def make_stream_meter_unit(text, meters):
     inner_vbox = Gtk.VBox()
     frame.add(inner_vbox)
     label = Gtk.Label(label=text)
-    attrlist = Pango.AttrList()
-    #attrlist.insert(Pango.AttrSize(METER_TEXT_SIZE, 0, len(text)))
+    attrlist = Pango.parse_markup(
+        '<span size="{}">{}</span>'.format(
+            METER_TEXT_SIZE,
+            text
+        ),
+        -1,
+        "0")[1]
     label.set_attributes(attrlist)
     labelbox = Gtk.Box()
     labelbox.add(label)
@@ -1803,6 +1781,13 @@ class MicMeter(Gtk.VBox):
         self.led.show()
         labeltext = labelbasetext + " " + str(index)
         label = Gtk.Label(label=labeltext)
+        attrlist = Pango.parse_markup(
+            '<span size="{}">{}</span>'.format(
+                METER_TEXT_SIZE,
+                labeltext
+            ),
+            -1,
+            "0")[1]
         label.set_attributes(attrlist)
         lhbox.pack_start(label, False, False, 0)
         label.show()
@@ -1851,7 +1836,13 @@ class RecIndicator(Gtk.Box):
         label = Gtk.Label(label=label_text)
         self.pack_start(label, True, True, 0)
         label.show()
-        attrlist = Pango.AttrList()
+        attrlist = Pango.parse_markup(
+            '<span size="{}">{}</span>'.format(
+                METER_TEXT_SIZE,
+                ""
+            ),
+            -1,
+            "0")[1]
         label.set_attributes(attrlist)
         self.image = Gtk.Image()
         self.pack_start(self.image, False, False, 0)
@@ -1870,9 +1861,13 @@ class RecordingPanel(Gtk.VBox):
 
         # TC: Record as in, to make a recording.
         label = Gtk.Label(label=" %s " % _('Record'))
-        attrlist = Pango.AttrList()
-        #attrlist.insert(Pango.AttrSize(
-        #                            METER_TEXT_SIZE, 0, len(label.get_text())))
+        attrlist = Pango.parse_markup(
+            '<span size="{}">{}</span>'.format(
+                METER_TEXT_SIZE,
+                _('Record')
+            ),
+            -1,
+            "0")[1]
         label.set_attributes(attrlist)
         self.pack_start(label, True, True, 0)
         label.show()
@@ -3172,7 +3167,7 @@ class MainWindow(dbus.service.Object):
         menuhbox.show()
         self.menu = MainMenu()
         menuhbox.pack_start(self.menu, True, True, 0)
-        self.rightpane.pack_start(self.vbox8, True, True, 0)
+        self.menu.show()
         self.rightpane.pack_start(self.vbox8, True, True, 0)
         self.window.add(self.paned)
         self.rightpane.show()
@@ -3522,8 +3517,13 @@ class MainWindow(dbus.service.Object):
 
         smvbox = Gtk.VBox()
         label = Gtk.Label(label=_('Monitor Mix'))
-        attrlist = Pango.AttrList()
-        #attrlist.insert(Pango.AttrSize(8000, 0, len(_('Monitor Mix'))))
+        attrlist = Pango.parse_markup(
+            '<span size="{}">{}</span>'.format(
+                METER_TEXT_SIZE,
+                _('Monitor')
+            ),
+            -1,
+            "0")[1]
         label.set_attributes(attrlist)
         smvbox.add(label)
         label.show()
@@ -3567,8 +3567,13 @@ class MainWindow(dbus.service.Object):
         mvbox = Gtk.VBox()
         # TC: Dropdown box title text widget.
         label = Gtk.Label(label=_('Metadata Source'))
-        attrlist = Pango.AttrList()
-        #attrlist.insert(Pango.AttrSize(8000, 0, len(_('Metadata Source'))))
+        attrlist = Pango.parse_markup(
+            '<span size="{}">{}</span>'.format(
+                METER_TEXT_SIZE,
+                _('Metadata')
+            ),
+            -1,
+            "0")[1]
         label.set_attributes(attrlist)
         mvbox.add(label)
         label.show()
@@ -3603,8 +3608,13 @@ class MainWindow(dbus.service.Object):
         plvbox = Gtk.VBox()
         # TC: Abbreviation of left.
         label = Gtk.Label(label=_('L'))
-        attrlist = Pango.AttrList()
-        #attrlist.insert(Pango.AttrSize(8000, 0, len(_('L'))))
+        attrlist = Pango.parse_markup(
+            '<span size="{}">{}</span>'.format(
+                METER_TEXT_SIZE,
+                _('L')
+            ),
+            -1,
+            "0")[1]
         label.set_attributes(attrlist)
         plvbox.add(label)
         label.show()
@@ -3625,8 +3635,13 @@ class MainWindow(dbus.service.Object):
         self.crossadj.connect("value_changed", self.cb_crossfade)
         cvbox = Gtk.VBox()
         label = Gtk.Label(label=_('Crossfader'))
-        attrlist = Pango.AttrList()
-        #attrlist.insert(Pango.AttrSize(8000, 0, len(_('Crossfader'))))
+        attrlist = Pango.parse_markup(
+            '<span size="{}">{}</span>'.format(
+                METER_TEXT_SIZE,
+                _('Crossfader')
+            ),
+            -1,
+            "0")[1]
         label.set_attributes(attrlist)
         cvbox.add(label)
         label.show()
@@ -3643,8 +3658,13 @@ class MainWindow(dbus.service.Object):
         prvbox = Gtk.VBox()
         # TC: Abbreviation of right.
         label = Gtk.Label(label=_('R'))
-        attrlist = Pango.AttrList()
-        #attrlist.insert(Pango.AttrSize(8000, 0, len(_('R'))))
+        attrlist = Pango.parse_markup(
+            '<span size="{}">{}</span>'.format(
+                METER_TEXT_SIZE,
+                _('R')
+            ),
+            -1,
+            "0")[1]
         label.set_attributes(attrlist)
         prvbox.add(label)
         label.show()
@@ -3668,8 +3688,13 @@ class MainWindow(dbus.service.Object):
         passbox = Gtk.VBox()
         # TC: Describes a mid point.
         label = Gtk.Label(label=_('Middle'))
-        attrlist = Pango.AttrList()
-        #attrlist.insert(Pango.AttrSize(8000, 0, len(_('Middle'))))
+        attrlist = Pango.parse_markup(
+            '<span size="{}">{}</span>'.format(
+                METER_TEXT_SIZE,
+                _('Middle')
+            ),
+            -1,
+            "0")[1]
         label.set_attributes(attrlist)
         label.show()
         # TC: Describes a mid point.
@@ -3718,7 +3743,10 @@ class MainWindow(dbus.service.Object):
         label = Gtk.Label(label=_('Response'))
         label.set_attributes(
             Pango.parse_markup(
-                '<span size="8000">{}</span>'.format(_('Response')),
+                '<span size="{}">{}</span>'.format(
+                    METER_TEXT_SIZE,
+                    _('Response')
+                ),
                 -1,
                 "0")[1]
         )
@@ -3765,8 +3793,13 @@ class MainWindow(dbus.service.Object):
         tvbox = Gtk.VBox()
         # TC: Duration in seconds.
         label = Gtk.Label(label=_('Time'))
-        attrlist = Pango.AttrList()
-        #attrlist.insert(Pango.AttrSize(8000, 0, len(_('Time'))))
+        attrlist = Pango.parse_markup(
+            '<span size="{}">{}</span>'.format(
+                METER_TEXT_SIZE,
+                _('Time')
+            ),
+            -1,
+            "0")[1]
         label.set_attributes(attrlist)
         tvbox.add(label)
         label.show()
@@ -3801,8 +3834,13 @@ class MainWindow(dbus.service.Object):
         # TC: The crossfader pass-across button text.
         # TC: The actual button appears as [<-->] with this text above it.
         label = Gtk.Label(label=_('Pass'))
-        attrlist = Pango.AttrList()
-        #attrlist.insert(Pango.AttrSize(8000, 0, len(_('Pass'))))
+        attrlist = Pango.parse_markup(
+            '<span size="{}">{}</span>'.format(
+                METER_TEXT_SIZE,
+                _('Pass')
+            ),
+            -1,
+            "0")[1]
         label.set_attributes(attrlist)
         pvbox.add(label)
         label.show()
