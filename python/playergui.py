@@ -30,6 +30,8 @@ from stat import *
 from collections import deque, namedtuple, defaultdict
 from functools import partial
 
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import GLib
 from gi.repository import GObject
 from gi.repository import Gtk
@@ -3532,7 +3534,7 @@ class IDJC_Media_Player:
         self.playlist_changed = True        # used by the request system
 
     def menu_activate(self, widget, event):
-        if event.type == Gdk.EventType.BUTTON_PRESS and event.button == 3:
+        if event.type == Gdk.EventType.BUTTON_PRESS and event.button.button == 3:
             self.menu_model = self.treeview.get_model()
             row_info = self.treeview.get_dest_row_at_pos(
                 int(event.x + 0.5),
@@ -3589,7 +3591,7 @@ class IDJC_Media_Player:
             self.playlist_copy.set_visible(sens2 and sens4)
             self.playlist_transfer.set_visible(sens2 and sens4)
 
-            widget.popup(None, None, None, event.button, event.time)
+            widget.popup(None, None, None, None, event.button.button, event.button.time)
             return True
         return False
 
@@ -5075,7 +5077,6 @@ class IDJC_Media_Player:
 
         self.playlist_transfer.set_submenu(self.transfer_menu)
         self.transfer_menu.show()
-
 
         self.treeview.connect_object(
             "event",
