@@ -3628,7 +3628,7 @@ class IDJC_Media_Player:
             "Jump To Top Control": ">jumptotop",
         }
         if text in textdict and self.pl_mode.get_active() == 0:
-            for ctl in self.filter_allowed_controls(((dict[text], ), )):
+            for ctl in self.filter_allowed_controls(((textdict[text], ), )):
                 if iter is not None:
                     iter = model.insert_after(iter)
                 else:
