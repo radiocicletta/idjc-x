@@ -30,8 +30,6 @@ from stat import *
 from collections import deque, namedtuple, defaultdict
 from functools import partial
 
-import gi
-gi.require_version('Gtk', '3.0')
 from gi.repository import GLib
 from gi.repository import GObject
 from gi.repository import Gtk
@@ -3388,7 +3386,7 @@ class IDJC_Media_Player:
     def drag_data_received_data(self, treeview, context, x, y, dragged, info,
                                 etime):
         if info != 0:
-            text = str(dragged.get_data())
+            text = dragged.get_data().decode()
             if text[:20] == "idjcplayercontrol://":
                 newrow = NOTVALID._replace(**dict(list(zip(
                     "rsmeta length meta encoding".split(),
@@ -3406,15 +3404,15 @@ class IDJC_Media_Player:
                         model.insert_before(iter_, newrow)
                     else:
                         model.insert_after(iter_, newrow)
-                if context.action == Gdk.DragAction.MOVE:
+                if context.get_actions() == Gdk.DragAction.MOVE:
                     context.finish(True, True, etime)
             else:
                 if context.get_actions() == Gdk.DragAction.MOVE:
                     context.finish(True, True, etime)
                 elements = self.get_elements_from([
                     urllib.parse.unquote(t[7:])
-                    for t in dragged.get_data().strip().splitlines()
-                    if str(t).startswith("file://")]
+                    for t in dragged.get_data().decode().strip().splitlines()
+                    if t.startswith("file://")]
                 )
                 try:
                     path, pos = treeview.get_dest_row_at_pos(x, y)
@@ -4387,12 +4385,12 @@ class IDJC_Media_Player:
             Gdk.DragAction.DEFAULT
         )
 
-        self.treeview.connect("drag_data_get", self.drag_data_get_data)
+        self.treeview.connect("drag-data-get", self.drag_data_get_data)
         self.treeview.connect(
-            "drag_data_received",
+            "drag-data-received",
             self.drag_data_received_data
         )
-        self.treeview.connect("drag_data_delete", self.drag_data_delete)
+        self.treeview.connect("drag-data-delete", self.drag_data_delete)
 
         self.treeview.connect(
             "row_activated",
