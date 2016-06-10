@@ -53,9 +53,7 @@ t = gettext.translation(FGlobs.package_name, FGlobs.localedir, fallback=True)
 _ = t.gettext
 
 
-
 Gtk.Window.set_default_icon_from_file(PGlobs.default_icon)
-
 
 
 class ProfileEntry(Gtk.Entry):
@@ -67,27 +65,24 @@ class ProfileEntry(Gtk.Entry):
         self.connect("key-press-event", self._cb_kp)
         self.connect("button-press-event", self._cb_button)
 
-
     def _cb_kp(self, widget, event):
         if not event.keyval in self._allowed and not \
-                                    profile_name_valid(event.string):
+                profile_name_valid(event.string):
             return True
-
 
     def _cb_button(self, widget, event):
         if event.button != 1:
             return True
 
 
-
 class NewProfileDialog(Gtk.Dialog):
-    _icon_dialog = IconPreviewFileChooserDialog("Choose An Icon",
-                        buttons = (Gtk.STOCK_CLEAR, Gtk.ResponseType.NONE,
-                                      Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                                      Gtk.STOCK_OK, Gtk.ResponseType.OK))
+    _icon_dialog = IconPreviewFileChooserDialog(
+        "Choose An Icon",
+        buttons=(Gtk.STOCK_CLEAR, Gtk.ResponseType.NONE,
+                 Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                 Gtk.STOCK_OK, Gtk.ResponseType.OK))
 
-
-    def __init__(self, row, filter_function=None, title_extra = "", edit=False):
+    def __init__(self, row, filter_function=None, title_extra="", edit=False):
         GObject.GObject.__init__(self)
         self.set_border_width(6)
         self.get_child().set_spacing(12)
@@ -95,9 +90,10 @@ class NewProfileDialog(Gtk.Dialog):
         self.set_destroy_with_parent(True)
         self._icon_dialog.set_transient_for(self)
         self._icon_dialog.set_title("Choose An Icon")
-        self._icon_dialog.set_buttons(Gtk.STOCK_CLEAR, Gtk.ResponseType.NONE,
-                                      Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                                      Gtk.STOCK_OK, Gtk.ResponseType.OK)
+        self._icon_dialog.set_buttons(
+            Gtk.STOCK_CLEAR, Gtk.ResponseType.NONE,
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OK, Gtk.ResponseType.OK)
 
         if row is not None:
             if edit:
@@ -137,16 +133,22 @@ class NewProfileDialog(Gtk.Dialog):
                 # TC: data entry dialog label text.
                 _("Description"))
         names = ("profile_entry", "icon_button", "nickname_entry",
-                                                        "description_entry")
+                 "description_entry")
         widgets = (ProfileEntry(), IconChooserButton(self._icon_dialog),
-                      Gtk.Entry(), Gtk.Entry())
+                   Gtk.Entry(), Gtk.Entry())
 
         for i, (label, name, widget) in enumerate(zip(labels, names, widgets)):
             label = Gtk.Label(label=label)
             label.set_alignment(1.0, 0.5)
-            table.attach(label, 0, 1, i, i + 1, Gtk.AttachOptions.SHRINK | Gtk.AttachOptions.FILL)
+            table.attach(
+                label,
+                0, 1, i, i + 1,
+                Gtk.AttachOptions.SHRINK | Gtk.AttachOptions.FILL)
 
-            table.attach(widget, 1, 2, i, i + 1, yoptions=Gtk.AttachOptions.SHRINK)
+            table.attach(
+                widget,
+                1, 2, i, i + 1,
+                yoptions=Gtk.AttachOptions.SHRINK)
             setattr(self, name, widget)
 
         self.profile_entry.set_width_chars(30)
@@ -176,7 +178,6 @@ class NewProfileDialog(Gtk.Dialog):
         self.ok = Gtk.Button(stock=Gtk.STOCK_OK)
         bb.add(self.ok)
 
-
     def _revert(self, widget, row, edit):
         profile_text = row[1] if edit else ""
         self.profile_entry.set_text(profile_text)
@@ -185,12 +186,10 @@ class NewProfileDialog(Gtk.Dialog):
         self.description_entry.set_text(row[2])
         self.profile_entry.grab_focus()
 
-
     @classmethod
     def append_dialog_title(cls, text):
         if cls._icon_dialog.get_title():
             cls._icon_dialog.set_title(cls._icon_dialog.get_title() + text)
-
 
 
 class ProfileSingleton(Singleton, type(Gtk.Dialog)):
@@ -198,44 +197,42 @@ class ProfileSingleton(Singleton, type(Gtk.Dialog)):
         return super(ProfileSingleton, cls).__call__(*args, **kwds)
 
 
-
 class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
-    __gproperties__ = {  "selection-active" : (GObject.TYPE_BOOLEAN,
-                                "selection active",
-                                "selected profile is active",
-                                0, GObject.PARAM_READABLE),
-
-                                "selection": (str, "profile selection",
-                                "profile selected in profile manager",
-                                "", MAX_PROFILE_LENGTH)
+    __gproperties__ = {"selection-active": (
+        GObject.TYPE_BOOLEAN,
+        "selection active",
+        "selected profile is active",
+        0, GObject.PARAM_READABLE),
+        "selection": (
+            str, "profile selection",
+            "profile selected in profile manager",
+            "", MAX_PROFILE_LENGTH)
     }
 
     _signal_names = "choose", "delete", "auto"
     _new_profile_dialog_signal_names = "new", "clone", "edit"
 
-    __gsignals__ = { "selection-active-changed" : (
-                                GObject.SignalFlags.RUN_FIRST, None,
-                                (str, GObject.TYPE_BOOLEAN,)),
+    __gsignals__ = {"selection-active-changed": (
+        GObject.SignalFlags.RUN_FIRST, None,
+        (str, GObject.TYPE_BOOLEAN,)),
 
-                          "selection-changed" : (
-                                GObject.SignalFlags.RUN_FIRST, None,
-                                (str,))
+        "selection-changed": (
+            GObject.SignalFlags.RUN_FIRST, None,
+            (str,))
     }
 
     __gsignals__.update(dict(
-            (x, (GObject.SignalFlags.RUN_FIRST, None,
-            (GObject.TYPE_STRING,))) for x in (_signal_names)))
+        (x, (GObject.SignalFlags.RUN_FIRST, None,
+             (GObject.TYPE_STRING,))) for x in (_signal_names)))
 
     __gsignals__.update(dict(
-            (x, (GObject.SignalFlags.RUN_FIRST, None,
-            (GObject.TYPE_STRING,) * 5))
-            for x in (_new_profile_dialog_signal_names)))
-
+        (x, (GObject.SignalFlags.RUN_FIRST, None,
+             (GObject.TYPE_STRING,) * 5))
+        for x in (_new_profile_dialog_signal_names)))
 
     @property
     def profile(self):
         return self._profile
-
 
     def __init__(self, default, data_function=None):
         self._default = default
@@ -255,7 +252,7 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
         w.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self.get_content_area().pack_start(w, True, True, 0)
         self.store = Gtk.ListStore(
-                            GdkPixbuf.Pixbuf, str, str, int, str, str, int, int)
+            GdkPixbuf.Pixbuf, str, str, int, str, str, int, int)
         self.sorted = Gtk.TreeModelSort(self.store)
         self.sorted.set_sort_func(1, self._sort_func)
         self.sorted.set_sort_column_id(1, Gtk.SortType.ASCENDING)
@@ -307,10 +304,10 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
         box = self.get_action_area()
         box.set_spacing(6)
         for attr, label, sec, stock in zip(
-                ("new", "clone", "edit", "delete", "auto", "cancel", "choose"),
-                (Gtk.STOCK_NEW, Gtk.STOCK_COPY, Gtk.STOCK_EDIT,
-                 Gtk.STOCK_DELETE, _("_Auto"), Gtk.STOCK_QUIT, Gtk.STOCK_OPEN),
-                (True,) * 4 + (False,) * 3,
+            ("new", "clone", "edit", "delete", "auto", "cancel", "choose"),
+            (Gtk.STOCK_NEW, Gtk.STOCK_COPY, Gtk.STOCK_EDIT,
+             Gtk.STOCK_DELETE, _("_Auto"), Gtk.STOCK_QUIT, Gtk.STOCK_OPEN),
+            (True,) * 4 + (False,) * 3,
                 (True,) * 4 + (False,) + (True,) * 2):
             w = Gtk.Button(label)
             w.set_use_stock(stock)
@@ -326,23 +323,19 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
             getattr(self, each).connect("clicked", self._cb_click, each)
         for each in self._new_profile_dialog_signal_names:
             getattr(self, each).connect("clicked", self._cb_new_profile_dialog,
-                                                                        each)
-
+                                        each)
 
     def display_error(self, message, transient_parent=None, markup=False):
         error_dialog = ErrorMessageDialog("", message, markup=markup)
         error_dialog.set_transient_for(transient_parent or self)
         error_dialog.show_all()
 
-
     def destroy_new_profile_dialog(self):
         self._new_profile_dialog.destroy()
         del self._new_profile_dialog
 
-
     def get_new_profile_dialog(self):
         return self._new_profile_dialog
-
 
     def do_get_property(self, prop):
         if prop.name == "selection-active":
@@ -352,13 +345,11 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
         else:
             raise AttributeError("unknown property: %s" % prop.name)
 
-
     def do_selection_active_changed(self, profile, state):
         state = not state
         self.choose.set_sensitive(state)
         self.edit.set_sensitive(state)
         self.clone.set_sensitive(state)
-
 
     def _cb_click(self, widget, signal):
         if self._highlighted is not None:
@@ -368,21 +359,22 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
 
             if signal == "delete":
                 if self._highlighted == self._default:
-                    message = _("<span weight='bold' size='12000'>Delete the"
-                            " data of profile '%s'?</span>\n\nThe profile will"
-                            " remain available with initial settings.")
+                    message = _(
+                        "<span weight='bold' size='12000'>Delete the"
+                        " data of profile '%s'?</span>\n\nThe profile will"
+                        " remain available with initial settings.")
                 else:
-                    message = _("<span weight='bold' size='12000'>Delete "
-                            "profile '%s' and all its data?</span>\n\nThe"
-                            " data of deleted profiles cannot be recovered.")
+                    message = _(
+                        "<span weight='bold' size='12000'>Delete "
+                        "profile '%s' and all its data?</span>\n\nThe"
+                        " data of deleted profiles cannot be recovered.")
                 conf = ConfirmationDialog("", message % self._highlighted,
-                                                                markup=True)
+                                          markup=True)
                 conf.set_transient_for(self)
                 conf.ok.connect("clicked", lambda w: commands())
                 conf.show_all()
             else:
                 commands()
-
 
     def _cb_new_profile_dialog(self, widget, action):
         if action in ("clone", "edit"):
@@ -394,8 +386,9 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
             row = None
             template = None
 
-        np_dialog = self._new_profile_dialog = NewProfileDialog(row,
-                    title_extra = self._title_extra, edit=action=="edit")
+        np_dialog = self._new_profile_dialog = NewProfileDialog(
+            row,
+            title_extra=self._title_extra, edit=action == "edit")
         np_dialog.set_transient_for(self)
 
         def sub_ok(widget):
@@ -409,9 +402,11 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
 
         np_dialog.ok.connect("clicked", sub_ok)
         if action == "edit":
-            np_dialog.delete.connect("clicked", lambda w: self.delete.clicked())
+            np_dialog.delete.connect(
+                "clicked",
+                lambda w: self.delete.clicked()
+            )
         np_dialog.show_all()
-
 
     def _cb_cancel(self, widget):
         if self._profile is None:
@@ -419,17 +414,14 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
         else:
             self.hide()
 
-
     def _cb_delete_event(self, widget, event):
         self.hide()
         return True
-
 
     def _cb_visible(self, *args):
         self._update_data()
         if self.props.visible:
             timeout_add(200, threadslock(self._update_data))
-
 
     def _cb_selection(self, ts):
         model, iter = ts.get_selected()
@@ -446,7 +438,6 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
             self._selection_active = active
             self.emit("selection-active-changed", self._highlighted, active)
 
-
     def highlight_profile(self, target, scroll=True):
         i = self._get_index_for_profile(target)
         if i is not None:
@@ -454,13 +445,11 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
             if scroll:
                 self.selection.get_tree_view().scroll_to_cell(i)
 
-
     def _get_index_for_profile(self, target):
         for i, data in enumerate(self.sorted):
             if data[1] == target:
                 return i
         return None
-
 
     def _get_row_for_profile(self, target):
         path = self._get_index_for_profile(target)
@@ -468,7 +457,6 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
             return list(self.sorted[path])
         else:
             return None
-
 
     def _sort_func(self, model, *iters):
         vals = tuple(model.get_value(x, 1) for x in iters if x is not None)
@@ -478,13 +466,11 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
         except ValueError:
             return cmp(*vals)
 
-
     def set_data_function(self, f):
         self._data_function = f
         self._update_data()
         if f is not None:
             self.highlight_profile(self._default)
-
 
     def _auto_data_function(self, col, cell, model, iter):
         val = model.get_value(iter, 7)
@@ -492,7 +478,6 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
         if val:
             cell.props.stock_id = Gtk.STOCK_APPLY
             cell.props.stock_size = Gtk.IconSize.MENU
-
 
     def _update_data(self):
         if self._data_function is not None:
@@ -524,11 +509,10 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
                     uptime = d["uptime"]
                     auto = d["auto"]
                     self.store.append((pb, d["profile"], desc, active, i or "",
-                                                            nick, uptime, auto))
+                                       nick, uptime, auto))
                 self.selection.handler_unblock_by_func(self._cb_selection)
                 self.highlight_profile(h, scroll=False)
         return self.props.visible
-
 
     def set_profile(self, newprofile, title_extra, iconpathname):
         assert self._profile is None
@@ -549,14 +533,12 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
         self.connect("delete-event", self._cb_delete_event)
         self.response(0)
 
-
     def run(self):
         if self._profile is None:
             self.show_all()
             Gtk.Dialog.run(self)
         else:
             self.show()
-
 
     def present(self):
         self.show_all()
