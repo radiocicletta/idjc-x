@@ -253,7 +253,7 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
         w.set_border_width(6)
         w.set_shadow_type(Gtk.ShadowType.ETCHED_OUT)
         w.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        self.get_content_area().add(w)
+        self.get_content_area().pack_start(w, True, True, 0)
         self.store = Gtk.ListStore(
                             GdkPixbuf.Pixbuf, str, str, int, str, str, int, int)
         self.sorted = Gtk.TreeModelSort(self.store)
