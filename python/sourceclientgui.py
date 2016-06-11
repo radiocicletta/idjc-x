@@ -999,8 +999,7 @@ class AutoAction(Gtk.HBox):
         lastradio = None
         self.action_lookup = []
         for index, (name, action) in enumerate(names_actions):
-            #radio = Gtk.RadioButton(lastradio, name)
-            radio = Gtk.RadioButton(label=name)
+            radio = Gtk.RadioButton(group=lastradio, label=name)
             radio.connect("clicked", self.__handle_radioclick, index)
             lastradio = radio
             radio.set_sensitive(False)
