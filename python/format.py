@@ -612,20 +612,20 @@ class FormatCodecMPEGMP2V1BitRates(FormatDropdown):
     
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Bitrate'), "bitrate", (
-            dict(display_text="384 kHz", value="384", chain="FormatCodecMPEGMP2ModeStereo"),
-            dict(display_text="320 kHz", value="320", chain="FormatCodecMPEGMP2ModeStereo"),
-            dict(display_text="256 kHz", value="256", chain="FormatCodecMPEGMP2ModeStereo"),
-            dict(display_text="224 kHz", value="224", chain="FormatCodecMPEGMP2ModeStereo"),
-            dict(display_text="192 kHz", value="192", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="160 kHz", value="160", chain="FormatCodecMPEGMP2Mode", default=True),
-            dict(display_text="128 kHz", value="128", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="112 kHz", value="112", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="96 kHz", value="96", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="80 kHz", value="80", chain="FormatCodecMPEGMP2ModeSingle"),
-            dict(display_text="64 kHz", value="64", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="56 kHz", value="56", chain="FormatCodecMPEGMP2ModeSingle"),
-            dict(display_text="48 kHz", value="48", chain="FormatCodecMPEGMP2ModeSingle"),
-            dict(display_text="32 kHz", value="32", chain="FormatCodecMPEGMP2ModeSingle")), 0)
+            dict(display_text="384 kbps", value="384", chain="FormatCodecMPEGMP2ModeStereo"),
+            dict(display_text="320 kbps", value="320", chain="FormatCodecMPEGMP2ModeStereo"),
+            dict(display_text="256 kbps", value="256", chain="FormatCodecMPEGMP2ModeStereo"),
+            dict(display_text="224 kbps", value="224", chain="FormatCodecMPEGMP2ModeStereo"),
+            dict(display_text="192 kbps", value="192", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="160 kbps", value="160", chain="FormatCodecMPEGMP2Mode", default=True),
+            dict(display_text="128 kbps", value="128", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="112 kbps", value="112", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="96 kbps", value="96", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="80 kbps", value="80", chain="FormatCodecMPEGMP2ModeSingle"),
+            dict(display_text="64 kbps", value="64", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="56 kbps", value="56", chain="FormatCodecMPEGMP2ModeSingle"),
+            dict(display_text="48 kbps", value="48", chain="FormatCodecMPEGMP2ModeSingle"),
+            dict(display_text="32 kbps", value="32", chain="FormatCodecMPEGMP2ModeSingle")), 0)
 
 
 class FormatCodecMPEGMP2V2BitRates(FormatDropdown):
@@ -633,20 +633,20 @@ class FormatCodecMPEGMP2V2BitRates(FormatDropdown):
     
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Bitrate'), "bitrate", (
-            dict(display_text="160 kHz", value="160", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="144 kHz", value="144", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="128 kHz", value="128", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="112 kHz", value="112", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="96 kHz", value="96", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="80 kHz", value="80", chain="FormatCodecMPEGMP2Mode", default=True),
-            dict(display_text="64 kHz", value="64", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="56 kHz", value="56", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="48 kHz", value="48", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="40 kHz", value="40", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="32 kHz", value="32", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="24 kHz", value="24", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="16 kHz", value="16", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="8 kHz", value="8", chain="FormatCodecMPEGMP2Mode")), 0)
+            dict(display_text="160 kbps", value="160", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="144 kbps", value="144", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="128 kbps", value="128", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="112 kbps", value="112", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="96 kbps", value="96", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="80 kbps", value="80", chain="FormatCodecMPEGMP2Mode", default=True),
+            dict(display_text="64 kbps", value="64", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="56 kbps", value="56", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="48 kbps", value="48", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="40 kbps", value="40", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="32 kbps", value="32", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="24 kbps", value="24", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="16 kbps", value="16", chain="FormatCodecMPEGMP2Mode"),
+            dict(display_text="8 kbps", value="8", chain="FormatCodecMPEGMP2Mode")), 0)
 
 
 class FormatCodecMPEGMP2V1SampleRates(FormatDropdown):
@@ -719,20 +719,20 @@ class FormatCodecMPEGMP3V1BitRates(FormatDropdown):
     
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Bitrate'), "bitrate", (
-            dict(display_text="320 kHz", value="320", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="256 kHz", value="256", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="224 kHz", value="224", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="192 kHz", value="192", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="160 kHz", value="160", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="128 kHz", value="128", chain="FormatCodecMPEGMP3Mode", default=True),
-            dict(display_text="112 kHz", value="112", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="96 kHz", value="96", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="80 kHz", value="80", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="64 kHz", value="64", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="56 kHz", value="56", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="48 kHz", value="48", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="40 kHz", value="40", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="32 kHz", value="32", chain="FormatCodecMPEGMP3Mode")), 0)
+            dict(display_text="320 kbps", value="320", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="256 kbps", value="256", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="224 kbps", value="224", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="192 kbps", value="192", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="160 kbps", value="160", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="128 kbps", value="128", chain="FormatCodecMPEGMP3Mode", default=True),
+            dict(display_text="112 kbps", value="112", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="96 kbps", value="96", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="80 kbps", value="80", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="64 kbps", value="64", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="56 kbps", value="56", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="48 kbps", value="48", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="40 kbps", value="40", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="32 kbps", value="32", chain="FormatCodecMPEGMP3Mode")), 0)
 
 
 class FormatCodecMPEGMP3V2BitRates(FormatDropdown):
@@ -740,20 +740,20 @@ class FormatCodecMPEGMP3V2BitRates(FormatDropdown):
     
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Bitrate'), "bitrate", (
-            dict(display_text="160 kHz", value="160", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="144 kHz", value="144", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="128 kHz", value="128", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="112 kHz", value="112", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="96 kHz", value="96", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="80 kHz", value="80", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="64 kHz", value="64", chain="FormatCodecMPEGMP3Mode", default=True),
-            dict(display_text="56 kHz", value="56", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="48 kHz", value="48", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="40 kHz", value="40", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="32 kHz", value="32", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="24 kHz", value="24", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="16 kHz", value="16", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="8 kHz", value="8", chain="FormatCodecMPEGMP3Mode")), 0)
+            dict(display_text="160 kbps", value="160", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="144 kbps", value="144", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="128 kbps", value="128", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="112 kbps", value="112", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="96 kbps", value="96", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="80 kbps", value="80", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="64 kbps", value="64", chain="FormatCodecMPEGMP3Mode", default=True),
+            dict(display_text="56 kbps", value="56", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="48 kbps", value="48", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="40 kbps", value="40", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="32 kbps", value="32", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="24 kbps", value="24", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="16 kbps", value="16", chain="FormatCodecMPEGMP3Mode"),
+            dict(display_text="8 kbps", value="8", chain="FormatCodecMPEGMP3Mode")), 0)
 
 
 class FormatCodecMPEGMP3V1SampleRates(FormatDropdown):
@@ -845,9 +845,9 @@ class FormatCodecFLACBits(FormatDropdown):
     
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Width'), "bitwidth", (
-            dict(display_text=_("24 bit"), value="24", chain="FormatMetadataUTF8"),
-            dict(display_text=_("20 bit"), value="20", chain="FormatMetadataUTF8"),
-            dict(display_text=_("16 bit"), value="16", chain="FormatMetadataUTF8")), 0,
+            dict(display_text=_("24 bits"), value="24", chain="FormatMetadataUTF8"),
+            dict(display_text=_("20 bits"), value="20", chain="FormatMetadataUTF8"),
+            dict(display_text=_("16 bits"), value="16", chain="FormatMetadataUTF8")), 0,
             _('24 bit records with the highest level of detail. If file size is a concern maybe FLAC is not the right codec.'))
 
 
@@ -1030,7 +1030,7 @@ class FormatCodecMPEGAACBitrate(FormatSpin):
     
     def __init__(self, prev_object):
         FormatSpin.__init__(self, prev_object, _('Bitrate'), "bitrate",
-            (128000, 32000, 320000, 1, 10), 0, " Hz", "FormatCodecMPEGAACMode",
+            (128000, 32000, 320000, 1, 10), 0, " bps", "FormatCodecMPEGAACMode",
             (192000, 160000, 128000, 112000, 96000, 80000, 64000, 48000, 45000, 32000))
 
 
@@ -1040,7 +1040,7 @@ class FormatCodecMPEGAACPlusV2Bitrate(FormatSpin):
     
     def __init__(self, prev_object):
         FormatSpin.__init__(self, prev_object, _('Bitrate'), "bitrate",
-            (64000, 16000, 72000, 1, 10), 0, " Hz", "FormatCodecMPEGAACModeStereo",
+            (64000, 16000, 72000, 1, 10), 0, " bps", "FormatCodecMPEGAACModeStereo",
             (72000, 64000, 48000, 45000, 32000, 24000, 16000))
 
 
