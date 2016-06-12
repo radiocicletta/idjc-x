@@ -27,7 +27,7 @@ which you typically want the library development packages whose names carry the 
       <th>Project name</th><th>Version</th><th>Comment</th>
    </tr>
    <tr>
-      <td><a href="http://sourceforge.net/projects/idjc/files/libshout-idjc/libshout-idjc-2.3.1.tar.gz/download/">libshout-idjc</a></td><td>2.3.1</td><td>Required&#8212;A specially modified version of libshout</td>
+      <td><a href="http://sourceforge.net/projects/idjc/files/libshout-idjc/libshout-idjc-2.4.1.tar.gz/download/">libshout-idjc</a></td><td>2.4.1</td><td>Required&#8212;A specially modified version of libshout</td>
    </tr>
    <tr>
       <td><a href="http://www.python.org/">Python</a></td><td>2.7+,&nbsp;not&nbsp;3</td><td>Required&#8212;probably installed already</td>
