@@ -31,10 +31,11 @@ from .tooltips import set_tip
 
 
 _ = gettext.translation(FGlobs.package_name, FGlobs.localedir,
-                                                        fallback=True).gettext
+                        fallback=True).gettext
 
 
 class TestEncoder(object, metaclass=ABCMeta):
+
     @abstractproperty
     def default_bitrate_stereo(self):
         """A guaranteed good bitrate when encoding 2 channels."""
@@ -79,6 +80,7 @@ class TestEncoder(object, metaclass=ABCMeta):
 
 
 class VorbisTestEncoder(TestEncoder):
+
     class _VORBIS_INFO(ctypes.Structure):
         _fields_ = [("version", ctypes.c_int),
                     ("channels", ctypes.c_int),
@@ -88,7 +90,6 @@ class VorbisTestEncoder(TestEncoder):
                     ("bitrate_lower", ctypes.c_long),
                     ("bitrate_window", ctypes.c_long),
                     ("codec_setup", ctypes.c_void_p)]
-
 
     _lv = ctypes.CDLL("libvorbis.so.0")
     _lve = ctypes.CDLL("libvorbisenc.so.2")
@@ -114,7 +115,8 @@ class VorbisTestEncoder(TestEncoder):
 
     @property
     def suggested_bitrates(self):
-        return (192000, 160000, 128000, 112000, 96000, 80000, 64000, 48000, 45000, 32000)
+        return (192000, 160000, 128000, 112000, 96000,
+                80000, 64000, 48000, 45000, 32000)
 
     def test(self, channels, samplerate, bitrate):
         """Test run these encoder settings with a vorbis encoder.
@@ -126,15 +128,20 @@ class VorbisTestEncoder(TestEncoder):
         vi = self._vi
 
         self._lv.vorbis_info_init(ctypes.byref(vi))
-        error_code = self._lve.vorbis_encode_init(ctypes.byref(vi),
-                ctypes.c_long(channels), ctypes.c_long(samplerate),
-                ctypes.c_long(-1), ctypes.c_long(bitrate), ctypes.c_long(-1))
+        error_code = self._lve.vorbis_encode_init(
+            ctypes.byref(vi),
+            ctypes.c_long(channels),
+            ctypes.c_long(samplerate),
+            ctypes.c_long(-1),
+            ctypes.c_long(bitrate),
+            ctypes.c_long(-1))
         self._lv.vorbis_info_clear(ctypes.byref(vi))
 
         return error_code == 0
 
 
 class EncoderRange(object):
+
     """Test out the limits of an encoder's settings."""
 
     def __init__(self, encoder):
@@ -185,43 +192,47 @@ class EncoderRange(object):
                 val1 = val2
             else:
                 span_1 = [span_2[-1], val1] if found is not None \
-                                                        else span_2 + [val1]
+                    else span_2 + [val1]
 
     def lowest_bitrate(self, channels, samplerate):
         """Calculate the lowest working bitrate."""
 
-        return self._boundary_search([8000, 1000000],
+        return self._boundary_search(
+            [8000, 1000000],
             lambda bitrate: self._test(channels, samplerate, bitrate))
 
     def highest_bitrate(self, channels, samplerate):
         """Calculate the highest working bitrate."""
 
-        return self._boundary_search([1000000, 8000],
+        return self._boundary_search(
+            [1000000, 8000],
             lambda bitrate: self._test(channels, samplerate, bitrate))
 
     def lowest_samplerate(self, channels, bitrate):
         """Calculate the lowest working samplerate."""
 
-        return self._boundary_search([4000, 200000],
+        return self._boundary_search(
+            [4000, 200000],
             lambda samplerate: self._test(channels, samplerate, bitrate))
 
     def highest_samplerate(self, channels, bitrate):
         """Calculate the highest working samplerate."""
 
-        return self._boundary_search([200000, 4000],
+        return self._boundary_search(
+            [200000, 4000],
             lambda samplerate: self._test(channels, samplerate, bitrate))
 
     def bitrate_bounds(self, channels, samplerate):
         """Lowest and highest working bitrate as a 2 tuple."""
 
         return self.lowest_bitrate(channels, samplerate), \
-                                self.highest_bitrate(channels, samplerate)
+            self.highest_bitrate(channels, samplerate)
 
     def samplerate_bounds(self, channels, bitrate):
         """Lowest and highest working samplerate as a 2 tuple."""
 
         return self.lowest_samplerate(channels, bitrate), \
-                                self.highest_samplerate(channels, bitrate)
+            self.highest_samplerate(channels, bitrate)
 
     def bounds(self, channels):
         """Find the absolute lowest and highest encoder supported settings.
@@ -239,9 +250,9 @@ class EncoderRange(object):
             oldsrb = srb
 
             brb = (self.bitrate_bounds(channels, srb[0])[0],
-                                self.bitrate_bounds(channels, srb[1])[1])
+                   self.bitrate_bounds(channels, srb[1])[1])
             srb = (self.samplerate_bounds(channels, brb[0])[0],
-                                self.samplerate_bounds(channels, brb[1])[1])
+                   self.samplerate_bounds(channels, brb[1])[1])
 
         return {"samplerate_bounds": srb, "bitrate_bounds": brb}
 
@@ -254,7 +265,7 @@ class EncoderRange(object):
             lower, upper = self.samplerate_bounds(channels, bitrate)
 
         return tuple(x for x in self._encoder.suggested_samplerates if
-                                                        lower <= x <= upper)
+                     lower <= x <= upper)
 
     def good_bitrates(self, channels, samplerate=None):
         """Returns a tuple of standard suggestion values."""
@@ -265,7 +276,7 @@ class EncoderRange(object):
             lower, upper = self.bitrate_bounds(channels, samplerate)
 
         return tuple(x for x in self._encoder.suggested_bitrates if
-                                                        lower <= x <= upper)
+                     lower <= x <= upper)
 
 
 def format_collate(specifier):
@@ -282,6 +293,7 @@ def format_collate(specifier):
 
 
 class FormatDropdown(Gtk.VBox):
+
     def __init__(self, prev_object, title, ident, elements, row, tooltip=None):
         """Parameter 'elements' is a tuple of dictionaries.
 
@@ -389,6 +401,7 @@ class FormatDropdown(Gtk.VBox):
 
 
 class FormatSpin(Gtk.VBox):
+
     def __init__(self, prev_object, title, ident, elements, row, unit, next_element_name, suggested_values, tooltip=None):
         """Parameter 'elements' is a tuple of dictionaries.
 
@@ -417,9 +430,15 @@ class FormatSpin(Gtk.VBox):
         adjustment = Gtk.Adjustment(*(float(x) for x in elements))
         self._spin_button = Gtk.SpinButton(adjustment)
         if suggested_values is not None:
-            self._spin_button.connect("populate_popup", self._on_populate_popup, suggested_values)
+            self._spin_button.connect(
+                "populate_popup",
+                self._on_populate_popup,
+                suggested_values)
             if tooltip is None:
-                set_tip(self._spin_button, _('Right click for suggested values.'))
+                set_tip(
+                    self._spin_button,
+                    _('Right click for suggested values.')
+                )
         vbox.pack_start(self._spin_button, False)
         self._fixed = Gtk.Label()
         self._fixed.set_alignment(0.5, 0.5)
@@ -498,43 +517,116 @@ class FormatSpin(Gtk.VBox):
 
 
 class FormatPregain(FormatDropdown):
+
     """Level adjustment for audio before hitting the codec."""
 
     def __init__(self, prev_object):
         codec = format_collate(prev_object)["codec"]
 
         FormatDropdown.__init__(self, prev_object, _('Pregain'), "pregain", (
-            dict(display_text=_('0 dB'), value="1.0"),
-            dict(display_text=_('-0.5 dB'), value="0.944"),
-            dict(display_text=_('-1.0 dB'), value="0.891", default=(codec in ("aac", "aacpv2"))),
-            dict(display_text=_('-1.5 dB'), value="0.841"),
-            dict(display_text=_('-2.0 dB'), value="0.794", default=(codec in ("mp2", "mp3"))),
-            dict(display_text=_('-2.5 dB'), value="0.750"),
-            dict(display_text=_('-3.0 dB'), value="0.708", default=(codec == "speex"))), 1,
-            _("A blanket gain reduction to promote audio quality when using long established lossy audio codecs like mp3 with loud audio material.\n\n"
-            "ReplayGain makes this feature generally unnecessary and the correct setting in that case is 0 dB."))
+            {
+                "display_text": _('0 dB'),
+                "value": "1.0"
+            },
+            {
+                "display_text": _('-0.5 dB'),
+                "value": "0.944"
+            },
+            {
+                "display_text": _('-1.0 dB'),
+                "value": "0.891",
+                "default": (codec in ("aac", "aacpv2"))
+            },
+            {
+                "display_text": _('-1.5 dB'),
+                "value": "0.841"
+            },
+            {
+                "display_text": _('-2.0 dB'),
+                "value": "0.794",
+                "default": (codec in ("mp2", "mp3"))
+            },
+            {
+                "display_text": _('-2.5 dB'),
+                "value": "0.750"
+            },
+            {
+                "display_text": _('-3.0 dB'),
+                "value": "0.708",
+                "default": (codec == "speex")
+            }
+        ), 1,
+            _("A blanket gain reduction to promote audio "
+              "quality when using long established lossy "
+              "audio codecs like mp3 with loud audio material.\n\n"
+              "ReplayGain makes this feature generally "
+              "unnecessary and the correct setting in "
+              "that case is 0 dB."))
 
 
 class FormatResampleQuality(FormatDropdown):
+
     """Resample quality."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Resample Quality'), "resample_quality", (
-            dict(display_text=_('Highest'), value="highest", chain="FormatPregain"),
-            dict(display_text=_('Medium'), value="medium", chain="FormatPregain", default=True),
-            dict(display_text=_('Lowest'), value="lowest", chain="FormatPregain")), 1,
-            _("All of these settings will provide adequate audio quality. The highest setting will preserve more of the original audio bandwidth at the expense of many CPU cycles."))
+        FormatDropdown.__init__(
+            self,
+            prev_object,
+            _('Resample Quality'),
+            "resample_quality", (
+                {
+                    "display_text": _('Highest'),
+                    "value": "highest",
+                    "chain": "FormatPregain"
+                },
+                {
+                    "display_text": _('Medium'),
+                    "value": "medium",
+                    "chain": "FormatPregain",
+                    "default": True
+                },
+                {
+                    "display_text": _('Lowest'),
+                    "value": "lowest",
+                    "chain": "FormatPregain"
+                }),
+            1,
+            _("All of these settings will provide adequate audio "
+              "quality. The highest setting will preserve more of "
+              "the original audio bandwidth at the expense of "
+              "many CPU cycles.")
+        )
 
 
 class FormatMetadataChoice(FormatDropdown):
+
     """User can select the metadata encoding format."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Metadata'), "metadata_mode", (
-            dict(display_text=_('Suppressed'), value="suppressed", chain="FormatResampleQuality"),
-            dict(display_text=_('UTF-8'), value="utf-8", chain="FormatResampleQuality"),
-            dict(display_text=_('Latin1 *'), value="latin1", chain="FormatResampleQuality", default=True)), 1,
-            _("This affects the stream metadata only. Recordings will use UTF-8 for their metadata."))
+        FormatDropdown.__init__(
+            self,
+            prev_object,
+            _('Metadata'),
+            "metadata_mode", (
+                {
+                    "display_text": _('Suppressed'),
+                    "value": "suppressed",
+                    "chain": "FormatResampleQuality"
+                },
+                {
+                    "display_text": _('UTF-8'),
+                    "value": "utf-8",
+                    "chain": "FormatResampleQuality"
+                },
+                {
+                    "display_text": _('Latin1 *'),
+                    "value": "latin1",
+                    "chain": "FormatResampleQuality",
+                    "default": True}
+            ), 1,
+            _("This affects the stream metadata only. Recordings "
+              "will use UTF-8 for their metadata.")
+        )
 
 
 class FormatMetadataNone(FormatDropdown):
@@ -547,28 +639,64 @@ class FormatMetadataNone(FormatDropdown):
 
 
 class FormatMetadataUTF8(FormatDropdown):
+
     """User can select whether to have metadata."""
 
     def __init__(self, prev_object):
         discourage = format_collate(prev_object)["family"] == "webm"
-
-        FormatDropdown.__init__(self, prev_object, _('Metadata'), "metadata_mode", (
-            dict(display_text=_('Suppressed'), value="suppressed", chain="FormatResampleQuality", default=discourage),
-            dict(display_text=_('UTF-8'), value="utf-8", chain="FormatResampleQuality", default=not discourage)), 1,
-            _("Choose whether the stream will carry dynamic metadata. In the case of Ogg streams this is important as a great many players can't handle chained Ogg streams which result from the metadata updates."))
+        FormatDropdown.__init__(
+            self,
+            prev_object,
+            _('Metadata'),
+            "metadata_mode", (
+                {
+                    "display_text": _('Suppressed'),
+                    "value": "suppressed",
+                    "chain": "FormatResampleQuality",
+                    "default": discourage
+                },
+                {
+                    "display_text": _('UTF-8'),
+                    "value": "utf-8",
+                    "chain": "FormatResampleQuality",
+                    "default": not discourage}
+            ), 1,
+            _("Choose whether the stream will carry dynamic "
+              "metadata. In the case of Ogg streams this is "
+              "important as a great many players can't handle "
+              "chained Ogg streams which result from the metadata updates.")
+        )
 
 
 class FormatMetadataLatin1(FormatDropdown):
+
     """User can select whether to have metadata."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Metadata'), "metadata_mode", (
-            dict(display_text=_('Suppressed'), value="suppressed", chain="FormatResampleQuality"),
-            dict(display_text=_('Latin1'), value="latin1", chain="FormatResampleQuality", default=True)), 1,
-            _("Choose whether to send metadata. Recordings will use UTF-8 metadata."))
+        FormatDropdown.__init__(
+            self,
+            prev_object,
+            _('Metadata'),
+            "metadata_mode", (
+                {
+                    "display_text": _('Suppressed'),
+                    "value": "suppressed",
+                    "chain": "FormatResampleQuality"
+                },
+
+                {
+                    "display_text": _('Latin1'),
+                    "value": "latin1",
+                    "chain": "FormatResampleQuality",
+                    "default": True
+                }
+            ), 1,
+            _("Choose whether to send metadata. Recordings will "
+              "use UTF-8 metadata."))
 
 
 class FormatCodecMPEGMP2Mode(FormatDropdown):
+
     """MP2 modes."""
 
     def __init__(self, prev_object):
@@ -582,123 +710,365 @@ class FormatCodecMPEGMP2Mode(FormatDropdown):
             defmode = "stereo"
 
         FormatDropdown.__init__(self, prev_object, _('Mode'), "mode", (
-            dict(display_text=_("Mono"), value="mono", default=(defmode == "mono"), chain="FormatMetadataChoice"),
-            dict(display_text=_("Stereo"), value="stereo", default=(defmode == "stereo"), chain="FormatMetadataChoice"),
-            dict(display_text=_("Joint Stereo"), value="jointstereo", default=(defmode=="jointstereo"), chain="FormatMetadataChoice")), 0,
+            {
+                "display_text": _("Mono"),
+                "value": "mono",
+                "default": (defmode == "mono"),
+                "chain": "FormatMetadataChoice"
+            },
+            {
+                "display_text": _("Stereo"),
+                "value": "stereo",
+                "default": (defmode == "stereo"),
+                "chain": "FormatMetadataChoice"
+            },
+            {
+                "display_text": _("Joint Stereo"),
+                "value": "jointstereo",
+                "default": (defmode == "jointstereo"),
+                "chain": "FormatMetadataChoice"
+            }
+        ), 0,
             _('Joint Stereo is a good choice on streams with low bitrates.'))
 
 
 class FormatCodecMPEGMP2ModeStereo(FormatDropdown):
+
     """MP2 modes. No mono option due to previous bitrate choice."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Mode'), "mode", (
-            dict(display_text=_("Mono"), value="mono", sensitive=False, chain="FormatMetadataLatin1"),
-            dict(display_text=_("Stereo"), value="stereo", default=True, chain="FormatMetadataLatin1"),
-            dict(display_text=_("Joint Stereo"), value="jointstereo", chain="FormatMetadataLatin1")), 0,
-            _('Due to the high bitrate selected, this codec will only support stereo.'))
+            {
+                "display_text": _("Mono"),
+                "value": "mono",
+                "sensitive": False,
+                "chain": "FormatMetadataLatin1"
+            },
+
+            {
+                "display_text": _("Stereo"),
+                "value": "stereo",
+                "default": True,
+                "chain": "FormatMetadataLatin1"
+            },
+
+            {
+                "display_text": _("Joint Stereo"),
+                "value": "jointstereo",
+                "chain": "FormatMetadataLatin1"
+            }
+        ), 0,
+            _('Due to the high bitrate selected, this codec will '
+              'only support stereo.'))
 
 
 class FormatCodecMPEGMP2ModeSingle(FormatDropdown):
+
     """MP2 modes. Only mono available due to previous bitrate choice."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Mode'), "mode", (
-            dict(display_text=_("Mono"), value="mono", chain="FormatMetadataLatin1"),
-            dict(display_text=_("Stereo"), value="stereo", sensitive=False, chain="FormatMetadataLatin1"),
-            dict(display_text=_("Joint Stereo"), value="jointstereo", sensitive=False, chain="FormatMetadataLatin1")), 0,
-            _('Due to the low bitrate selected, this codec will only support mono.'))
+            {
+                "display_text": _("Mono"),
+                "value": "mono",
+                "chain": "FormatMetadataLatin1"
+            },
+            {
+                "display_text": _("Stereo"),
+                "value": "stereo",
+                "sensitive": False,
+                "chain": "FormatMetadataLatin1"
+            },
+            {
+                "display_text": _("Joint Stereo"),
+                "value": "jointstereo",
+                "sensitive": False,
+                "chain": "FormatMetadataLatin1"
+            }
+        ), 0,
+            _('Due to the low bitrate selected, this codec '
+              'will only support mono.'))
 
 
 class FormatCodecMPEGMP2V1BitRates(FormatDropdown):
+
     """MP2 MPEG1 bit rates. Some channel modes are restricted by bitrate."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Bitrate'), "bitrate", (
-            dict(display_text="384 kbps", value="384", chain="FormatCodecMPEGMP2ModeStereo"),
-            dict(display_text="320 kbps", value="320", chain="FormatCodecMPEGMP2ModeStereo"),
-            dict(display_text="256 kbps", value="256", chain="FormatCodecMPEGMP2ModeStereo"),
-            dict(display_text="224 kbps", value="224", chain="FormatCodecMPEGMP2ModeStereo"),
-            dict(display_text="192 kbps", value="192", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="160 kbps", value="160", chain="FormatCodecMPEGMP2Mode", default=True),
-            dict(display_text="128 kbps", value="128", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="112 kbps", value="112", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="96 kbps", value="96", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="80 kbps", value="80", chain="FormatCodecMPEGMP2ModeSingle"),
-            dict(display_text="64 kbps", value="64", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="56 kbps", value="56", chain="FormatCodecMPEGMP2ModeSingle"),
-            dict(display_text="48 kbps", value="48", chain="FormatCodecMPEGMP2ModeSingle"),
-            dict(display_text="32 kbps", value="32", chain="FormatCodecMPEGMP2ModeSingle")), 0)
+            {
+                "display_text": "384 kHz",
+                "value": "384",
+                "chain": "FormatCodecMPEGMP2ModeStereo"
+            },
+            {
+                "display_text": "320 kHz",
+                "value": "320",
+                "chain": "FormatCodecMPEGMP2ModeStereo"
+            },
+            {
+                "display_text": "256 kHz",
+                "value": "256",
+                "chain": "FormatCodecMPEGMP2ModeStereo"
+            },
+            {
+                "display_text": "224 kHz",
+                "value": "224",
+                "chain": "FormatCodecMPEGMP2ModeStereo"
+            },
+            {
+                "display_text": "192 kHz",
+                "value": "192",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "160 kHz",
+                "value": "160",
+                "chain": "FormatCodecMPEGMP2Mode",
+                "default": True
+            },
+            {
+                "display_text": "128 kHz",
+                "value": "128",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "112 kHz",
+                "value": "112",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "96 kHz",
+                "value": "96",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "80 kHz",
+                "value": "80",
+                "chain": "FormatCodecMPEGMP2ModeSingle"
+            },
+            {
+                "display_text": "64 kHz",
+                "value": "64",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "56 kHz",
+                "value": "56",
+                "chain": "FormatCodecMPEGMP2ModeSingle"
+            },
+            {
+                "display_text": "48 kHz",
+                "value": "48",
+                "chain": "FormatCodecMPEGMP2ModeSingle"
+            },
+            {
+                "display_text": "32 kHz",
+                "value": "32",
+                "chain": "FormatCodecMPEGMP2ModeSingle"
+            },
+        ), 0)
 
 
 class FormatCodecMPEGMP2V2BitRates(FormatDropdown):
+
     """MP2 MPEG2 bit rates."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Bitrate'), "bitrate", (
-            dict(display_text="160 kbps", value="160", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="144 kbps", value="144", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="128 kbps", value="128", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="112 kbps", value="112", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="96 kbps", value="96", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="80 kbps", value="80", chain="FormatCodecMPEGMP2Mode", default=True),
-            dict(display_text="64 kbps", value="64", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="56 kbps", value="56", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="48 kbps", value="48", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="40 kbps", value="40", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="32 kbps", value="32", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="24 kbps", value="24", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="16 kbps", value="16", chain="FormatCodecMPEGMP2Mode"),
-            dict(display_text="8 kbps", value="8", chain="FormatCodecMPEGMP2Mode")), 0)
+            {
+                "display_text": "160 kHz",
+                "value": "160",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "144 kHz",
+                "value": "144",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "128 kHz",
+                "value": "128",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "112 kHz",
+                "value": "112",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "96 kHz",
+                "value": "96",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "80 kHz",
+                "value": "80",
+                "chain": "FormatCodecMPEGMP2Mode",
+                "default": True
+            },
+            {
+                "display_text": "64 kHz",
+                "value": "64",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "56 kHz",
+                "value": "56",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "48 kHz",
+                "value": "48",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "40 kHz",
+                "value": "40",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "32 kHz",
+                "value": "32",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "24 kHz",
+                "value": "24",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "16 kHz",
+                "value": "16",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+            {
+                "display_text": "8 kHz",
+                "value": "8",
+                "chain": "FormatCodecMPEGMP2Mode"
+            },
+        ), 0)
 
 
 class FormatCodecMPEGMP2V1SampleRates(FormatDropdown):
+
     """MP2 MPEG1 sample rates."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Samplerate'), "samplerate", (
-            dict(display_text="48000 Hz", value="48000", chain="FormatCodecMPEGMP2V1BitRates"),
-            dict(display_text="44100 Hz", value="44100", chain="FormatCodecMPEGMP2V1BitRates", default=True),
-            dict(display_text="32000 Hz", value="32000", chain="FormatCodecMPEGMP2V1BitRates")), 0)
+        FormatDropdown.__init__(
+            self,
+            prev_object,
+            _('Samplerate'),
+            "samplerate",
+            (
+                {
+                    "display_text": "48000 Hz",
+                    "value": "48000",
+                    "chain": "FormatCodecMPEGMP2V1BitRates"
+                },
+                {
+                    "display_text": "44100 Hz",
+                    "value": "44100",
+                    "chain": "FormatCodecMPEGMP2V1BitRates",
+                    "default": True
+                },
+                {
+                    "display_text": "32000 Hz",
+                    "value": "32000",
+                    "chain": "FormatCodecMPEGMP2V1BitRates"
+                }
+            ), 0)
 
 
 class FormatCodecMPEGMP2V2SampleRates(FormatDropdown):
+
     """MP2 MPEG2 sample rates."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Samplerate'), "samplerate", (
-            dict(display_text="24000 Hz", value="24000", chain="FormatCodecMPEGMP2V2BitRates"),
-            dict(display_text="22050 Hz", value="22050", chain="FormatCodecMPEGMP2V2BitRates", default=True),
-            dict(display_text="16000 Hz", value="16000", chain="FormatCodecMPEGMP2V2BitRates")), 0)
+        FormatDropdown.__init__(
+            self,
+            prev_object,
+            _('Samplerate'),
+            "samplerate",
+            (
+                {
+                    "display_text": "24000 Hz",
+                    "value": "24000",
+                    "chain": "FormatCodecMPEGMP2V2BitRates"
+                },
+                {
+                    "display_text": "22050 Hz",
+                    "value": "22050",
+                    "chain": "FormatCodecMPEGMP2V2BitRates",
+                    "default": True
+                },
+                {
+                    "display_text": "16000 Hz",
+                    "value": "16000",
+                    "chain": "FormatCodecMPEGMP2V2BitRates"
+                }
+            ), 0)
 
 
 class FormatCodecMPEGMP2(FormatDropdown):
+
     """MP2 standard selection."""
 
     def __init__(self, prev_object):
         # TC: Abbreviation of the word, standard.
         FormatDropdown.__init__(self, prev_object, _('Std.'), "standard", (
             # TC: v stands for version.
-            dict(display_text=_("V 1"), value="1", chain="FormatCodecMPEGMP2V1SampleRates"),
+            {
+                "display_text": _("V 1"),
+                "value": "1",
+                "chain": "FormatCodecMPEGMP2V1SampleRates"
+            },
             # TC: v stands for version.
-            dict(display_text=_("V 2"), value="2", chain="FormatCodecMPEGMP2V2SampleRates")), 0,
-            _('MPEG2 introduced lower samplerate options and corresponding lower bitrates. Choose 2 if those are required.'))
+            {
+                "display_text": _("V 2"),
+                "value": "2",
+                "chain": "FormatCodecMPEGMP2V2SampleRates"
+            }), 0,
+            _('MPEG2 introduced lower samplerate options '
+              'and corresponding lower bitrates. Choose 2 '
+              'if those are required.'))
 
 
 class FormatCodecMPEGMP3Quality(FormatDropdown):
+
     """MP3 quality."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Quality'), "quality", (
-            dict(display_text=_('0 most'), value="0", chain="FormatMetadataChoice"),
-            dict(display_text="1", value="1", chain="FormatMetadataChoice"),
+            {
+                "display_text": _('0 most'),
+                "value": "0",
+                "chain": "FormatMetadataChoice"
+            },
+            {
+                "display_text": "1",
+                "value": "1",
+                "chain": "FormatMetadataChoice"
+            },
             # TC: * means is the recommended setting.
-            dict(display_text=_("2 *"), value="2", chain="FormatMetadataChoice", default=True)) + tuple(
-            dict(display_text=str(x), value=str(x), chain="FormatMetadataChoice") for x in range(3, 10)), 0,
+            {
+                "display_text": _("2 *"),
+                "value": "2",
+                "chain": "FormatMetadataChoice",
+                "default": True
+            }
+        ) + tuple(
+            {
+                "display_text": str(x),
+                "value": str(x),
+                "chain": "FormatMetadataChoice"
+            } for x in range(3, 10)
+        ), 0,
             _('Higher quality costs more in terms of CPU cycles.'))
 
 
 class FormatCodecMPEGMP3Mode(FormatDropdown):
+
     """MP3 modes."""
 
     def __init__(self, prev_object):
@@ -711,164 +1081,442 @@ class FormatCodecMPEGMP3Mode(FormatDropdown):
             defmode = "stereo"
 
         FormatDropdown.__init__(self, prev_object, _('Mode'), "mode", (
-            dict(display_text=_("Mono"), value="mono", default=(defmode == "mono"), chain="FormatCodecMPEGMP3Quality"),
-            dict(display_text=_("Stereo"), value="stereo", default=(defmode == "stereo"), chain="FormatCodecMPEGMP3Quality"),
-            dict(display_text=_("Joint Stereo"), value="jointstereo", default=(defmode == "jointstereo"), chain="FormatCodecMPEGMP3Quality")), 0,
+            {
+                "display_text": _("Mono"),
+                "value": "mono",
+                "default": (defmode == "mono"),
+                "chain": "FormatCodecMPEGMP3Quality"
+            },
+            {
+                "display_text": _("Stereo"),
+                "value": "stereo",
+                "default": (defmode == "stereo"),
+                "chain": "FormatCodecMPEGMP3Quality"
+            },
+            {
+                "display_text": _("Joint Stereo"),
+                "value": "jointstereo",
+                "default": (defmode == "jointstereo"),
+                "chain": "FormatCodecMPEGMP3Quality"
+            }
+        ), 0,
             _('Joint Stereo is a good choice on streams with low bitrates'))
 
 
 class FormatCodecMPEGMP3V1BitRates(FormatDropdown):
+
     """MP3 MPEG1 bit rates."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Bitrate'), "bitrate", (
-            dict(display_text="320 kbps", value="320", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="256 kbps", value="256", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="224 kbps", value="224", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="192 kbps", value="192", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="160 kbps", value="160", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="128 kbps", value="128", chain="FormatCodecMPEGMP3Mode", default=True),
-            dict(display_text="112 kbps", value="112", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="96 kbps", value="96", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="80 kbps", value="80", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="64 kbps", value="64", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="56 kbps", value="56", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="48 kbps", value="48", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="40 kbps", value="40", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="32 kbps", value="32", chain="FormatCodecMPEGMP3Mode")), 0)
+            {
+                "display_text": "320 kHz",
+                "value": "320",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "256 kHz",
+                "value": "256",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "224 kHz",
+                "value": "224",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "192 kHz",
+                "value": "192",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "160 kHz",
+                "value": "160",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "128 kHz",
+                "value": "128",
+                "chain": "FormatCodecMPEGMP3Mode",
+                "default": True
+            },
+            {
+                "display_text": "112 kHz",
+                "value": "112",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "96 kHz",
+                "value": "96",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "80 kHz",
+                "value": "80",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "64 kHz",
+                "value": "64",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "56 kHz",
+                "value": "56",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "48 kHz",
+                "value": "48",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "40 kHz",
+                "value": "40",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "32 kHz",
+                "value": "32",
+                "chain": "FormatCodecMPEGMP3Mode"
+            }
+        ), 0)
 
 
 class FormatCodecMPEGMP3V2BitRates(FormatDropdown):
+
     """MP3 MPEG2 and 2.5 bit rates."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Bitrate'), "bitrate", (
-            dict(display_text="160 kbps", value="160", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="144 kbps", value="144", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="128 kbps", value="128", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="112 kbps", value="112", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="96 kbps", value="96", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="80 kbps", value="80", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="64 kbps", value="64", chain="FormatCodecMPEGMP3Mode", default=True),
-            dict(display_text="56 kbps", value="56", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="48 kbps", value="48", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="40 kbps", value="40", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="32 kbps", value="32", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="24 kbps", value="24", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="16 kbps", value="16", chain="FormatCodecMPEGMP3Mode"),
-            dict(display_text="8 kbps", value="8", chain="FormatCodecMPEGMP3Mode")), 0)
+            {
+                "display_text": "160 kHz",
+                "value": "160",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "144 kHz",
+                "value": "144",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "128 kHz",
+                "value": "128",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "112 kHz",
+                "value": "112",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "96 kHz",
+                "value": "96",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "80 kHz",
+                "value": "80",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "64 kHz",
+                "value": "64",
+                "chain": "FormatCodecMPEGMP3Mode",
+                "default": True
+            },
+            {
+                "display_text": "56 kHz",
+                "value": "56",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "48 kHz",
+                "value": "48",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "40 kHz",
+                "value": "40",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "32 kHz",
+                "value": "32",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "24 kHz",
+                "value": "24",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "16 kHz",
+                "value": "16",
+                "chain": "FormatCodecMPEGMP3Mode"
+            },
+            {
+                "display_text": "8 kHz",
+                "value": "8",
+                "chain": "FormatCodecMPEGMP3Mode"
+            }
+        ), 0)
 
 
 class FormatCodecMPEGMP3V1SampleRates(FormatDropdown):
+
     """MP3 MPEG1 sample rates."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Samplerate'), "samplerate", (
-            dict(display_text="48000 Hz", value="48000", chain="FormatCodecMPEGMP3V1BitRates"),
-            dict(display_text="44100 Hz", value="44100", chain="FormatCodecMPEGMP3V1BitRates", default=True),
-            dict(display_text="32000 Hz", value="32000", chain="FormatCodecMPEGMP3V1BitRates")), 0)
+        FormatDropdown.__init__(
+            self, prev_object, _('Samplerate'), "samplerate", (
+                {
+                    "display_text": "48000 Hz",
+                    "value": "48000",
+                    "chain": "FormatCodecMPEGMP3V1BitRates"
+                },
+                {
+                    "display_text": "44100 Hz",
+                    "value": "44100",
+                    "chain": "FormatCodecMPEGMP3V1BitRates",
+                    "default": True
+                },
+                {
+                    "display_text": "32000 Hz",
+                    "value": "32000",
+                    "chain": "FormatCodecMPEGMP3V1BitRates"
+                }
+            ), 0)
 
 
 class FormatCodecMPEGMP3V2SampleRates(FormatDropdown):
+
     """MP3 MPEG2 sample rates."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Samplerate'), "samplerate", (
-            dict(display_text="24000 Hz", value="24000", chain="FormatCodecMPEGMP3V2BitRates"),
-            dict(display_text="22050 Hz", value="22050", chain="FormatCodecMPEGMP3V2BitRates", default=True),
-            dict(display_text="16000 Hz", value="16000", chain="FormatCodecMPEGMP3V2BitRates")), 0)
+        FormatDropdown.__init__(
+            self, prev_object, _('Samplerate'), "samplerate", (
+                {
+                    "display_text": "24000 Hz",
+                    "value": "24000",
+                    "chain": "FormatCodecMPEGMP3V2BitRates"},
+                {
+                    "display_text": "22050 Hz",
+                    "value": "22050",
+                    "chain": "FormatCodecMPEGMP3V2BitRates",
+                    "default": True},
+                {
+                    "display_text": "16000 Hz",
+                    "value": "16000",
+                    "chain": "FormatCodecMPEGMP3V2BitRates"}
+            ), 0)
 
 
 class FormatCodecMPEGMP3V2_5SampleRates(FormatDropdown):
+
     """MP3 MPEG2.5 non standard sample rates."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Samplerate'), "samplerate", (
-            dict(display_text="12000 Hz", value="12000", chain="FormatCodecMPEGMP3V2BitRates"),
-            dict(display_text="11025 Hz", value="11025", chain="FormatCodecMPEGMP3V2BitRates", default=True),
-            dict(display_text="8000 Hz", value="8000", chain="FormatCodecMPEGMP3V2BitRates")), 0)
+        FormatDropdown.__init__(
+            self, prev_object, _('Samplerate'), "samplerate", (
+                {
+                    "display_text": "12000 Hz",
+                    "value": "12000",
+                    "chain": "FormatCodecMPEGMP3V2BitRates"
+                },
+                {
+                    "display_text": "11025 Hz",
+                    "value": "11025",
+                    "chain": "FormatCodecMPEGMP3V2BitRates",
+                    "default": True
+                },
+                {
+                    "display_text": "8000 Hz",
+                    "value": "8000",
+                    "chain": "FormatCodecMPEGMP3V2BitRates"
+                }
+            ), 0)
 
 
 class FormatCodecMPEGMP3(FormatDropdown):
+
     """MP3 standard selection."""
 
     def __init__(self, prev_object):
         # TC: Abbreviation of the word, standard.
         FormatDropdown.__init__(self, prev_object, _('Std.'), "standard", (
             # TC: v stands for version.
-            dict(display_text=_("V 1"), value="1", chain="FormatCodecMPEGMP3V1SampleRates"),
-            # TC: v stands for version.
-            dict(display_text=_("V 2"), value="2", chain="FormatCodecMPEGMP3V2SampleRates"),
-            # TC: v stands for version.
-            dict(display_text=_("V 2.5"), value="2.5", chain="FormatCodecMPEGMP3V2_5SampleRates")), 0)
+            {
+                "display_text": _("V 1"),
+                "value": "1",
+                "chain": "FormatCodecMPEGMP3V1SampleRates"
+            },
+            # "TC": v stands for version.
+            {
+                "display_text": _("V 2"),
+                "value": "2",
+                "chain": "FormatCodecMPEGMP3V2SampleRates"
+            },
+            # "TC": v stands for version.
+            {
+                "display_text": _("V 2.5"),
+                "value": "2.5",
+                "chain": "FormatCodecMPEGMP3V2_5SampleRates"
+            }
+        ), 0)
 
 
 class FormatCodecSpeexComplexity(FormatDropdown):
+
     """Speex cpu usage selection."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Complexity'), "complexity",
-            tuple(dict(display_text=str(x), value=str(x), chain="FormatMetadataUTF8", default=(x==5))
-                                                            for x in range(9, -1, -1)), 0,
+        FormatDropdown.__init__(
+            self, prev_object, _('Complexity'), "complexity",
+            tuple({
+                "display_text": str(x),
+                "value": str(x),
+                "chain": "FormatMetadataUTF8",
+                "default": (x == 5)}
+                for x in range(9, -1, -1)
+            ), 0,
             _('A quality setting that affects how heavily the CPU is used.'))
 
 
 class FormatCodecSpeexQuality(FormatDropdown):
+
     """Speex quality selection."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Quality'), "quality",
-            tuple(dict(display_text=str(x), value=str(x), default=(x==8), chain="FormatCodecSpeexComplexity")
-                                                            for x in range(9, -1, -1)), 0,
-            _('The higher this setting, the higher the bitrate.'))
+        FormatDropdown.__init__(
+            self, prev_object, _('Quality'), "quality",
+            tuple({
+                "display_text": str(x),
+                "value": str(x),
+                "default": (x == 8),
+                "chain": "FormatCodecSpeexComplexity"
+            }
+                for x in range(9, -1, -1)), 0,
+            _('The higher this setting, the higher the bitrate.')
+        )
 
 
 class FormatCodecSpeexBandwidth(FormatDropdown):
+
     """Speex bandwidth selection."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Bandwidth'), "samplerate", (
-            dict(display_text=_("Ultrawide"), value="32000", chain="FormatCodecSpeexQuality"),
-            dict(display_text=_("Wide"), value="16000", chain="FormatCodecSpeexQuality"),
-            dict(display_text=_("Narrow"), value="8000", chain="FormatCodecSpeexQuality")), 0,
+        FormatDropdown.__init__(
+            self, prev_object, _('Bandwidth'), "samplerate", (
+                {
+                    "display_text": _("Ultrawide"),
+                    "value": "32000",
+                    "chain": "FormatCodecSpeexQuality"
+                },
+                {
+                    "display_text": _("Wide"),
+                    "value": "16000",
+                    "chain": "FormatCodecSpeexQuality"
+                },
+                {
+                    "display_text": _("Narrow"),
+                    "value": "8000",
+                    "chain": "FormatCodecSpeexQuality"
+                }
+            ), 0,
             _('Essentially a samplerate setting.'))
 
 
 class FormatCodecSpeexMode(FormatDropdown):
+
     """Speex mode selection."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Mode'), "mode", (
-            dict(display_text=_("Mono"), value="mono", chain="FormatCodecSpeexBandwidth"),
-            dict(display_text=_("Stereo"), value="stereo", chain="FormatCodecSpeexBandwidth")), 0)
+            {
+                "display_text": _("Mono"),
+                "value": "mono",
+                "chain": "FormatCodecSpeexBandwidth"
+            },
+            {
+                "display_text": _("Stereo"),
+                "value": "stereo",
+                "chain": "FormatCodecSpeexBandwidth"
+            }
+        ), 0)
 
 
 class FormatCodecFLACBits(FormatDropdown):
+
     """FLAC bit width selection."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Width'), "bitwidth", (
-            dict(display_text=_("24 bits"), value="24", chain="FormatMetadataUTF8"),
-            dict(display_text=_("20 bits"), value="20", chain="FormatMetadataUTF8"),
-            dict(display_text=_("16 bits"), value="16", chain="FormatMetadataUTF8")), 0,
-            _('24 bit records with the highest level of detail. If file size is a concern maybe FLAC is not the right codec.'))
+            {
+                "display_text": _("24 bit"),
+                "value": "24",
+                "chain": "FormatMetadataUTF8"
+            },
+            {
+                "display_text": _("20 bit"),
+                "value": "20",
+                "chain": "FormatMetadataUTF8"
+            },
+            {
+                "display_text": _("16 bit"),
+                "value": "16",
+                "chain": "FormatMetadataUTF8"
+            }
+        ), 0,
+            _('24 bit records with the highest level of detail. '
+              'If file size is a concern maybe FLAC is not the '
+              'right codec.'))
 
 
 class FormatCodecVorbisVariability(FormatDropdown):
+
     """Vorbis bit rate variability."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Variability'), "variability", (
-            dict(display_text=_("Constant"), value="0", chain="FormatMetadataUTF8"),
-            dict(display_text=_("\u00B110%"), value="10", chain="FormatMetadataUTF8"),
-            dict(display_text=_("\u00B120%"), value="20", chain="FormatMetadataUTF8"),
-            dict(display_text=_("\u00B130%"), value="30", chain="FormatMetadataUTF8"),
-            dict(display_text=_("\u00B140%"), value="40", chain="FormatMetadataUTF8"),
-            dict(display_text=_("\u00B150%"), value="50", chain="FormatMetadataUTF8")), 0,
-            _('This control is for enabling variable bitrate on Vorbis streams.'))
+        FormatDropdown.__init__(
+            self, prev_object, _('Variability'), "variability", (
+                {
+                    "display_text": _("Constant"),
+                    "value": "0",
+                    "chain": "FormatMetadataUTF8"
+                },
+                {
+                    "display_text": _("\u00B110%"),
+                    "value": "10",
+                    "chain": "FormatMetadataUTF8"
+                },
+                {
+                    "display_text": _("\u00B120%"),
+                    "value": "20",
+                    "chain": "FormatMetadataUTF8"
+                },
+                {
+                    "display_text": _("\u00B130%"),
+                    "value": "30",
+                    "chain": "FormatMetadataUTF8"
+                },
+                {
+                    "display_text": _("\u00B140%"),
+                    "value": "40",
+                    "chain": "FormatMetadataUTF8"
+                },
+                {
+                    "display_text": _("\u00B150%"),
+                    "value": "50",
+                    "chain": "FormatMetadataUTF8"
+                }
+            ), 0,
+            _('This control is for enabling variable '
+              'bitrate on Vorbis streams.'))
 
 
 class FormatCodecVorbisBitRate(FormatSpin):
+
     """Vorbis bit rate selection."""
 
     def __init__(self, prev_object):
@@ -878,11 +1526,13 @@ class FormatCodecVorbisBitRate(FormatSpin):
         sr = int(dict_["samplerate"])
         bounds = er.bitrate_bounds(channels, sr)
         FormatSpin.__init__(self, prev_object, _('Bitrate'), "bitrate",
-            (128000,) + bounds + (1, 10), 0, " bps", "FormatCodecVorbisVariability",
-            er.good_bitrates(channels, sr))
+                            (128000,) + bounds +
+                            (1, 10), 0, " bps", "FormatCodecVorbisVariability",
+                            er.good_bitrates(channels, sr))
 
 
 class FormatCodecVorbisSampleRate(FormatSpin):
+
     """Vorbis sample rate selection."""
 
     def __init__(self, prev_object):
@@ -890,88 +1540,207 @@ class FormatCodecVorbisSampleRate(FormatSpin):
         er = EncoderRange(VorbisTestEncoder())
         bounds = er.bounds(channels)["samplerate_bounds"]
         FormatSpin.__init__(self, prev_object, _('Samplerate'), "samplerate",
-            (44100,) + bounds + (1, 10), 0, " Hz", "FormatCodecVorbisBitRate",
-            er.good_samplerates(channels))
+                            (44100,) + bounds +
+                            (1, 10), 0, " Hz", "FormatCodecVorbisBitRate",
+                            er.good_samplerates(channels))
 
 
 class FormatCodecFLACSampleRate(FormatSpin):
-    """FLAC sample rate selection."""
 
+    """FLAC sample rate selection."""
 
     def __init__(self, prev_object):
         FormatSpin.__init__(self, prev_object, _('Samplerate'), "samplerate",
-            (44100, 1, 655350, 1, 10), 0, " Hz", "FormatCodecFLACBits",
-            (96000, 88200, 48000, 44100))
+                            (44100, 1, 655350, 1,
+                             10), 0, " Hz", "FormatCodecFLACBits",
+                            (96000, 88200, 48000, 44100))
 
 
 class FormatCodecFLACMode(FormatDropdown):
+
     """Speex mode selection."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Mode'), "mode", (
-            dict(display_text=_("Mono"), value="mono", chain="FormatCodecFLACSampleRate"),
-            dict(display_text=_("Stereo"), value="stereo", default=True, chain="FormatCodecFLACSampleRate")), 0)
+            {
+                "display_text": _("Mono"),
+                "value": "mono",
+                "chain": "FormatCodecFLACSampleRate"
+            },
+            {
+                "display_text": _("Stereo"),
+                "value": "stereo",
+                "default": True,
+                "chain": "FormatCodecFLACSampleRate"
+            }
+        ), 0)
 
 
 class FormatCodecVorbisMode(FormatDropdown):
+
     """Vorbis mode selection."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Mode'), "mode", (
-            dict(display_text=_("Mono"), value="mono", chain="FormatCodecVorbisSampleRate"),
-            dict(display_text=_("Stereo"), value="stereo", default=True, chain="FormatCodecVorbisSampleRate")), 0)
+            {
+                "display_text": _("Mono"),
+                "value": "mono",
+                "chain": "FormatCodecVorbisSampleRate"
+            },
+            {
+                "display_text": _("Stereo"),
+                "value": "stereo",
+                "default": True,
+                "chain": "FormatCodecVorbisSampleRate"
+            }
+        ), 0)
 
 
 class FormatCodecOpusPostGain(FormatDropdown):
+
     """Level adjustment for audio before hitting the codec."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Postgain'), "postgain", (
-            dict(display_text=_('3.0 dB'), value="768", chain="FormatMetadataUTF8"),
-            dict(display_text=_('2.5 dB'), value="640", chain="FormatMetadataUTF8"),
-            dict(display_text=_('2.0 dB'), value="512", chain="FormatMetadataUTF8"),
-            dict(display_text=_('1.5 dB'), value="384", chain="FormatMetadataUTF8"),
-            dict(display_text=_('1.0 dB'), value="256", chain="FormatMetadataUTF8"),
-            dict(display_text=_('0.5 dB'), value="128", chain="FormatMetadataUTF8"),
-            dict(display_text=_('0 dB'), value="0", default=True, chain="FormatMetadataUTF8"),
-            dict(display_text=_('-0.5 dB'), value="-128", chain="FormatMetadataUTF8"),
-            dict(display_text=_('-1.0 dB'), value="-256", chain="FormatMetadataUTF8"),
-            dict(display_text=_('-1.5 dB'), value="-384", chain="FormatMetadataUTF8"),
-            dict(display_text=_('-2.0 dB'), value="-512", chain="FormatMetadataUTF8"),
-            dict(display_text=_('-2.5 dB'), value="-640", chain="FormatMetadataUTF8"),
-            dict(display_text=_('-3.0 dB'), value="-768", chain="FormatMetadataUTF8")), 1,
+            {
+                "display_text": _('3.0 dB'),
+                "value": "768",
+                "chain": "FormatMetadataUTF8"
+            },
+            {
+                "display_text": _('2.5 dB'),
+                "value": "640",
+                "chain": "FormatMetadataUTF8"
+            },
+            {
+                "display_text": _('2.0 dB'),
+                "value": "512",
+                "chain": "FormatMetadataUTF8"
+            },
+            {
+                "display_text": _('1.5 dB'),
+                "value": "384",
+                "chain": "FormatMetadataUTF8"
+            },
+            {
+                "display_text": _('1.0 dB'),
+                "value": "256",
+                "chain": "FormatMetadataUTF8"
+            },
+            {
+                "display_text": _('0.5 dB'),
+                "value": "128",
+                "chain": "FormatMetadataUTF8"
+            },
+            {
+                "display_text": _('0 dB'),
+                "value": "0",
+                "default": True,
+                "chain": "FormatMetadataUTF8"
+            },
+            {
+                "display_text": _('-0.5 dB'),
+                "value": "-128",
+                "chain": "FormatMetadataUTF8"
+            },
+            {
+                "display_text": _('-1.0 dB'),
+                "value": "-256",
+                "chain": "FormatMetadataUTF8"
+            },
+            {
+                "display_text": _('-1.5 dB'),
+                "value": "-384",
+                "chain": "FormatMetadataUTF8"
+            },
+            {
+                "display_text": _('-2.0 dB'),
+                "value": "-512",
+                "chain": "FormatMetadataUTF8"
+            },
+            {
+                "display_text": _('-2.5 dB'),
+                "value": "-640",
+                "chain": "FormatMetadataUTF8"
+            },
+            {
+                "display_text": _('-3.0 dB'),
+                "value": "-768",
+                "chain": "FormatMetadataUTF8"
+            }
+        ), 1,
             _("A gain adjustment for the player to apply."))
 
 
 class FormatCodecOpusVariability(FormatDropdown):
+
     """Set VBR, CBR, etc."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Variability'), "variability", (
-            dict(display_text=_('CBR *'), value="cbr", default=True, chain="FormatCodecOpusPostGain"),
-            dict(display_text=_('CVBR'), value="cvbr", chain="FormatCodecOpusPostGain"),
-            dict(display_text=_('VBR'), value="vbr", chain="FormatCodecOpusPostGain")), 0,
-            _("Bitrate variability. Actual VBR operation may require a higher frame size."))
+        FormatDropdown.__init__(
+            self, prev_object, _('Variability'), "variability", (
+                {
+                    "display_text": _('CBR *'),
+                    "value": "cbr",
+                    "default": True,
+                    "chain": "FormatCodecOpusPostGain"
+                },
+                {
+                    "display_text": _('CVBR'),
+                    "value": "cvbr",
+                    "chain": "FormatCodecOpusPostGain"
+                },
+                {
+                    "display_text": _('VBR'),
+                    "value": "vbr",
+                    "chain": "FormatCodecOpusPostGain"
+                }
+            ), 0,
+            _("Bitrate variability. Actual VBR operation may "
+              "require a higher frame size."))
 
 
 class FormatCodecOpusFrameSize(FormatDropdown):
+
     """Size of Opus frames in milliseconds."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Frame Size'), "framesize", (
-            dict(display_text=_('60 ms'), value="60", chain="FormatCodecOpusVariability"),
-            dict(display_text=_('40 ms'), value="40", chain="FormatCodecOpusVariability"),
-            dict(display_text=_('20 ms'), value="20", default=True, chain="FormatCodecOpusVariability")), 0,
+        FormatDropdown.__init__(
+            self, prev_object, _('Frame Size'), "framesize", (
+                {
+                    "display_text": _('60 ms'),
+                    "value": "60",
+                    "chain": "FormatCodecOpusVariability"
+                },
+                {
+                    "display_text": _('40 ms'),
+                    "value": "40",
+                    "chain": "FormatCodecOpusVariability"
+                },
+                {
+                    "display_text": _('20 ms'),
+                    "value": "20",
+                    "default": True,
+                    "chain": "FormatCodecOpusVariability"
+                }
+            ), 0,
             _("A higher frame size may sound better on very low bitrates."))
 
 
 class FormatCodecOpusComplexity(FormatDropdown):
+
     """Opus cpu usage selection."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('CPU'), "complexity",
-            tuple(dict(display_text=str(x), value=str(x), chain="FormatCodecOpusFrameSize", default=(x==10))
-                                                            for x in range(10, -1, -1)), 0,
+        FormatDropdown.__init__(
+            self, prev_object, _('CPU'), "complexity",
+            tuple({
+                "display_text": str(x),
+                "value": str(x),
+                "chain": "FormatCodecOpusFrameSize",
+                "default": (x == 10)}
+                for x in range(
+                    10, -1, -1)), 0,
             _('The encoder complexity setting which affects CPU load.'))
 
 
@@ -983,101 +1752,231 @@ class FormatCodecOpusBitRate(FormatSpin):
         channels = 1 if dict_["mode"] == "mono" else 2
         bounds = (6 * channels, 256 * channels)
         FormatSpin.__init__(self, prev_object, _('Bitrate'), "bitrate",
-            ((64, 96)[channels - 1],) + bounds + (1, 10), 0, " kbps", "FormatCodecOpusComplexity",
-            (256 * channels, 128 * channels, 64 * channels, 48 * channels, 32 * channels, 16 * channels))
+                            ((64, 96)[channels - 1],) + bounds +
+                            (1, 10), 0, " kbps", "FormatCodecOpusComplexity",
+                            (256 * channels,
+                             128 * channels,
+                             64 * channels,
+                             48 * channels,
+                             32 * channels,
+                             16 * channels))
 
 
 class FormatCodecOpusMode(FormatDropdown):
+
     """Opus mode selection."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Mode'), "mode", (
-            dict(display_text=_("Mono"), value="mono", chain="FormatCodecOpusBitRate"),
-            dict(display_text=_("Stereo"), value="stereo", default=True, chain="FormatCodecOpusBitRate")), 0)
+            {
+                "display_text": _("Mono"),
+                "value": "mono",
+                "chain": "FormatCodecOpusBitRate"
+            },
+            {
+                "display_text": _("Stereo"),
+                "value": "stereo",
+                "default": True,
+                "chain": "FormatCodecOpusBitRate"
+            }
+        ), 0)
 
 
 class FormatCodecXiphOgg(FormatDropdown):
+
     """Ogg codec selection."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Codec'), "codec", (
-            dict(display_text=_('Vorbis'), value="vorbis", chain="FormatCodecVorbisMode"),
-            dict(display_text=_('FLAC'), value="flac", chain="FormatCodecFLACMode", sensitive=FGlobs.oggflacenabled),
-            dict(display_text=_('Speex'), value="speex", chain="FormatCodecSpeexMode", sensitive=FGlobs.speexenabled),
-            dict(display_text=_('Opus'), value="opus", chain="FormatCodecOpusMode", sensitive=FGlobs.opusenabled),
-
-            ), 0,
+            {
+                "display_text": _('Vorbis'),
+                "value": "vorbis",
+                "chain": "FormatCodecVorbisMode"
+            },
+            {
+                "display_text": _('FLAC'),
+                "value": "flac",
+                "chain": "FormatCodecFLACMode",
+                "sensitive": FGlobs.oggflacenabled
+            },
+            {
+                "display_text": _('Speex'),
+                "value": "speex",
+                "chain": "FormatCodecSpeexMode",
+                "sensitive": FGlobs.speexenabled
+            },
+            {
+                "display_text": _('Opus'),
+                "value": "opus",
+                "chain": "FormatCodecOpusMode",
+                "sensitive": FGlobs.opusenabled
+            }
+        ), 0,
             _('Codecs of the Ogg container.'))
 
 
 class FormatCodecMPEGAACMode(FormatDropdown):
+
     """AAC mode selection."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Mode'), "mode", (
-            dict(display_text=_("Mono"), value="mono", chain="FormatMetadataUTF8"),
-            dict(display_text=_("Stereo"), value="stereo", default=True, chain="FormatMetadataUTF8")), 0)
+            {
+                "display_text": _("Mono"),
+                "value": "mono",
+                "chain": "FormatMetadataUTF8"
+            },
+            {
+                "display_text": _("Stereo"),
+                "value": "stereo",
+                "default": True,
+                "chain": "FormatMetadataUTF8"
+            }
+        ), 0)
 
 
 class FormatCodecMPEGAACModeStereo(FormatDropdown):
+
     """AAC+ v2 mode selection which is always stereo."""
 
     def __init__(self, prev_object):
         FormatDropdown.__init__(self, prev_object, _('Mode'), "mode", (
-            dict(display_text=_("Mono"), value="mono", sensitive=False),
-            dict(display_text=_("Stereo"), value="stereo", default=True, chain="FormatMetadataUTF8")), 0)
+            {
+                "display_text": _("Mono"),
+                "value": "mono",
+                "sensitive": False
+            },
+            {
+                "display_text": _("Stereo"),
+                "value": "stereo",
+                "default": True,
+                "chain": "FormatMetadataUTF8"
+            }
+        ), 0)
 
 
 class FormatCodecMPEGAACBitrate(FormatSpin):
+
     """AAC bit rate selection."""
 
     def __init__(self, prev_object):
         FormatSpin.__init__(self, prev_object, _('Bitrate'), "bitrate",
-            (128000, 32000, 320000, 1, 10), 0, " bps", "FormatCodecMPEGAACMode",
-            (192000, 160000, 128000, 112000, 96000, 80000, 64000, 48000, 45000, 32000))
-
+                            (128000, 32000, 320000, 1,
+                             10), 0, " bps", "FormatCodecMPEGAACMode",
+                            (192000, 160000, 128000, 112000, 96000,
+                             80000, 64000, 48000, 45000, 32000))
 
 
 class FormatCodecMPEGAACPlusV2Bitrate(FormatSpin):
+
     """AAC bit rate selection."""
 
     def __init__(self, prev_object):
         FormatSpin.__init__(self, prev_object, _('Bitrate'), "bitrate",
-            (64000, 16000, 72000, 1, 10), 0, " bps", "FormatCodecMPEGAACModeStereo",
-            (72000, 64000, 48000, 45000, 32000, 24000, 16000))
-
+                            (64000, 16000, 72000, 1,
+                             10), 0, " bps", "FormatCodecMPEGAACModeStereo",
+                            (72000, 64000, 48000, 45000, 32000, 24000, 16000))
 
 
 class FormatCodecMPEGAACSamplerate(FormatDropdown):
+
     """Sample rates as allowed when using the ADTS header."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Samplerate'), "samplerate", (
-            dict(display_text=_('96000 Hz'), value="96000", chain="FormatCodecMPEGAACBitrate"),
-            dict(display_text=_('88200 Hz'), value="88200", chain="FormatCodecMPEGAACBitrate"),
-            dict(display_text=_('64000 Hz'), value="64000", chain="FormatCodecMPEGAACBitrate"),
-            dict(display_text=_('48000 Hz'), value="48000", chain="FormatCodecMPEGAACBitrate"),
-            dict(display_text=_('44100 Hz'), value="44100", chain="FormatCodecMPEGAACBitrate", default=True),
-            dict(display_text=_('32000 Hz'), value="32000", chain="FormatCodecMPEGAACBitrate"),
-            dict(display_text=_('24000 Hz'), value="24000", chain="FormatCodecMPEGAACBitrate"),
-            dict(display_text=_('22050 Hz'), value="22050", chain="FormatCodecMPEGAACBitrate"),
-            dict(display_text=_('16000 Hz'), value="16000", chain="FormatCodecMPEGAACBitrate"),
-            dict(display_text=_('12000 Hz'), value="12000", chain="FormatCodecMPEGAACBitrate"),
-            dict(display_text=_('11025 Hz'), value="11025", chain="FormatCodecMPEGAACBitrate"),
-            dict(display_text=_('8000 Hz'), value="8000", chain="FormatCodecMPEGAACBitrate"),
-            dict(display_text=_('7350 Hz'), value="7350", chain="FormatCodecMPEGAACBitrate")), 0)
+        FormatDropdown.__init__(
+            self, prev_object, _('Samplerate'), "samplerate", (
+                {
+                    "display_text": _('96000 Hz'),
+                    "value": "96000",
+                    "chain": "FormatCodecMPEGAACBitrate"
+                },
+                {
+                    "display_text": _('88200 Hz'),
+                    "value": "88200",
+                    "chain": "FormatCodecMPEGAACBitrate"
+                },
+                {
+                    "display_text": _('64000 Hz'),
+                    "value": "64000",
+                    "chain": "FormatCodecMPEGAACBitrate"
+                },
+                {
+                    "display_text": _('48000 Hz'),
+                    "value": "48000",
+                    "chain": "FormatCodecMPEGAACBitrate"
+                },
+                {
+                    "display_text": _('44100 Hz'),
+                    "value": "44100",
+                    "chain": "FormatCodecMPEGAACBitrate",
+                    "default": True
+                },
+                {
+                    "display_text": _('32000 Hz'),
+                    "value": "32000",
+                    "chain": "FormatCodecMPEGAACBitrate"
+                },
+                {
+                    "display_text": _('24000 Hz'),
+                    "value": "24000",
+                    "chain": "FormatCodecMPEGAACBitrate"
+                },
+                {
+                    "display_text": _('22050 Hz'),
+                    "value": "22050",
+                    "chain": "FormatCodecMPEGAACBitrate"
+                },
+                {
+                    "display_text": _('16000 Hz'),
+                    "value": "16000",
+                    "chain": "FormatCodecMPEGAACBitrate"
+                },
+                {
+                    "display_text": _('12000 Hz'),
+                    "value": "12000",
+                    "chain": "FormatCodecMPEGAACBitrate"
+                },
+                {
+                    "display_text": _('11025 Hz'),
+                    "value": "11025",
+                    "chain": "FormatCodecMPEGAACBitrate"
+                },
+                {
+                    "display_text": _('8000 Hz'),
+                    "value": "8000",
+                    "chain": "FormatCodecMPEGAACBitrate"
+                },
+                {
+                    "display_text": _('7350 Hz'),
+                    "value": "7350",
+                    "chain": "FormatCodecMPEGAACBitrate"
+                }
+            ), 0)
 
 
 class FormatCodecMPEGAACPlusV2Samplerate(FormatDropdown):
+
     """Sample rates as allowed when using the ADTS header."""
 
     def __init__(self, prev_object):
-        FormatDropdown.__init__(self, prev_object, _('Samplerate'), "samplerate", (
-            dict(display_text=_('48000 Hz'), value="48000", chain="FormatCodecMPEGAACPlusV2Bitrate"),
-            dict(display_text=_('44100 Hz'), value="44100", chain="FormatCodecMPEGAACPlusV2Bitrate", default=True)), 0)
+        FormatDropdown.__init__(
+            self, prev_object, _('Samplerate'), "samplerate", (
+                {
+                    "display_text": _('48000 Hz'),
+                    "value": "48000",
+                    "chain": "FormatCodecMPEGAACPlusV2Bitrate"
+                },
+                {
+                    "display_text": _('44100 Hz'),
+                    "value": "44100",
+                    "chain": "FormatCodecMPEGAACPlusV2Bitrate",
+                    "default": True
+                }
+            ), 0)
 
 
 class FormatCodecMPEG(FormatDropdown):
+
     """MPEG codec selection."""
 
     def __init__(self, prev_object):
@@ -1087,27 +1986,57 @@ class FormatCodecMPEG(FormatDropdown):
         extra = []
 
         if not have_mp2:
-            extra.append(_('The MP2 option requires IDJC be rebuilt against libtwolame.'))
+            extra.append(
+                _('The MP2 option requires IDJC be rebuilt '
+                  'against libtwolame.'))
 
         if not have_mp3:
-            extra.append(_('Enable the MP3 option by installing libmp3lame.'))
+            extra.append(_('Enable the MP3 option by '
+                           'installing libmp3lame.'))
 
         if not have_aac:
-            extra.append(_('The AAC options require IDJC be rebuilt against libav libraries.'))
+            extra.append(_('The AAC options require IDJC be '
+                           'rebuilt against libav libraries.'))
         else:
             if not FormatCodecMPEG.aac_enabled:
-                extra.append(_('Specific AAC support not present in libavcodec. More info: idjc.sourceforge.net.'))
+                extra.append(_('Specific AAC support not present'
+                               'in libavcodec. More info: '
+                               'idjc.sourceforge.net.'))
             if not FormatCodecMPEG.aacpv2_enabled:
-                extra.append(_('Specific AAC+ support not present in libavcodec. More info: idjc.sourceforge.net.'))
+                extra.append(_('Specific AAC+ support not present'
+                               'in libavcodec. More info: '
+                               'idjc.sourceforge.net.'))
 
         spc = "\n\n\n" if extra else ""
         tooltip = _('Codecs of the MPEG family.') + spc + "\n\n".join(extra)
 
         FormatDropdown.__init__(self, prev_object, _('Codec'), "codec", (
-            dict(display_text=_('MP2'), value="mp2", chain="FormatCodecMPEGMP2", sensitive=have_mp2),
-            dict(display_text=_('MP3'), value="mp3", chain="FormatCodecMPEGMP3", sensitive=have_mp3, default=have_mp3),
-            dict(display_text=_('AAC'), value="aac", chain="FormatCodecMPEGAACSamplerate", sensitive=have_aac and FormatCodecMPEG.aac_enabled),
-            dict(display_text=_('AAC+ v2'), value="aacpv2", chain="FormatCodecMPEGAACPlusV2Samplerate", sensitive=have_aac and FormatCodecMPEG.aacpv2_enabled)), 0,
+            {
+                "display_text": _('MP2'),
+                "value": "mp2",
+                "chain": "FormatCodecMPEGMP2",
+                "sensitive": have_mp2
+            },
+            {
+                "display_text": _('MP3'),
+                "value": "mp3",
+                "chain": "FormatCodecMPEGMP3",
+                "sensitive": have_mp3,
+                "default": have_mp3
+            },
+            {
+                "display_text": _('AAC'),
+                "value": "aac",
+                "chain": "FormatCodecMPEGAACSamplerate",
+                "sensitive": have_aac and FormatCodecMPEG.aac_enabled
+            },
+            {
+                "display_text": _('AAC+ v2'),
+                "value": "aacpv2",
+                "chain": "FormatCodecMPEGAACPlusV2Samplerate",
+                "sensitive": have_aac and FormatCodecMPEG.aacpv2_enabled
+            }
+        ), 0,
             tooltip)
 
 
@@ -1178,6 +2107,7 @@ class FormatCodecWebM(FormatDropdown):
 
 
 class FormatFamily(FormatDropdown):
+
     """Gives choice of codec family/container format e.g. Xiph/Ogg or MPEG.
 
     The format is modified by means of a dropdown box.
@@ -1188,24 +2118,42 @@ class FormatFamily(FormatDropdown):
         FormatDropdown.__init__(self, prev_object, _('Family'), "family", (
             dict(display_text=_('WebM'), value="webm", chain="FormatCodecWebM", shoutcast=False, sensitive=FGlobs.avenabled),
             # TC: Xiph.org Ogg container format.
-            dict(display_text=_('Xiph/Ogg'), value="ogg", chain="FormatCodecXiphOgg", shoutcast=False),
-            dict(display_text=_('MPEG'), value="mpeg", chain="FormatCodecMPEG", default=True)), 0,
-            _('Codecs have been grouped by standards body and or container format.'))
+            {
+                "display_text": _('Xiph/Ogg'),
+                "value": "ogg",
+                "chain": "FormatCodecXiphOgg",
+                "shoutcast": False
+            },
+            {
+                "display_text": _('MPEG'),
+                "value": "mpeg",
+                "chain": "FormatCodecMPEG",
+                "default": True
+            }
+        ), 0,
+            _('Codecs have been grouped by standards '
+              'body and or container format.'))
 
 
 class FormatControl(Gtk.VBox):
     __gproperties__ = {
-        'cap-icecast': (GObject.TYPE_BOOLEAN, 'icecast capable',
-                        'if true this format can stream to icecast',
-                        0, GObject.PARAM_READABLE),
-
-        'cap-shoutcast': (GObject.TYPE_BOOLEAN, 'shoutcast capable',
-                        'if true this format can stream to shoutcast',
-                        0, GObject.PARAM_READABLE),
-
-        'cap-recordable': (GObject.TYPE_BOOLEAN, 'can be recorded',
-                        'if true this format is compatible with the recording facility',
-                        0, GObject.PARAM_READABLE)
+        'cap-icecast': (
+            GObject.TYPE_BOOLEAN,
+            'icecast capable',
+            'if true this format can stream to icecast',
+            0, GObject.PARAM_READABLE
+        ),
+        'cap-shoutcast': (
+            GObject.TYPE_BOOLEAN,
+            'shoutcast capable',
+            'if true this format can stream to shoutcast',
+            0, GObject.PARAM_READABLE
+        ),
+        'cap-recordable': (
+            GObject.TYPE_BOOLEAN,
+            'can be recorded',
+            'if true this format is compatible with the recording facility',
+            0, GObject.PARAM_READABLE)
     }
 
     def __init__(self, send, receive):
@@ -1226,8 +2174,9 @@ class FormatControl(Gtk.VBox):
         self.green = led["green"]
         self.clear = led["clear"]
 
-        for name, label_text in zip("icecast shoutcast recordable".split(),
-                            (_('Icecast'), _('Shoutcast'), _('Recordable'))):
+        for name, label_text in zip(
+            "icecast shoutcast recordable".split(),
+                (_('Icecast'), _('Shoutcast'), _('Recordable'))):
             hbox = Gtk.HBox()
             hbox.set_spacing(3)
             label = Gtk.Label(label=label_text)
@@ -1253,13 +2202,15 @@ class FormatControl(Gtk.VBox):
         back_button.set_sensitive(False)
         back_button.add(image)
         button_box.add(back_button)
-        image = Gtk.Image.new_from_stock(Gtk.STOCK_GO_FORWARD, Gtk.IconSize.MENU)
+        image = Gtk.Image.new_from_stock(
+            Gtk.STOCK_GO_FORWARD,
+            Gtk.IconSize.MENU)
         apply_button = self.apply_button = Gtk.Button()
         apply_button.add(image)
         button_box.add(apply_button)
 
         #test_button = Gtk.ToggleButton("Test")
-        #button_box.add(test_button)
+        # button_box.add(test_button)
         #test_button.connect("toggled", self._on_test)
 
         elem_box[-1].pack_end(button_frame, True, False, 0)
@@ -1291,7 +2242,8 @@ class FormatControl(Gtk.VBox):
                 self._update_capabilities()
             else:
                 self._current = globals()[next_element_name](self._current)
-                elem_box[self._current.row].pack_start(self._current, False, False, 0)
+                elem_box[self._current.row].pack_start(
+                    self._current, False, False, 0)
             back_button.set_sensitive(True)
 
     def _on_back(self, back_button, apply_button):
@@ -1361,7 +2313,7 @@ class FormatControl(Gtk.VBox):
 
     def do_get_property(self, property):
         if property.name not in (
-                            "cap-icecast", "cap-shoutcast", "cap-recordable"):
+                "cap-icecast", "cap-shoutcast", "cap-recordable"):
             raise AttributeError('unknown property %s' % property.name)
         return getattr(self, "_" + property.name.replace("-", "_"))
 
@@ -1380,7 +2332,9 @@ class FormatControl(Gtk.VBox):
                 print("key error", self._current.ident)
                 break
             else:
-                if self._current.applied or self._current.ident == unapplied or oldcurr == self._current:
+                if self._current.applied or \
+                        self._current.ident == unapplied or \
+                        oldcurr == self._current:
                     break
                 oldcurr = self._current
                 self.apply_button.clicked()

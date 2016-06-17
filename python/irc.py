@@ -18,7 +18,6 @@
 #   If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import re
 import json
 import time
@@ -56,7 +55,7 @@ from .tooltips import set_tip
 __all__ = ["IRCPane"]
 
 _ = gettext.translation(FGlobs.package_name, FGlobs.localedir,
-                                                        fallback=True).gettext
+                        fallback=True).gettext
 
 XCHAT_COLOR = {
     0:  0xCCCCCCFF,
@@ -78,35 +77,37 @@ XCHAT_COLOR = {
 }
 
 MESSAGE_CATEGORIES = (
-        # TC: IRC message subcategory, triggers on new track announcements.
-        _("Track announce"),
-        # TC: IRC message subcategory, triggered by a timer.
-        _("Timer"),
-        # TC: IRC message subcategory, triggered once when the stream starts.
-        _("On stream up"),
-        # TC: IRC message subcategory, triggered once at the stream's end.
-        _("On stream down"),
-        # TC: IRC message subcategory, triggered once at the stream's end.
-        _("Operations"))
+    # TC: IRC message subcategory, triggers on new track announcements.
+    _("Track announce"),
+    # TC: IRC message subcategory, triggered by a timer.
+    _("Timer"),
+    # TC: IRC message subcategory, triggered once when the stream starts.
+    _("On stream up"),
+    # TC: IRC message subcategory, triggered once at the stream's end.
+    _("On stream down"),
+    # TC: IRC message subcategory, triggered once at the stream's end.
+    _("Operations"))
 
 ASCII_C0 = "".join(chr(x) for x in range(32))
 
-CODES_AND_DESCRIPTIONS = list(zip(("%r", "%t", "%l", "%s", "%n", "%d", "%u", "%U"),
+CODES_AND_DESCRIPTIONS = list(
+    zip(("%r", "%t", "%l", "%s", "%n", "%d", "%u", "%U"),
         (_('Artist'), _('Title'), _('Album'), _('Song name'),
          _('DJ name'), _('Description'), _('Listen URL'), _('Source URI'))))
 
 
 class IRCEntry(Gtk.Entry):  # pylint: disable=R0904
+
     """Specialised IRC text entry widget.
 
     Features pop-up menu and direct control character insertion.
     """
 
     _control_keytable = {107: "\u0003", 98: "\u0002",
-                        117: "\u001F", 111: "\u000F"}
+                         117: "\u001F", 111: "\u000F"}
 
     def __init__(self, *args, **kwds):
-        GObject.GObject.__init__(self)  #, *args, **kwds)
+        GObject.GObject.__init__(self)  # , *args, **kwds)
         self.connect("key-press-event", self._on_key_press_event)
         self.connect("populate-popup", self._popup_menu_populate)
 
@@ -120,7 +121,7 @@ class IRCEntry(Gtk.Entry):  # pylint: disable=R0904
         if event.get_state() & Gdk.ModifierType.CONTROL_MASK:
             # Remove the effect of CAPS lock - works for letter keys only.
             keyval = event.keyval + (
-                                32 if event.get_state() & Gdk.ModifierType.LOCK_MASK else 0)
+                32 if event.get_state() & Gdk.ModifierType.LOCK_MASK else 0)
             try:
                 replacement = self._control_keytable[keyval]
             except KeyError:
@@ -151,7 +152,6 @@ class IRCEntry(Gtk.Entry):  # pylint: disable=R0904
         def sub(pairs):
             """Build the attribute inserting menu elements."""
 
-
             for code, menutext in pairs:
                 menuitem = Gtk.MenuItem()
                 label = Gtk.Label()
@@ -159,8 +159,9 @@ class IRCEntry(Gtk.Entry):  # pylint: disable=R0904
                 label.set_markup(menutext)
                 menuitem.add(label)
                 label.show()
-                menuitem.connect_object("activate", self._on_menu_item_activate,
-                                                                    entry, code)
+                menuitem.connect_object(
+                    "activate", self._on_menu_item_activate,
+                    entry, code)
                 submenu.append(menuitem)
                 menuitem.show()
 
@@ -172,12 +173,12 @@ class IRCEntry(Gtk.Entry):  # pylint: disable=R0904
         sep.show()
 
         sub(list(zip(("\u0002", "\u001F", "\u000F"), (
-                    # TC: Text formatting style.
-                    _('<b>Bold</b>'),
-                    # TC: Text formatting style.
-                    _('<u>Underline</u>'),
-                    # TC: Text formatting style.
-                    _('Normal')))))
+            # TC: Text formatting style.
+            _('<b>Bold</b>'),
+            # TC: Text formatting style.
+            _('<u>Underline</u>'),
+            # TC: Text formatting style.
+            _('Normal')))))
 
     def _popup_menu_add_colourselectors(self, entry, submenu):
         """Adder for menuitems that choose text colour."""
@@ -195,22 +196,26 @@ class IRCEntry(Gtk.Entry):  # pylint: disable=R0904
                     continue
 
                 colourmenuitem = Gtk.MenuItem()
-                colourmenuitem.connect_object("activate",
-                                    self._on_menu_insert_colour_code, entry, i)
+                colourmenuitem.connect_object(
+                    "activate",
+                    self._on_menu_insert_colour_code, entry,
+                    i)
                 hbox = Gtk.HBox()
 
                 label = Gtk.Label()
                 label.set_alignment(0, 0.5)
                 label.set_markup(
-                                "<span font_family='monospace'>%02d</span>" % i)
+                    "<span font_family='monospace'>%02d</span>" % i)
                 hbox.pack_start(label, True, True, 0)
                 label.show()
 
-                pixbuf = GdkPixbuf.Pixbuf(GdkPixbuf.Colorspace.RGB, True, 8, 20, 20)
+                pixbuf = GdkPixbuf.Pixbuf(
+                    GdkPixbuf.Colorspace.RGB, True, 8, 20, 20)
                 pixbuf.fill(rgba)
                 image = Gtk.image_new_from_pixbuf(pixbuf)
-                image.connect_after("expose-event",
-                                    lambda w,e: self._on_colour_box_expose(w))
+                image.connect_after(
+                    "expose-event",
+                    lambda w, e: self._on_colour_box_expose(w))
                 hbox.pack_start(image, True, True, 0)
                 image.show()
 
@@ -233,7 +238,7 @@ class IRCEntry(Gtk.Entry):  # pylint: disable=R0904
         """Insert the colour palette control code."""
 
         cursor = entry.get_position()
-        if cursor < 3 or entry.get_text()[cursor - 3] !="\x03":
+        if cursor < 3 or entry.get_text()[cursor - 3] != "\x03":
             # Foreground colour.
             entry.insert_text("\u0003" + str("%02d" % code), cursor)
         else:
@@ -253,6 +258,7 @@ class IRCEntry(Gtk.Entry):  # pylint: disable=R0904
 
 
 class IRCView(Gtk.TextView):  # pylint: disable=R0904
+
     """A viewer for IRC text.
 
     This text window shows the text as it would be displayed to other users.
@@ -265,8 +271,8 @@ class IRCView(Gtk.TextView):  # pylint: disable=R0904
         ("bold", "\x02"),
         ("underline",  "\x1F"),
         ("normal", "\x0F"),
-        ("text", "[^\x00-\x1F]*"),
-        ))
+        ("text", "[^\x00-\x1F]*"),)
+    )
 
     readable_equiv = tuple((x, "<%s>" % y) for x, y in CODES_AND_DESCRIPTIONS)
 
@@ -339,7 +345,7 @@ class IRCView(Gtk.TextView):  # pylint: disable=R0904
 
         try:
             self._foreground, self._background = \
-                            self._rslt.group()[1:].split(",")
+                self._rslt.group()[1:].split(",")
         except IndexError:
             self._foreground = self._background = None
 
@@ -367,11 +373,14 @@ class IRCView(Gtk.TextView):  # pylint: disable=R0904
         if self._bold:
             props.weight = Pango.Weight.BOLD
 
-        buf.insert_with_tags(buf.get_end_iter(), self._rslt.group(),
-                                                            tag)
+        buf.insert_with_tags(
+            buf.get_end_iter(),
+            elf._rslt.group(),
+            tag)
 
 
 class EditDialogMixin(object):
+
     """Mix-in class to convert initial-data-entry dialogs to edit dialogs."""
 
     def __init__(self, orig_data):
@@ -398,6 +407,7 @@ server_port_adj = Gtk.Adjustment(6667.0, 0.0, 65535.0, 1.0, 10.0)
 
 
 class ServerDialog(Gtk.Dialog):
+
     """Data entry dialog for adding a new IRC server."""
 
     optinfo = _("Optional data entry field for information only.")
@@ -416,8 +426,10 @@ class ServerDialog(Gtk.Dialog):
         self.password = Gtk.Entry()
         self.password.set_visibility(False)
         self.manual_start = Gtk.CheckButton(_("Manual start"))
-        set_tip(self.manual_start,
-                            _('Off when restarting IDJC and off initially.'))
+        set_tip(
+            self.manual_start,
+            _('Off when restarting IDJC and off initially.')
+        )
         self.nick1 = Gtk.Entry()
         self.nick2 = Gtk.Entry()
         self.nick3 = Gtk.Entry()
@@ -430,7 +442,7 @@ class ServerDialog(Gtk.Dialog):
         hbox.set_spacing(5)
 
         image = Gtk.Image.new_from_stock(
-                                        Gtk.STOCK_NETWORK, Gtk.IconSize.DIALOG)
+            Gtk.STOCK_NETWORK, Gtk.IconSize.DIALOG)
         image.set_alignment(0.5, 0)
         table = Gtk.Table(10, 2)
         table.set_col_spacings(6)
@@ -440,66 +452,88 @@ class ServerDialog(Gtk.Dialog):
         hbox.pack_start(table, True)
 
         for i, (text, widget) in enumerate(zip((
-                            # TC: The IRC network e.g. EFnet.
-                            _("Network"),
-                            # TC: label for hostname entry.
-                            _("Hostname"),
-                            # TC: TCP/IP port number label.
-                            _("Port"),
-                            _("User name"),
-                            _("Password"), "",
-                            # TC: IRC nickname data entry label.
-                            _("Nickname"),
-                            # TC: Second choice of IRC nickname.
-                            _("Second choice"),
-                            # TC: Third choice of IRC nickname.
-                            _("Third choice"),
-                            # TC: The IRC user's 'real' name.
-                            _("Real name"),
-                            # TC: The NickServ password.
-                            _("NickServ p/w")),
+            # TC: The IRC network e.g. EFnet.
+            _("Network"),
+            # TC: label for hostname entry.
+            _("Hostname"),
+            # TC: TCP/IP port number label.
+            _("Port"),
+            _("User name"),
+            _("Password"), "",
+            # TC: IRC nickname data entry label.
+            _("Nickname"),
+            # TC: Second choice of IRC nickname.
+            _("Second choice"),
+            # TC: Third choice of IRC nickname.
+            _("Third choice"),
+            # TC: The IRC user's 'real' name.
+            _("Real name"),
+            # TC: The NickServ password.
+            _("NickServ p/w")),
                 (self.network, self.hostname, self.port,
                  self.username, self.password, self.manual_start, self.nick1,
                  self.nick2, self.nick3, self.realname, self.nickserv))):
             # TC: Tooltip to IRC 'User name' field.
-            set_tip(self.username, _("Ideally set this to something even on "
-                                "servers that allow public anonymous access."))
+            set_tip(
+                self.username,
+                _("Ideally set this to something even on "
+                  "servers that allow public anonymous access."))
             l = Gtk.Label(label=text)
             l.set_alignment(1.0, 0.5)
 
-            table.attach(l, 0, 1, i, i + 1, Gtk.AttachOptions.SHRINK | Gtk.AttachOptions.FILL)
+            table.attach(
+                l, 0, 1, i, i + 1,
+                Gtk.AttachOptions.SHRINK | Gtk.AttachOptions.FILL)
             table.attach(widget, 1, 2, i, i + 1)
 
         for each in (self.nick1, self.nick2, self.nick3):
             # TC: tooltip to all IRC nicknames entry fields.
-            set_tip(each, _("When a nickname is in use on the target IRC "
-            "network, during connection these IRC nicknames are cycled through,"
-            " then twice again after appending an additional underscore until "
-            "giving up. This gives IDJC a maximum of nine IRC nicknames "
-            "to try."))
-        set_tip(self.realname, _("The real name you want to use which will be "
-        "available regardless of whether the network connection was made with "
-        "the primary nickname or not.\n\nIdeally set this to something."))
-        set_tip(self.nickserv, _("If this value is set an attempt will be made "
-        "to acquire your first choice IRC nickname (if needed) and log in with "
-        "NickServ@services.\n\nThe use of the NickServ service requires prior "
-        "nickname registration on the network using a regular chat client."))
+            set_tip(
+                each,
+                _("When a nickname is in use on the target IRC "
+                  "network, during connection these IRC nicknames "
+                  "are cycled through, then twice again after "
+                  "appending an additional underscore until "
+                  "giving up. This gives IDJC a maximum of "
+                  "nine IRC nicknames to try."))
+        set_tip(
+            self.realname,
+            _("The real name you want to use which will be "
+              "available regardless of whether the network "
+              "connection was made with the primary nickname "
+              "or not.\n\nIdeally set this to something."))
+        set_tip(
+            self.nickserv,
+            _("If this value is set an attempt will be made "
+              "to acquire your first choice IRC nickname "
+              "(if needed) and log in with NickServ@services."
+              "\n\nThe use of the NickServ service requires prior "
+              "nickname registration on the network using a "
+              "regular chat client."))
 
         self.get_content_area().add(hbox)
 
     def as_tuple(self):
         """Data extraction method."""
 
-        return (self.manual_start.get_active(),
-            self.port.get_value(), False,
-            self.network.get_text().strip(), self.hostname.get_text().strip(),
-            self.username.get_text().strip(), self.password.get_text().strip(),
-            self.nick1.get_text().strip(), self.nick2.get_text().strip(),
-            self.nick3.get_text().strip(), self.realname.get_text().strip(),
-            self.nickserv.get_text().strip())
+        return (
+            self.manual_start.get_active(),
+            self.port.get_value(),
+            False,
+            self.network.get_text().strip(),
+            self.hostname.get_text().strip(),
+            self.username.get_text().strip(),
+            self.password.get_text().strip(),
+            self.nick1.get_text().strip(),
+            self.nick2.get_text().strip(),
+            self.nick3.get_text().strip(),
+            self.realname.get_text().strip(),
+            self.nickserv.get_text().strip()
+        )
 
 
 class EditServerDialog(ServerDialog, EditDialogMixin):
+
     """Adds a delete and restore button to the standard server dialog."""
 
     def __init__(self, orig_data):
@@ -508,9 +542,13 @@ class EditServerDialog(ServerDialog, EditDialogMixin):
 
     def delete_confirmation(self, deleter):
         def inner(w):
-            cd = ConfirmationDialog("", _("<span weight='bold' size='12000'>"
-            "Permanently delete this server?</span>\n\nThis action will also "
-            "erase all of its associated messages."), markup=True)
+            cd = ConfirmationDialog(
+                "",
+                _("<span weight='bold' size='12000'>"
+                  "Permanently delete this server?</span>\n\n"
+                  "This action will also "
+                  "erase all of its associated messages."),
+                markup=True)
             cd.set_transient_for(self)
             cd.ok.connect("clicked", deleter)
             cd.show_all()
@@ -541,6 +579,7 @@ message_interval_adj = Gtk.Adjustment(600, 60, 9999, 1, 10)
 
 
 class ChannelsDialog(Gtk.Dialog):
+
     """Channels entry dialog."""
 
     icon = Gtk.STOCK_NEW
@@ -560,9 +599,12 @@ class ChannelsDialog(Gtk.Dialog):
         self.channels = Gtk.Entry()
         chbox.pack_start(l, False)
         chbox.pack_start(self.channels, True)
-        set_tip(self.channels, _("The comma or space separated list of channels"
-        " and/or users to whom the message will be sent.\n\nProtected channels "
-        "are included with the form:\n#channel:keyword."))
+        set_tip(
+            self.channels,
+            _("The comma or space separated list of channels"
+              " and/or users to whom the message will be sent.\n\n"
+              "Protected channels are included with the form:\n"
+              "#channel:keyword."))
 
         self.mainbox = Gtk.VBox()
         self.mainbox.set_spacing(5)
@@ -590,6 +632,7 @@ class ChannelsDialog(Gtk.Dialog):
 
 
 class EditChannelsDialog(ChannelsDialog, EditDialogMixin):
+
     """Adds delete and restore buttons to a channels dialog."""
 
     icon = Gtk.STOCK_EDIT
@@ -605,6 +648,7 @@ class EditChannelsDialog(ChannelsDialog, EditDialogMixin):
 
 
 class MessageDialog(ChannelsDialog):
+
     """Message entry dialog."""
 
     def __init__(self, title=None):
@@ -617,10 +661,13 @@ class MessageDialog(ChannelsDialog):
         self.message = IRCEntry()
         hbox.pack_start(l, False)
         hbox.pack_start(self.message, True, True, 0)
-        set_tip(self.message, _("The message to send.\n\nOn the pop-up window "
-        "(mouse right click) are some useful options for embedding metadata and"
-        " for text formatting.\n\nThe window below displays how the message "
-        "will appear to users of XChat."))
+        set_tip(
+            self.message,
+            _("The message to send.\n\nOn the pop-up window "
+              "(mouse right click) are some useful options "
+              "for embedding metadata and for text formatting."
+              "\n\nThe window below displays how the message "
+              "will appear to users of XChat."))
         self.mainbox.pack_start(hbox, False)
 
         sw = Gtk.ScrolledWindow()
@@ -629,8 +676,9 @@ class MessageDialog(ChannelsDialog):
         sw.add(irc_view)
         self.mainbox.pack_start(sw, False)
 
-        self.message.connect("changed",
-                                    lambda w: irc_view.set_text(w.get_text()))
+        self.message.connect(
+            "changed",
+            lambda w: irc_view.set_text(w.get_text()))
 
     def _pack(self, widgets):
         vbox = Gtk.VBox()
@@ -651,6 +699,7 @@ class MessageDialog(ChannelsDialog):
 
 
 class EditMessageDialog(MessageDialog, EditDialogMixin):
+
     """Adds delete and restore buttons to a message creation dialog."""
 
     icon = Gtk.STOCK_EDIT
@@ -667,6 +716,7 @@ class EditMessageDialog(MessageDialog, EditDialogMixin):
 
 
 class AnnounceMessageDialog(MessageDialog):
+
     """Adds delay functionality to the message dialog."""
 
     # TC: Dialog window title text.
@@ -679,12 +729,16 @@ class AnnounceMessageDialog(MessageDialog):
         # TC: Spinbutton label for a delay value.
         self._pack(((_("Delay"), self.delay), ))
         # TC: tooltip on a spinbutton widget.
-        set_tip(self.delay, _("The delay time of this message.\n\nTypically "
-        "listener clients will buffer approximately ten seconds of audio data "
-        "which means they are listening the same amount of time behind the "
-        "actual stream therefore without a delay IRC messages will appear to "
-        "the listener many seconds ahead of the audio.\n\nThis setting will "
-        "help synchronise the track change with the message."))
+        set_tip(
+            self.delay,
+            _("The delay time of this message.\n\nTypically "
+              "listener clients will buffer approximately ten "
+              "seconds of audio data which means they are listening "
+              "the same amount of time behind the actual stream "
+              "therefore without a delay IRC messages will appear to "
+              "the listener many seconds ahead of the audio.\n\n"
+              "This setting will help synchronise the "
+              "track change with the message."))
 
     def as_tuple(self):
         """Data extraction method."""
@@ -701,8 +755,8 @@ class EditAnnounceMessageDialog(AnnounceMessageDialog, EditDialogMixin):
 
     def from_tuple(self, orig_data):
         return (self.delay.set_value(orig_data[0]),
-                  self.channels.set_text(orig_data[1]),
-                  self.message.set_text(orig_data[2]))
+                self.channels.set_text(orig_data[1]),
+                self.message.set_text(orig_data[2]))
 
 
 class TimerMessageDialog(MessageDialog):
@@ -721,15 +775,20 @@ class TimerMessageDialog(MessageDialog):
             (_("Interval"), self.interval)))
 
         # TC: spinbutton tooltip
-        set_tip(self.offset, (_("The time offset within the below specified "
-                            "interval at which the message will be issued.")))
+        set_tip(
+            self.offset, (
+                _("The time offset within the below specified "
+                  "interval at which the message will be issued.")))
         # TC: spinbutton tooltip
-        set_tip(self.interval, (
-                            _("The interval in seconds of the timed message.")))
+        set_tip(
+            self.interval, (
+                _("The interval in seconds of the timed message.")))
 
     def as_tuple(self):
-        return (self.offset.get_value(), self.interval.get_value()
-                                                ) + MessageDialog.as_tuple(self)
+        return (
+            self.offset.get_value(),
+            self.interval.get_value()
+        ) + MessageDialog.as_tuple(self)
 
 
 class EditTimerMessageDialog(TimerMessageDialog, EditDialogMixin):
@@ -740,10 +799,11 @@ class EditTimerMessageDialog(TimerMessageDialog, EditDialogMixin):
         EditDialogMixin.__init__(self, orig_data)
 
     def from_tuple(self, orig_data):
-        return (self.offset.set_value(orig_data[0]),
-                  self.interval.set_value(orig_data[1]),
-                  self.channels.set_text(orig_data[2]),
-                  self.message.set_text(orig_data[3]))
+        return (
+            self.offset.set_value(orig_data[0]),
+            self.interval.set_value(orig_data[1]),
+            self.channels.set_text(orig_data[2]),
+            self.message.set_text(orig_data[3]))
 
 
 def glue(f):
@@ -768,8 +828,9 @@ def glue(f):
 
                 d.set_modal(True)
                 d.set_transient_for(self.get_toplevel())
-                d.ok.connect("clicked",
-                                lambda w: cb(d, model, _iter, *args, **kwds))
+                d.ok.connect(
+                    "clicked",
+                    lambda w: cb(d, model, _iter, *args, **kwds))
 
                 if hasattr(d, "delete"):
                     @d.delete_confirmation
@@ -806,6 +867,7 @@ def highlight(f):
 
 
 class IRCTreeView(Gtk.TreeView):
+
     """A Gtk.TreeView that has a tooltip which handles IRC text formatting."""
 
     def __init__(self, model=None):
@@ -824,7 +886,7 @@ class IRCTreeView(Gtk.TreeView):
             self.tooltip_coords = (x, y)
         elif None not in (x, y):
             path = tv.get_path_at_pos(
-                                *tv.convert_widget_to_bin_window_coords(x, y))
+                *tv.convert_widget_to_bin_window_coords(x, y))
             if path is not None:
                 model = tv.get_model()
                 iter = model.get_iter(path[0])
@@ -838,26 +900,45 @@ class IRCTreeView(Gtk.TreeView):
 
 
 class IRCRowReference(NamedTreeRowReference):
+
     """A Gtk.TreeRowReference but with named attributes.
 
     The naming scheme depends on the data type of each row.
     """
 
     _lookup = {
-        1: {"manual":2, "port":3, "unused":4, "network":5, "hostname":6, "username":7,
-             "password":8, "nick1":9, "nick2":10, "nick3":11, "realname":12,
-             "nickserv":13, "nick":14},
-
-        3: {"delay":4, "channels":5, "message":6},
-
-        5: {"offset":3, "interval":4, "channels":5, "message":6, "issue":14},
-
-        7: {"channels":5, "message":6},
-
-        9: {"channels":5, "message":6},
-
-        11: {"channels":5}
-        }
+        1: {
+            "manual": 2,
+            "port": 3,
+            "unused": 4,
+            "network": 5,
+            "hostname": 6,
+            "username": 7,
+            "password": 8,
+            "nick1": 9,
+            "nick2": 10,
+            "nick3": 11,
+            "realname": 12,
+            "nickserv": 13,
+            "nick": 14},
+        3: {
+            "delay": 4,
+            "channels": 5,
+            "message": 6},
+        5: {
+            "offset": 3,
+            "interval": 4,
+            "channels": 5,
+            "message": 6,
+            "issue": 14},
+        7: {
+            "channels": 5,
+            "message": 6},
+        9: {
+            "channels": 5,
+            "message": 6},
+        11: {"channels": 5}
+    }
 
     def get_index_for_name(self, tree_row_ref, name):
         """An abstract method of the base class that performs the lookup."""
@@ -872,6 +953,7 @@ class IRCRowReference(NamedTreeRowReference):
 
 
 class IRCTreeStore(Gtk.TreeStore):
+
     """The data storage object."""
 
     @property
@@ -913,6 +995,7 @@ class IRCTreeStore(Gtk.TreeStore):
 
 
 class IRCPane(Gtk.VBox):
+
     """The main user interface."""
 
     def __init__(self):
@@ -962,11 +1045,13 @@ class IRCPane(Gtk.VBox):
         if HAVE_IRC:
             self.pack_start(sw, True, True, 0)
             self.pack_start(bb, False)
-            self.connections_controller = ConnectionsController(self._treestore)
+            self.connections_controller = ConnectionsController(
+                self._treestore)
         else:
             self.set_sensitive(False)
-            label = Gtk.Label(label=
-                _("This feature requires the installation of python-irc."))
+            label = Gtk.Label(
+                label=_("This feature requires the "
+                        "installation of python-irc."))
             self.add(label)
             self.connections_controller = ConnectionsController(None)
 
@@ -1076,7 +1161,10 @@ class IRCPane(Gtk.VBox):
                         text = "+%d;%s; %s" % (row.delay, channels, message)
                     elif row.type == 5:
                         text = "%d/%d;%s; %s" % (
-                                row.offset, row.interval, channels, message)
+                            row.offset,
+                            row.interval,
+                            channels,
+                            message)
                     elif row.type in (7, 9):
                         text = channels + "; " + message
                 elif row.type == 11:
@@ -1085,7 +1173,6 @@ class IRCPane(Gtk.VBox):
             text = (("Server", ) + MESSAGE_CATEGORIES)[row.type / 2]
 
         cell.props.text = text
-
 
     # TC: Dialog title text.
     _dsu = _("IRC stream up message")
@@ -1124,7 +1211,12 @@ class IRCPane(Gtk.VBox):
             title = self._dsu if mode == 7 else self._dsd
             dialog(EditMessageDialog(title, row[5:7]), self._standard_edit, 5)
         elif mode == 11:
-            dialog(EditChannelsDialog(self._dso, row[5:6]), self._standard_edit, 5)
+            dialog(
+                EditChannelsDialog(
+                    self._dso,
+                    row[5:6]),
+                self._standard_edit,
+                5)
         else:
             self._unhandled_mode(mode)
 
@@ -1156,26 +1248,33 @@ class IRCPane(Gtk.VBox):
 
     @highlight
     def _add_announce(self, d, model, parent_iter):
-        return model.insert(parent_iter, 0, (3, 1, 0, 0) + d.as_tuple()
-                                                                + ("", ) * 8)
+        return model.insert(
+            parent_iter,
+            0,
+            (3, 1, 0, 0) + d.as_tuple() + ("", ) * 8)
 
     @highlight
     def _add_timer(self, d, model, parent_iter):
-        return model.insert(parent_iter, 0, (5, 1, 0) + d.as_tuple()
-                                                                + ("", ) * 8)
+        return model.insert(
+            parent_iter,
+            0,
+            (5, 1, 0) + d.as_tuple() + ("", ) * 8)
 
     @highlight
     def _add_message(self, d, model, parent_iter, mode):
-        return model.insert(parent_iter, 0, (mode + 1, 1, 0, 0, 0)
-                                                + d.as_tuple() + ("", ) * 8)
+        return model.insert(
+            parent_iter,
+            0,
+            (mode + 1, 1, 0, 0, 0) + d.as_tuple() + ("", ) * 8)
 
     @highlight
     def _add_channels(self, d, model, parent_iter, mode):
         return model.insert(parent_iter, 0, (mode + 1, 1, 0, 0, 0)
-                                                + d.as_tuple() + ("", ) * 9)
+                            + d.as_tuple() + ("", ) * 9)
 
 
 class ConnectionsController(list):
+
     """Layer between the user interface and the ServerConnection classes.
 
     As a list it contains the active server connections.
@@ -1226,6 +1325,7 @@ class ConnectionsController(list):
 
 
 class IRCConnection(Gtk.TreeRowReference, threading.Thread):
+
     """Self explanatory really."""
 
     def __init__(self, model, path, stream_active):
@@ -1245,10 +1345,12 @@ class IRCConnection(Gtk.TreeRowReference, threading.Thread):
 
         self.server = self.reactor.server()
         self.start()
-        self._hooks.append((model, model.connect("row-inserted",
-                                                        self._on_row_inserted)))
-        self._hooks.append((model, model.connect_after("row-changed",
-                                                    self._on_ui_row_changed)))
+        self._hooks.append((model, model.connect(
+            "row-inserted",
+            self._on_row_inserted)))
+        self._hooks.append((model, model.connect_after(
+            "row-changed",
+            self._on_ui_row_changed)))
         self._on_ui_row_changed(model, path, model.get_iter(path))
 
     def set_stream_active(self, stream_active):
@@ -1267,22 +1369,26 @@ class IRCConnection(Gtk.TreeRowReference, threading.Thread):
     def _on_row_inserted(self, model, path, iter):
         if path[:-1] == self.get_path():
             type = model[path].type
-            mh = globals()["MessageHandlerForType_" + str(type + 1)](model,
-                                                    path, self._stream_active)
+            mh = globals()["MessageHandlerForType_" + str(type + 1)](
+                model,
+                path,
+                self._stream_active)
             mh.connect("channels-changed", self._on_channels_changed)
             mh.connect("privmsg-ready", self._on_privmsg_ready)
             self._message_handlers.append(mh)
 
     def _on_channels_changed(self, message_handler, channel_set):
         if self._have_welcome:
-            rest = frozenset.union(frozenset(), *(x.props.channels
+            rest = frozenset.union(frozenset(), *(
+                x.props.channels
                 for x in self._message_handlers if x is not message_handler))
 
             joins = channel_set.difference(rest and
-                                                message_handler.props.channels)
+                                           message_handler.props.channels)
 
             parts = message_handler.props.channels.difference(
-                                                channel_set).difference(rest)
+                channel_set).difference(rest)
+
             def deferred():
                 for each in joins:
                     if each[0] in "#&":
@@ -1316,7 +1422,7 @@ class IRCConnection(Gtk.TreeRowReference, threading.Thread):
 
             if delay:
                 self._queue.append(
-                        lambda: self.server.execute_delayed(delay, deferred))
+                    lambda: self.server.execute_delayed(delay, deferred))
             else:
                 self._queue.append(deferred)
 
@@ -1332,14 +1438,21 @@ class IRCConnection(Gtk.TreeRowReference, threading.Thread):
                 username = row.username or None
                 ircname = row.realname or None
                 opts = {}
+
                 def deferred():
                     self._alternates = [
-                            row.nick2, row.nick3, nickname + "_",
-                            row.nick2 + "_", row.nick3 + "_", nickname + "__",
-                            row.nick2 + "__", row.nick3 + "__"]
+                        row.nick2, row.nick3, nickname + "_",
+                        row.nick2 + "_", row.nick3 + "_", nickname + "__",
+                        row.nick2 + "__", row.nick3 + "__"]
 
-                    connect = partial(self.server.connect, hostname, port,
-                                        nickname, password, username, ircname)
+                    connect = partial(
+                        self.server.connect,
+                        hostname,
+                        port,
+                        nickname,
+                        password,
+                        username,
+                        ircname)
 
                     def try_connect(*delays):
                         model = ref.get_model()
@@ -1349,7 +1462,7 @@ class IRCConnection(Gtk.TreeRowReference, threading.Thread):
                             return
 
                         print("Attempting to connect IRC %s:%d" % (
-                                                            hostname, port))
+                            hostname, port))
                         try:
                             connect()
                         except client.ServerConnectionError as e:
@@ -1362,11 +1475,11 @@ class IRCConnection(Gtk.TreeRowReference, threading.Thread):
                             else:
                                 print("%d more tries" % len(delays))
                                 self.server.execute_delayed(delay, try_connect,
-                                                                    delays[1:])
+                                                            delays[1:])
                         else:
                             self._ui_set_nick(nickname)
-                            print("New IRC connection: %s@%s:%d" %
-                                  (nickname, hostname, port))
+                            print("New IRC connection: %s@%s:%d" % (
+                                nickname, hostname, port))
 
                     try_connect(1, 2, 3)
             else:
@@ -1462,9 +1575,9 @@ class IRCConnection(Gtk.TreeRowReference, threading.Thread):
         print("Will issue recover and release commands to NickServ")
         for i, (func, args) in enumerate((
                 (server.privmsg, (
-                                "NickServ", "RECOVER %s %s" % (target, nspw))),
+                    "NickServ", "RECOVER %s %s" % (target, nspw))),
                 (server.privmsg, (
-                                "NickServ", "RELEASE %s %s" % (target, nspw))),
+                    "NickServ", "RELEASE %s %s" % (target, nspw))),
                 (server.nick, (target,))), start=1):
 
             server.execute_delayed(i, func, args)
@@ -1522,11 +1635,11 @@ class IRCConnection(Gtk.TreeRowReference, threading.Thread):
 
         if args == ["CLIENTINFO"]:
             reply("CLIENTINFO VERSION TIME SOURCE PING ACTION CLIENTINFO "
-                                            "PLAYED STREAMSTATUS KILLSTREAM")
+                  "PLAYED STREAMSTATUS KILLSTREAM")
 
         elif args == ["VERSION"]:
             reply("VERSION %s %s (python-irc)" % (
-                                FGlobs.package_name, FGlobs.package_version))
+                FGlobs.package_name, FGlobs.package_version))
         elif args == ["TIME"]:
             reply("TIME " + time.ctime())
 
@@ -1548,7 +1661,7 @@ class IRCConnection(Gtk.TreeRowReference, threading.Thread):
                 else:
                     message = "PLAYED \x0304%s\x0f, \x0306%d minutes ago\x0f."
                 server.execute_delayed(i, reply, (message %
-                                                        (each[0], age),))
+                                                  (each[0], age),))
 
             if not show:
                 reply("PLAYED Nothing recent to report.")
@@ -1557,7 +1670,7 @@ class IRCConnection(Gtk.TreeRowReference, threading.Thread):
 
         elif args == ["STREAMSTATUS"]:
             reply("STREAMSTATUS The stream is %s." % (
-                                    "up" if self._stream_active else "down"))
+                "up" if self._stream_active else "down"))
 
         elif args == ["KILLSTREAM"]:
             reply("KILLSTREAM This feature was added as a joke.")
@@ -1567,7 +1680,7 @@ class IRCConnection(Gtk.TreeRowReference, threading.Thread):
 
         else:
             pass
-            #print("CTCP from", source, args)
+            # print "CTCP from", source, args
 
     def _on_motd(self, server, event):
         pass
@@ -1582,26 +1695,38 @@ class IRCConnection(Gtk.TreeRowReference, threading.Thread):
 
 class MessageHandler(GObject.GObject):
     __gsignals__ = {
-        'channels-changed': (GObject.SignalFlags.RUN_LAST | GObject.SignalFlags.ACTION,
-                                None, (GObject.TYPE_PYOBJECT, )),
+        'channels-changed': (
+            GObject.SignalFlags.RUN_LAST | GObject.SignalFlags.ACTION,
+            None, (GObject.TYPE_PYOBJECT, )
+        ),
 
-        'privmsg-ready':    (GObject.SignalFlags.RUN_LAST | GObject.SignalFlags.ACTION,
-                            None, (GObject.TYPE_PYOBJECT,
-                            GObject.TYPE_STRING, GObject.TYPE_INT))
+        'privmsg-ready': (
+            GObject.SignalFlags.RUN_LAST | GObject.SignalFlags.ACTION,
+            None, (GObject.TYPE_PYOBJECT,
+                   GObject.TYPE_STRING, GObject.TYPE_INT)
+        )
 
     }
 
     __gproperties__ = {
-        'channels': (GObject.TYPE_PYOBJECT, 'channels', 'ircchannels',
-                                                    GObject.PARAM_READABLE)
+        'channels': (
+            GObject.TYPE_PYOBJECT, 'channels', 'ircchannels',
+            GObject.PARAM_READABLE)
     }
 
     @property
     def stream_active(self):
         return self._stream_active
 
-    subst_keys = ("artist", "title", "album", "songname", "djname",
-                                    "description", "url", "source")
+    subst_keys = (
+        "artist",
+        "title",
+        "album",
+        "songname",
+        "djname",
+        "description",
+        "url",
+        "source")
 
     subst_tokens = ("%r", "%t", "%l", "%s", "%n", "%d", "%u", "%U")
 
@@ -1692,9 +1817,10 @@ class MessageHandler(GObject.GObject):
                 row = model[path]
                 delay_s = delay_calc(row)
                 if delay_s is not None:
-                    targets = [x.split("!")[0] for x in row.channels.split(",")]
+                    targets = [x.split("!")[0]
+                               for x in row.channels.split(",")]
                     table = [("%%", "%")] + list(zip(self.subst_tokens, (
-                                        self.subst[x] for x in self.subst_keys)))
+                        self.subst[x] for x in self.subst_keys)))
                     if forced_message is not None:
                         message = string_multireplace(forced_message, table)
                     else:
@@ -1705,12 +1831,14 @@ class MessageHandler(GObject.GObject):
 
 
 class MessageHandlerForType_3(MessageHandler):
+
     def on_new_metadata(self):
         if self.stream_active:
             self.issue_messages(lambda row: row.delay)
 
 
 class MessageHandlerForType_5(MessageHandler):
+
     def __init__(self, *args, **kwargs):
         self._timeout_id = None
         MessageHandler.__init__(self, *args, **kwargs)
@@ -1728,7 +1856,7 @@ class MessageHandlerForType_5(MessageHandler):
     @threadslock
     def _timeout(self):
         self.issue_messages(partial(self._delay_calc,
-                                                the_time=int(time.time())))
+                                    the_time=int(time.time())))
         return True
 
     def _delay_calc(self, row, the_time):
@@ -1745,15 +1873,19 @@ class MessageHandlerForType_5(MessageHandler):
 
 
 class MessageHandlerForType_7(MessageHandler):
+
     def on_stream_active(self):
         self.issue_messages()
 
 
 class MessageHandlerForType_9(MessageHandler):
+
     def on_stream_inactive(self):
         self.issue_messages()
 
+
 class MessageHandlerForType_11(MessageHandler):
+
     def on_stream_active(self):
         self.issue_messages(forced_message="!handover acquired %U")
 
