@@ -39,7 +39,7 @@ _ = t.gettext
 
 
 # Fix PyGTK spin button binding.
-#def SB():
+# def SB():
 #    GTK_SB = Gtk.SpinButton
 #
 #    class SpinButton(GTK_SB):
@@ -53,6 +53,7 @@ _ = t.gettext
 
 
 class NotebookSR(Gtk.Notebook):
+
     """Add methods so the save/restore scheme does not have to be extended."""
 
     def get_active(self):
@@ -63,27 +64,29 @@ class NotebookSR(Gtk.Notebook):
 
 
 class LEDDict(dict):
+
     """Dictionary of pixbufs of LEDs."""
 
     def __init__(self, size=10):
         names = "clear", "red", "green", "yellow"
         filenames = ("led_unlit_clear_border_64x64.png",
-                         "led_lit_red_black_border_64x64.png",
-                         "led_lit_green_black_border_64x64.png",
-                         "led_lit_amber_black_border_64x64.png")
+                     "led_lit_red_black_border_64x64.png",
+                     "led_lit_green_black_border_64x64.png",
+                     "led_lit_amber_black_border_64x64.png")
         for name, filename in zip(names, filenames):
             self[name] = GdkPixbuf.Pixbuf.new_from_file_at_size(
                 FGlobs.pkgdatadir / filename, size, size)
 
 
 class CellRendererLED(Gtk.CellRendererPixbuf):
+
     """A cell renderer that displays LEDs."""
 
     __gproperties__ = {
-            "active" : (GObject.TYPE_INT, "active", "active",
-                            0, 1, 0, GObject.PARAM_WRITABLE),
-            "color" :  (GObject.TYPE_STRING, "color", "color",
-                            "clear", GObject.PARAM_WRITABLE)
+        "active": (GObject.TYPE_INT, "active", "active",
+                   0, 1, 0, GObject.PARAM_WRITABLE),
+        "color":  (GObject.TYPE_STRING, "color", "color",
+                   "clear", GObject.PARAM_WRITABLE)
     }
 
     def __init__(self, size=10, actives=("clear", "green")):
@@ -103,14 +106,13 @@ class CellRendererLED(Gtk.CellRendererPixbuf):
 
 
 class CellRendererTime(Gtk.CellRendererText):
+
     """Displays time in days, hours, minutes."""
 
-
     __gproperties__ = {
-            "time" : (GObject.TYPE_INT, "time", "time",
-                         0, 1000000000, 0, GObject.PARAM_WRITABLE)
+        "time": (GObject.TYPE_INT, "time", "time",
+                 0, 1000000000, 0, GObject.PARAM_WRITABLE)
     }
-
 
     def do_set_property(self, prop, value):
         if prop.name == "time":
@@ -128,6 +130,7 @@ class CellRendererTime(Gtk.CellRendererText):
 
 
 class StandardDialog(Gtk.Dialog):
+
     def __init__(self, title, message, stock_item, label_width, modal, markup):
         GObject.GObject.__init__(self)
         self.set_border_width(6)
@@ -140,7 +143,7 @@ class StandardDialog(Gtk.Dialog):
         hbox.set_spacing(12)
         hbox.set_border_width(6)
         image = Gtk.Image.new_from_stock(stock_item,
-                                                        Gtk.IconSize.DIALOG)
+                                         Gtk.IconSize.DIALOG)
         image.set_alignment(0.0, 0.0)
         hbox.pack_start(image, False, False, 0)
         vbox = Gtk.VBox()
@@ -159,12 +162,13 @@ class StandardDialog(Gtk.Dialog):
 
 
 class ConfirmationDialog(StandardDialog):
+
     """This needs to be pulled out since it's generic."""
 
     def __init__(self, title, message, label_width=300, modal=True,
-            markup=False, action=Gtk.STOCK_DELETE, inaction=Gtk.STOCK_CANCEL):
+                 markup=False, action=Gtk.STOCK_DELETE, inaction=Gtk.STOCK_CANCEL):
         StandardDialog.__init__(self, title, message,
-                        Gtk.STOCK_DIALOG_WARNING, label_width, modal, markup)
+                                Gtk.STOCK_DIALOG_WARNING, label_width, modal, markup)
         aa = self.get_action_area()
         cancel = Gtk.Button(stock=inaction)
         cancel.connect("clicked", lambda w: self.destroy())
@@ -175,12 +179,13 @@ class ConfirmationDialog(StandardDialog):
 
 
 class ErrorMessageDialog(StandardDialog):
+
     """This needs to be pulled out since it's generic."""
 
     def __init__(self, title, message, label_width=300, modal=True,
-                                                                markup=False):
+                 markup=False):
         StandardDialog.__init__(self, title, message,
-                            Gtk.STOCK_DIALOG_ERROR, label_width, modal, markup)
+                                Gtk.STOCK_DIALOG_ERROR, label_width, modal, markup)
         b = Gtk.Button(stock=Gtk.STOCK_CLOSE)
         b.connect("clicked", lambda w: self.destroy())
         self.get_action_area().add(b)
@@ -239,7 +244,9 @@ def nullcm():
 
     yield
 
+
 class DefaultEntry(Gtk.Entry):
+
     def __init__(self, default_text, sensitive_override=False):
         GObject.GObject.__init__(self)
         self.connect("focus-in-event", self.on_focus_in)
@@ -253,19 +260,21 @@ class DefaultEntry(Gtk.Entry):
     def on_realize(self, entry):
         layout = self.get_layout().copy()
         layout.set_markup("<span foreground='dark gray'>%s</span>" %
-                                                            self.default_text)
+                          self.default_text)
         extents = layout.get_pixel_extents()[1]
         try:
-            drawable = self.get_parent_window().create_similar_surface(cairo.Content.COLOR, extents.width, extents.height)
+            drawable = self.get_parent_window().create_similar_surface(
+                cairo.Content.COLOR, extents.width, extents.height)
 
             gc = Gdk.cairo_create(drawable)
             gc2 = entry.props.style.base_gc[0]
             drawable.draw_rectangle(gc2, True, *extents)
             drawable.draw_layout(gc, 0, 0, layout)
-            pixbuf = GdkPixbuf.Pixbuf(GdkPixbuf.Colorspace.RGB, True, 8, extents[2],
-                                                                extents[3])
+            pixbuf = GdkPixbuf.Pixbuf(
+                GdkPixbuf.Colorspace.RGB, True, 8, extents[2],
+                extents[3])
             pixbuf.get_from_drawable(drawable, drawable.get_colormap(), 0, 0,
-                                                                *extents)
+                                     *extents)
             self.empty_pixbuf = pixbuf
             if not Gtk.Entry.get_text(self):
                 self.props.primary_icon_pixbuf = pixbuf
@@ -302,6 +311,7 @@ class DefaultEntry(Gtk.Entry):
 
 
 class HistoryEntry(Gtk.ComboBoxText):
+
     """Combobox which performs history function."""
 
     def __init__(self, max_size=6, initial_text=("",), store_blank=True):
@@ -324,7 +334,7 @@ class HistoryEntry(Gtk.ComboBoxText):
     def update_history(self, *args):
         if self.get_has_entry():
             text = self.get_child().get_text().strip()
-        else :
+        else:
             text = None
         if self.store_blank or text:
             # Remove duplicate stored text.
@@ -356,6 +366,7 @@ class HistoryEntry(Gtk.ComboBoxText):
 
 
 class NamedTreeRowReference(object, metaclass=ABCMeta):
+
     """Provides named attribute access to Gtk.TreeRowReference objects.
 
     This is a virtual base class.
@@ -382,7 +393,7 @@ class NamedTreeRowReference(object, metaclass=ABCMeta):
             return self.get_index_for_name(self._tree_row_ref, name)
         except Exception:
             raise AttributeError("%s has no attribute: %s" %
-                                            (repr(self._tree_row_ref), name))
+                                 (repr(self._tree_row_ref), name))
 
     def __iter__(self):
         return iter(self._tree_row_ref)
@@ -406,6 +417,7 @@ NamedTreeRowReference.register(list)
 
 
 class WindowSizeTracker(object):
+
     """This class will monitor the un-maximized size of a window."""
 
     def __init__(self, window, tracking=True):
@@ -458,18 +470,19 @@ class WindowSizeTracker(object):
     def _on_window_state_event(self, widget, event):
         if self._is_tracking:
             self._max = event.new_window_state & \
-                                        Gdk.WindowState.MAXIMIZED != 0
+                Gdk.WindowState.MAXIMIZED != 0
 
 
 class IconChooserButton(Gtk.Button):
+
     """Imitate a FileChooserButton but specific to image types.
 
     The image rather than the mime-type icon is shown on the button.
     """
 
     __gsignals__ = {
-            "filename-changed" : (GObject.SignalFlags.RUN_LAST, None,
-                                                    (GObject.TYPE_PYOBJECT,)),
+        "filename-changed": (GObject.SignalFlags.RUN_LAST, None,
+                             (GObject.TYPE_PYOBJECT,)),
     }
 
     def __init__(self, dialog):
@@ -488,7 +501,7 @@ class IconChooserButton(Gtk.Button):
         vsep = Gtk.VSeparator()
         hbox.pack_start(vsep, False, False, 0)
         rightmost_icon = Gtk.Image.new_from_stock(Gtk.STOCK_OPEN,
-                                                            Gtk.IconSize.MENU)
+                                                  Gtk.IconSize.MENU)
         hbox.pack_start(rightmost_icon, False, False, 0)
         self.add(hbox)
         hbox.show_all()
@@ -504,7 +517,8 @@ class IconChooserButton(Gtk.Button):
             disp = GLib.filename_display_name(f)
             pb = GdkPixbuf.Pixbuf.new_from_file_at_size(f, 16, 16)
         except (GLib.GError, TypeError):
-            # TC: Text reads as /path/to/file.ext or this when no file is chosen.
+            # TC: Text reads as /path/to/file.ext or this when no file is
+            # chosen.
             self._label.set_text(_("(None)"))
             self._image.clear()
             self._filename = None
@@ -533,10 +547,11 @@ class IconChooserButton(Gtk.Button):
         if attr in Gtk.FileChooser.__dict__:
             return getattr(self._dialog, attr)
         raise AttributeError("%s has no attribute, %s" % (
-                                            self, attr))
+            self, attr))
 
 
 class IconPreviewFileChooserDialog(Gtk.FileChooserDialog):
+
     def __init__(self, *args, **kwds):
         GObject.GObject.__init__(self)  # , *args, **kwds)
         filefilter = Gtk.FileFilter()
@@ -570,6 +585,7 @@ class IconPreviewFileChooserDialog(Gtk.FileChooserDialog):
 
 
 class LabelSubst(Gtk.Frame):
+
     """User interface label substitution widget -- by the user."""
 
     def __init__(self, heading):
@@ -614,7 +630,7 @@ class LabelSubst(Gtk.Frame):
         args = default_text, entry, widget
         use_default.connect("toggled", self.cb_radio_default, *args)
         use_supplied.connect_object("toggled", self.cb_radio_default,
-                                                            use_default, *args)
+                                    use_default, *args)
         use_default.set_active(True)
 
     def cb_entry_changed(self, entry, widget, use_supplied):
@@ -632,6 +648,7 @@ class LabelSubst(Gtk.Frame):
 
 
 class FolderChooserButton(Gtk.Button):
+
     """Replaces the now-broken Gtk.FileChosserButton for folder selection.
 
     The old chooser also had some issues with being able to visually select
@@ -643,9 +660,9 @@ class FolderChooserButton(Gtk.Button):
     mode.
     """
 
-    __gsignals__ = { 'current-folder-changed' : (GObject.SignalFlags.RUN_FIRST,
-        None, (GObject.TYPE_STRING,))
-    }
+    __gsignals__ = {'current-folder-changed': (GObject.SignalFlags.RUN_FIRST,
+                                               None, (GObject.TYPE_STRING,))
+                    }
 
     def __init__(self, dialog=None):
         GObject.GObject.__init__(self)
@@ -654,7 +671,8 @@ class FolderChooserButton(Gtk.Button):
         hbox = Gtk.HBox()
         hbox.set_spacing(3)
         self.add(hbox)
-        self._icon = Gtk.Image.new_from_stock(Gtk.STOCK_DIRECTORY, Gtk.IconSize.MENU)
+        self._icon = Gtk.Image.new_from_stock(
+            Gtk.STOCK_DIRECTORY, Gtk.IconSize.MENU)
         hbox.pack_start(self._icon, False, False, 0)
         # TC: FolderChooserButton text for null -- no directory is set.
         self._label = Gtk.Label(label=_("(None)"))
@@ -767,5 +785,3 @@ def idle_add(callback, *args, **kwargs):
     data = [True, callback, args, kwargs]
     data.append(GLib.idle_add(_source_wrapper, data))
     return data
-
-

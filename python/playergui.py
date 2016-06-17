@@ -19,7 +19,9 @@ __all__ = ['IDJC_Media_Player', 'make_arrow_button', 'supported']
 
 import os
 import time
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 import random
 import re
 import xml.dom.minidom as mdom
@@ -148,6 +150,7 @@ class FillStopper(Gtk.Button):
 
 
 class IndexingIterator(object):
+
     def __init__(self, iteree):
         self.index = 0
         self.iteree = iteree
@@ -258,6 +261,7 @@ class NumberedLabel(Gtk.Label):
 
 
 class CellRendererDuration(Gtk.CellRendererText):
+
     """Render a value in frames as a time mm:ss:hs right justified."""
 
     __gproperties__ = {
@@ -398,6 +402,7 @@ class CuesheetPlaylist(Gtk.Frame):
 
 
 class ButtonFrame(Gtk.Frame):
+
     def __init__(self, title):
         GObject.GObject.__init__(self)
         attrlist = Pango.parse_markup(
@@ -419,6 +424,7 @@ class ButtonFrame(Gtk.Frame):
 
 
 class ExternalPL(Gtk.Frame):
+
     def get_next(self):
         next = self._get_next()
         if next is None:
@@ -546,6 +552,7 @@ class ExternalPL(Gtk.Frame):
 
 
 class AnnouncementDialog(Gtk.Dialog):
+
     def write_changes(self, widget):
         m = "%02d" % int(self.minutes.get_value())
         s = "%02d" % int(self.seconds.get_value())
@@ -746,6 +753,7 @@ class AnnouncementDialog(Gtk.Dialog):
 
 
 class Supported(object):
+
     def _check(self, pathname, which):
         ext = os.path.splitext(pathname)[1].lower()
         return ext in which and ext or False
@@ -813,6 +821,7 @@ def get_number_for(token, string):
 
 
 class nice_listen_togglebutton(Gtk.ToggleButton):
+
     def __init__(self, label=None, use_underline=True):
         GObject.GObject.__init__(self)
         self.set_label(label)
@@ -832,6 +841,7 @@ class nice_listen_togglebutton(Gtk.ToggleButton):
 
 
 class CueSheet(object):
+
     """A class for parsing cue sheets."""
 
     _operands = (
@@ -2007,7 +2017,8 @@ class IDJC_Media_Player:
 
             if self.parent.prefs_window.rg_adjust.get_active():
                 if self.gain == RGDEF:
-                    self.gain = self.parent.prefs_window.rg_defaultgain.get_value()
+                    self.gain = self.parent.prefs_window.rg_defaultgain.get_value(
+                        )
                 self.gain += self.parent.prefs_window.rg_boost.get_value()
                 print("final gain value of %f dB" % self.gain)
             else:
@@ -2484,7 +2495,8 @@ class IDJC_Media_Player:
                     # Log the time the file was last played.
                     self.parent.files_played[self.music_filename] = time.time()
                 else:
-                    self.parent.files_played_offline[self.music_filename] = time.time()
+                    self.parent.files_played_offline[
+                        self.music_filename] = time.time()
 
             self.progress_current_figure = self.playtime_elapsed.get_value()
             self.progressadj.set_value(self.playtime_elapsed.get_value())
@@ -2570,7 +2582,8 @@ class IDJC_Media_Player:
                     self.alarm_cid != cid:
                 # DJ Alarm is on and we are at the correct play position.
                 # The alarm has not sounded yet.
-                fader = "left" if self.parent.crossadj.get_value() < 50.0 else "right"
+                fader = "left" if self.parent.crossadj.get_value(
+                    ) < 50.0 else "right"
 
                 if self.playername == fader and \
                         (pl_mode in (3, 4) or
@@ -2705,7 +2718,7 @@ class IDJC_Media_Player:
                 pass
 
     def advance(self):
-        #self.set_fade_mode(self.pl_delay.get_active())
+        # self.set_fade_mode(self.pl_delay.get_active())
         if self.is_playing:
             self.parent.mic_opener.open_auto("advance")
             path = self.model_playing.get_path(self.iter_playing)[0] + 1
@@ -2716,7 +2729,7 @@ class IDJC_Media_Player:
         else:
             self.parent.mic_opener.close_all()
             self.play.clicked()
-        #self.set_fade_mode(0)
+        # self.set_fade_mode(0)
 
     def callback(self, widget, data):
         if data == "pbspeedzero":
@@ -3180,7 +3193,7 @@ class IDJC_Media_Player:
         for filename in files:
             pathname = "/".join((chosendir, filename))
             if os.path.isdir(pathname):
-                #if os.path.realpath(pathname) == pathname:
+                # if os.path.realpath(pathname) == pathname:
                 if not filename.startswith("."):
                     directories.add(filename)
             else:
@@ -4325,7 +4338,7 @@ class IDJC_Media_Player:
         self.progressadj = Gtk.Adjustment(0.0, 0.0, 100.0, 0.1, 1.0, 0.0)
         self.progressadj.connect("value_changed", self.cb_progress)
         self.progressbar = Gtk.HScale(adjustment=self.progressadj)
-        #self.progressbar.set_update_policy(Gtk.UPDATE_CONTINUOUS)
+        # self.progressbar.set_update_policy(Gtk.UPDATE_CONTINUOUS)
         self.progressbar.set_digits(1)
         self.progressbar.set_value_pos(Gtk.PositionType.TOP)
         self.progressbar.set_draw_value(False)
@@ -4461,7 +4474,7 @@ class IDJC_Media_Player:
 
         # An information display for playlist stats
         self.pl_statusbar = Gtk.Statusbar()
-        #self.pl_statusbar.set_has_resize_grip(False)
+        # self.pl_statusbar.set_has_resize_grip(False)
         plvbox.pack_start(self.pl_statusbar, False, False, 0)
         self.pl_statusbar.show()
         set_tip(
@@ -4488,7 +4501,7 @@ class IDJC_Media_Player:
         self.pbspeedadj = Gtk.Adjustment(64.0, 0.0, 127.0, 0.1, 0.0, 0.0)
         self.pbspeedadj.connect("value_changed", self.cb_pbspeed)
         self.pbspeedbar = Gtk.HScale(adjustment=self.pbspeedadj)
-        #self.pbspeedbar.set_update_policy(Gtk.UPDATE_CONTINUOUS)
+        # self.pbspeedbar.set_update_policy(Gtk.UPDATE_CONTINUOUS)
         self.pbspeedbar.connect("format-value", self.pbspeedbar_format)
         self.pbspeedbox.pack_start(self.pbspeedbar, True, True, 0)
         self.pbspeedbar.show()
@@ -5164,4 +5177,3 @@ class IDJC_Media_Player:
         self.no_more_files = False
         self.model_playing = None
         self.player_cid = -1
-

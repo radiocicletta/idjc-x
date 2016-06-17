@@ -21,7 +21,9 @@ __all__ = ['SourceClientGui']
 
 import os
 import time
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 import base64
 import gettext
 import traceback
@@ -81,6 +83,7 @@ lame_enabled = False
 
 
 class SmallLabel(Gtk.Label):
+
     """A Gtk.Label with small text size."""
 
     def __init__(self, text=None):
@@ -92,6 +95,7 @@ class SmallLabel(Gtk.Label):
 
 
 class HistoryEntryWithMenu(HistoryEntry):
+
     def __init__(self):
         HistoryEntry.__init__(self, initial_text=("", "%s", "%r - %t"))
         #self.get_child().connect("populate-popup", self._on_populate_popup)
@@ -117,6 +121,7 @@ class HistoryEntryWithMenu(HistoryEntry):
 
 
 class ModuleFrame(Gtk.Frame):
+
     def __init__(self, frametext=None):
         GObject.GObject.__init__(self)
         self.set_label(frametext)
@@ -127,6 +132,7 @@ class ModuleFrame(Gtk.Frame):
 
 
 class CategoryFrame(Gtk.Frame):
+
     def __init__(self, frametext=None):
         GObject.GObject.__init__(self)
         self.set_label(frametext)
@@ -134,6 +140,7 @@ class CategoryFrame(Gtk.Frame):
 
 
 class SubcategoryFrame(Gtk.Frame):
+
     def __init__(self, frametext=None):
         GObject.GObject.__init__(self)
         self.set_label(frametext)
@@ -141,6 +148,7 @@ class SubcategoryFrame(Gtk.Frame):
 
 
 class ConnectionDialog(Gtk.Dialog):
+
     """Create new data for or edit an item in the connection table.
 
     When an item is selected in the TreeView, will edit, else add.
@@ -403,6 +411,7 @@ class ConnectionDialog(Gtk.Dialog):
             chooser.unselect_all()
 
 class StatsThread(Thread):
+
     def __init__(self, d):
         Thread.__init__(self)
         self.is_shoutcast = d["server_type"] % 2
@@ -428,7 +437,8 @@ class StatsThread(Thread):
             stats_url = "http://%s/admin.cgi?mode=viewxml" % hostport
             realm = "Shoutcast Server"
         else:
-            stats_url = "http://%s/admin/listclients?mount=%s" % (hostport, self.mount)
+            stats_url = "http://%s/admin/listclients?mount=%s" % (hostport,
+                                                                  self.mount)
             realm = "Icecast2 Server"
         auth_handler = urllib.request.HTTPBasicAuthHandler()
         auth_handler.add_password(realm, hostport, self.login, self.passwd)
@@ -500,6 +510,7 @@ class StatsThread(Thread):
             dom.unlink()
 
 class ActionTimer(object):
+
     def run(self):
         if self.n == 0:
             self.first()
@@ -573,6 +584,7 @@ class CellRendererXCast(Gtk.CellRendererText):
 
 
 class ConnectionPane(Gtk.VBox):
+
     def get_master_server_type(self):
         try:
             s_type = ListLine(*self.liststore[0]).server_type
@@ -937,6 +949,7 @@ class ConnectionPane(Gtk.VBox):
 
 
 class TimeEntry(Gtk.HBox):
+
     """A 24-hour-time entry widget with a checkbutton."""
 
     def time_valid(self):
@@ -1006,6 +1019,7 @@ class TimeEntry(Gtk.HBox):
 
 
 class AutoAction(Gtk.HBox):
+
     def activate(self):
         if self.get_active():
             for radio, action in self.action_lookup:
@@ -1060,6 +1074,7 @@ class AutoAction(Gtk.HBox):
 
 
 class FramedSpin(Gtk.Frame):
+
     """A framed spin button that can be disabled"""
 
     def get_value(self):
@@ -1101,6 +1116,7 @@ class FramedSpin(Gtk.Frame):
 
 
 class SimpleFramedSpin(Gtk.Frame):
+
     """A framed spin button"""
 
     def get_value(self):
@@ -1127,6 +1143,7 @@ class SimpleFramedSpin(Gtk.Frame):
 
 
 class Tab(Gtk.VBox):
+
     """
     Base class for the widget in which
     each streamer and recorder appears.
@@ -1156,6 +1173,7 @@ class Tab(Gtk.VBox):
 
 
 class Troubleshooting(Gtk.VBox):
+
     """Server connection management control widget."""
 
     def __init__(self):
@@ -1255,6 +1273,7 @@ class Troubleshooting(Gtk.VBox):
 
 
 class StreamTab(Tab):
+
     def make_combo_box(self, items):
         combobox = Gtk.ComboBoxText()
         for each in items:
@@ -1413,7 +1432,6 @@ class StreamTab(Tab):
             self.send(self.connection_string)
             self.receive()
 
-
     @staticmethod
     def get_utf8_text(widget):
         return widget.get_text().strip()
@@ -1514,7 +1532,7 @@ class StreamTab(Tab):
             songname = self.scg.songname or fallback
             table = [("%%", "%")] + zip(("%r", "%t", "%l"), ((
                 getattr(self.scg, x) or fallback) for x in (
-                    "artist", "title", "album")))
+                "artist", "title", "album")))
             table.append(("%s", songname))
             raw_cm = self.metadata.get_text().strip()
             cm = string_multireplace(raw_cm, table)
@@ -2039,6 +2057,7 @@ class StreamTab(Tab):
 
 
 class RecordTab(Tab):
+
     class RecordButtons(CategoryFrame):
 
         def cb_recbuttons(self, widget, userdata):
@@ -2147,6 +2166,7 @@ class RecordTab(Tab):
             hbox.show()
 
     class TimeIndicator(Gtk.Entry):
+
         def set_value(self, seconds):
             if self.oldvalue != seconds:
                 self.oldvalue = seconds
@@ -2272,7 +2292,8 @@ class RecordTab(Tab):
 
     def show_indicator(self, colour):
         Tab.show_indicator(self, colour)
-        self.scg.parent.recording_panel.indicator[self.numeric_id].set_indicator(colour)
+        self.scg.parent.recording_panel.indicator[
+            self.numeric_id].set_indicator(colour)
 
     def recordstate(self, state, path):
         self.scg._handle_recordstate(self.numeric_id, state, path)
@@ -2307,6 +2328,7 @@ class RecordTab(Tab):
 
 
 class TabFrame(ModuleFrame):
+
     def __init__(self, scg, frametext, q_tabs, tabtype, indicatorlist,
                  tab_tip_text):
         ModuleFrame.__init__(self, " %s " % frametext)
@@ -2337,6 +2359,7 @@ class TabFrame(ModuleFrame):
 
 
 class StreamTabFrame(TabFrame):
+
     def forall(self, widget, f, *args):
         for cb, tab in zip(self.togglelist, self.tabs):
             if cb.get_active():
@@ -2752,7 +2775,7 @@ class SourceClientGui(dbus.service.Object):
             self.app_exit()
         if not sample_rate_string.startswith("sample_rate="):
             print(self.unexpected_reply)
-            print("sample rate reply contains the following:", \
+            print("sample rate reply contains the following:",
                   sample_rate_string)
             self.app_exit()
         self.send("command=encoder_lame_availability\n")
@@ -2847,7 +2870,8 @@ class SourceClientGui(dbus.service.Object):
                                 continue
                             if method != "password" or \
                                     self.parent.prefs_window.keeppass.get_active():
-                                f.write("".join((lvalue, "=", rvalue or '', "\n")))
+                                f.write(
+                                    "".join((lvalue, "=", rvalue or '', "\n")))
                         f.write("\n")
                     except Exception as e:
                         print("error attempting to write file: serverdata", e)
@@ -2933,7 +2957,8 @@ class SourceClientGui(dbus.service.Object):
                                         except:
                                             float_rvalue = None
                                         if type(method) == tuple:
-                                            widget.__getattribute__(method[0])(rvalue)
+                                            widget.__getattribute__(
+                                                method[0])(rvalue)
                                         elif method == "active":
                                             if int_rvalue is not None:
                                                 widget.set_active(int_rvalue)
@@ -2945,10 +2970,12 @@ class SourceClientGui(dbus.service.Object):
                                                 widget.set_value(float_rvalue)
                                         elif method == "notebookpage":
                                             if int_rvalue is not None:
-                                                widget.set_current_page(int_rvalue)
+                                                widget.set_current_page(
+                                                    int_rvalue)
                                         elif method == "radioindex":
                                             if int_rvalue is not None:
-                                                widget.set_radio_index(int_rvalue)
+                                                widget.set_radio_index(
+                                                    int_rvalue)
                                         elif method == "current_page":
                                             widget.set_current_page(int_rvalue)
                                         elif method == "text":
@@ -2959,10 +2986,12 @@ class SourceClientGui(dbus.service.Object):
                                             widget.set_history(rvalue)
                                         elif method == "directory":
                                             if rvalue:
-                                                widget.set_current_folder(rvalue)
+                                                widget.set_current_folder(
+                                                    rvalue)
                                         elif method == "filename":
                                             if rvalue:
-                                                rvalue = widget.set_filename(rvalue)
+                                                rvalue = widget.set_filename(
+                                                    rvalue)
                                         elif method == "marshall":
                                             widget.unmarshall(rvalue)
                                         else:

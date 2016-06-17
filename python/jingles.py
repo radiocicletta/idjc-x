@@ -26,7 +26,9 @@ from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GdkPixbuf
 from gi.repository import GObject
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 
 from idjc import *
 from .playergui import *
@@ -49,6 +51,7 @@ LED = LEDDict(9)
 
 
 class Effect(Gtk.HBox):
+
     """A trigger button for an audio effect or jingle.
 
     Takes a numeric parameter for identification. Also includes numeric I.D.,
@@ -363,6 +366,7 @@ class Effect(Gtk.HBox):
 
 
 class EffectConfigDialog(Gtk.FileChooserDialog):
+
     """Configuration dialog for an Effect."""
 
     file_filter = Gtk.FileFilter()
@@ -439,6 +443,7 @@ class EffectConfigDialog(Gtk.FileChooserDialog):
 
 
 class EffectBank(Gtk.Frame):
+
     """A vertical stack of effects with level controls."""
 
     def __init__(self, qty, base, filename, parent, all_effects, vol_adj, mute_adj):
@@ -525,6 +530,7 @@ class EffectBank(Gtk.Frame):
 
 
 class LabelSubst(Gtk.Frame):
+
     def __init__(self, heading):
         GObject.GObject.__init__(self, " %s " % heading)
         self.vbox = Gtk.VBox()
@@ -582,6 +588,7 @@ class LabelSubst(Gtk.Frame):
 
 
 class ExtraPlayers(Gtk.HBox):
+
     """For effects, and background tracks."""
 
     def __init__(self, parent):
