@@ -485,38 +485,28 @@ class JackMenu(MenuMixin):
 class ColouredArea(Gtk.DrawingArea):
 
     def __init__(self, colour=Gdk.RGBA(255, 255, 255, 0)):
-        self.gc = None
-        self.window = None
-        # GObject.GObject.__init__(self)
         super(ColouredArea, self).__init__()
         self.colour = colour
         self.rect = Gdk.Rectangle()
-        self.connect("realize", self._on_realize)
+        #self.connect("realize", self._on_realize)
         self.connect("configure-event", self._on_configure)
-        #self.connect("expose-event", self._on_expose)
         self.connect("draw", self._on_expose)
 
     def set_colour(self, colour):
         self.colour = colour
         self.queue_draw_area(0, 0, self.rect.width, self.rect.height)
 
-    def _on_realize(self, widget):
-        if not self.window:
-            return
-        self.gc = Gdk.cairo_create(widget.window)
-
     def _on_configure(self, widget, event):
         self.rect.width = event.width
         self.rect.height = event.height
 
     def _on_expose(self, widget, event):
-        if not self.gc:
-            if not self.window:
-                return
-            self.gc = Gdk.cairo_create(widget.window)
-        self.gc.set_rgb_fg_color(self.colour)
-        self.window.draw_rectangle(
-            self.gc, True, 0, 0, self.rect.width, self.rect.height)
+        if not self.get_window():
+            return
+        ctx = Gdk.cairo_create(self.get_window())
+        Gdk.cairo_set_source_color(ctx, self.colour)
+        ctx.rectangle(0, 0, self.rect.width, self.rect.height)
+        ctx.fill()
 
 
 class ColourButton(Gtk.ColorButton):
@@ -1430,36 +1420,39 @@ class StreamMeter(Gtk.Frame):
     """Main panel meter showing stream status and buffer fill."""
 
     def realize(self, widget):
-        if not self.window:
-            return
-        self.gc = Gdk.cairo_create(widget.window)
-        self.gc.copy(self.da.get_style().fg_gc[Gtk.StateType.NORMAL])
-        self.green = Gdk.color_parse("#30D030")
-        self.red = Gdk.color_parse("#D05044")
-        self.grey = Gdk.color_parse("darkgray")
+        self.green = Gdk.RGBA()
+        self.red = Gdk.RGBA()
+        self.grey = Gdk.RGBA()
+
+        self.green.parse("#30D030")
+        self.red.parse("#D05044")
+        self.grey.parse("darkgray")
 
     def expose(self, widget, event):
-        if not self.gc:
-            if not self.window:
-                return
-            self.gc = Gdk.cairo_create(widget.window)
+        if not self.da.get_realized():
+            return
+
+        ctx = Gdk.cairo_create(self.da.get_window())
         if self.flash or not self.active:
-            self.gc.set_rgb_fg_color(self.grey)
-            self.da.window.draw_rectangle(
-                self.gc, True, 0, 0, self.rect.width, self.rect.height)
+            Gdk.cairo_set_source_rgba(ctx, self.grey)
+            ctx.rectangle(0, 0, self.rect.width, self.rect.height)
+            ctx.fill()
         else:
             valuep = int(float(self.value - self.base) /
                          float(self.top - self.base) * self.rect.width)
-            self.gc.set_rgb_fg_color(self.red)
-            self.da.window.draw_rectangle(
-                self.gc, True, 0, 0, valuep, self.rect.height)
-            self.gc.set_rgb_fg_color(self.green)
-            self.da.window.draw_rectangle(self.gc, True, valuep, 0,
-                                          self.rect.width - valuep, self.rect.height)
+            Gdk.cairo_set_source_rgba(ctx, self.red)
+            ctx.rectangle(0, 0, valuep, self.rect.height)
+            ctx.fill()
+            Gdk.cairo_set_source_rgba(ctx, self.green)
+            ctx.rectangle(valuep, 0,
+                          self.rect.width - valuep, self.rect.height)
+            ctx.fill()
 
     def cb_configure(self, widget, event):
         if isinstance(event, Gdk.EventConfigure):
-            self.rect = (event.width, event.height)
+            #self.rect = (event.width, event.height)
+            self.rect.width = event.width
+            self.rect.height = event.height
 
     def set_value(self, value):
         if value < self.base:
@@ -1481,25 +1474,23 @@ class StreamMeter(Gtk.Frame):
             self.flash = flash
             self.invalidate()
 
-    # def invalidate(self):
-    #    if self.da.get_realized():
-    #        self.da.window.invalidate_rect(self.rect, False)
+    def invalidate(self):
+        if self.da.get_realized() and self.da.get_window():
+            self.da.get_window().invalidate_rect(self.rect, False)
 
     def __init__(self, base, top):
         self.base = base
         self.top = top
         self.gc = None
-        self.window = None
         super(StreamMeter, self).__init__()
         self.set_shadow_type(Gtk.ShadowType.IN)
         self.da = Gtk.DrawingArea()
         self.add(self.da)
         self.da.connect("configure_event", self.cb_configure)
         self.da.connect("realize", self.realize)
-        # self.da.connect("expose_event", self.)
         self.da.connect("draw", self.expose)
         self.da.show()
-        self.rect = ()
+        self.rect = Gdk.Rectangle()
         self.value = self.oldvalue = self.base
         self.active = False
         self.flash = False
@@ -1510,13 +1501,17 @@ class BasicMeter(Gtk.Frame):
     """A meter widget with a simple rectangular vertical bar."""
 
     def realize(self, widget):
-        self.gc = Gdk.cairo_create(widget)
-        self.gc.copy(self.da.get_style().fg_gc[Gtk.StateType.NORMAL])
-        self.lowc = Gdk.color_parse("#30D030")
-        self.midc = Gdk.color_parse("#CCCF44")
-        self.highc = Gdk.color_parse("#D05044")
-        self.backc = Gdk.color_parse("darkgray")
-        self.linec = Gdk.color_parse("#505050")
+        self.lowc = Gdk.RGBA()
+        self.midc = Gdk.RGBA()
+        self.highc = Gdk.RGBA()
+        self.backc = Gdk.RGBA()
+        self.linec = Gdk.RGBA()
+
+        self.lowc.parse("#30D030")
+        self.midc.parse("#CCCF44")
+        self.highc.parse("#D05044")
+        self.backc.parse("darkgray")
+        self.linec.parse("#505050")
 
     def expose(self, widget, event):
         self.oldvalue = self.top
@@ -1535,40 +1530,51 @@ class BasicMeter(Gtk.Frame):
                         float(self.top - self.base))
 
     def set_value(self, value):
-        return
         if value > self.top:
             value = self.top
         if value < self.base:
             value = self.base
         self.value = value
         if self.da.get_realized():
+            ctx = Gdk.cairo_create(self.da.get_window())
             valuep = int(self.height * float(self.value - self.base) /
                          float(self.top - self.base))
+            Gtk.render_background(self.da.get_style_context(), ctx,
+                                  0, 0, self.width, self.height)
             if value < self.oldvalue:
-                self.gc.set_rgb_fg_color(self.backc)
-                self.da.window.draw_rectangle(self.gc, True, 0, 0, self.width,
-                                              self.height - valuep)
+                Gdk.cairo_set_source_rgba(ctx, self.backc)
+                ctx.rectangle(0, 0, self.width, self.height - valuep)
+                ctx.fill()
             if value > self.oldvalue:
                 if valuep > self.mutp:
-                    self.gc.set_rgb_fg_color(self.highc)
-                    self.da.window.draw_rectangle(self.gc, True, 0, self.height
-                                                  - valuep, self.width, valuep - self.mutp)
+                    Gdk.cairo_set_source_rgba(ctx, self.highc)
+                    ctx.rectangle(
+                        0,
+                        self.height - valuep,
+                        self.width,
+                        valuep - self.mutp)
+                    ctx.fill()
                     valuep = self.mutp
                 if valuep > self.lutp:
-                    self.gc.set_rgb_fg_color(self.midc)
-                    self.da.window.draw_rectangle(self.gc, True, 0, self.height
-                                                  - valuep, self.width, valuep - self.lutp)
+                    Gdk.cairo_set_source_rgba(ctx, self.midc)
+                    ctx.rectangle(
+                        0,
+                        self.height - valuep,
+                        self.width,
+                        valuep - self.lutp)
+                    ctx.fill()
                     valuep = self.lutp
                 if valuep > 0:
-                    self.gc.set_rgb_fg_color(self.lowc)
-                    self.da.window.draw_rectangle(self.gc, True, 0, self.height
-                                                  - valuep, self.width, valuep)
+                    Gdk.cairo_set_source_rgba(ctx, self.lowc)
+                    ctx.rectangle(0, self.height - valuep, self.width, valuep)
+                    ctx.fill()
             if self.line is not None:
                 valuel = int(self.height * float(self.line - self.base) /
                              float(self.top - self.base))
-                self.gc.set_rgb_fg_color(self.linec)
-                self.da.window.draw_lines(self.gc, ((0, self.height - valuel),
-                                                    (self.width, self.height - valuel)))
+                Gdk.cairo_set_source_rgba(ctx, self.linec)
+                ctx.move_to(0, self.height - valuel)
+                ctx.line_to(self.width, self.height - valuel)
+                ctx.stroke()
             self.oldvalue = value
 
     def set_line(self, lineval):
@@ -1592,15 +1598,14 @@ class BasicMeter(Gtk.Frame):
         assert lut <= top, "lut must not exceed top"
         assert mut >= lut, "mut must be greater than or equal to lut"
         assert mut <= top, "mut must not exceed top"
-        GObject.GObject.__init__(self)
+        super(BasicMeter, self).__init__()
         self.set_shadow_type(Gtk.ShadowType.IN)
-        # self.da = Gdk.Window(None, Gdk.WindowAttr(), 0) #Gtk.DrawingArea()
-        # self.add(self.da)
-        #self.da.connect("configure_event", self.cb_configure)
-        #self.da.connect("realize", self.realize)
-        ##self.da.connect("expose_event", self.expose)
-        #self.da.connect("draw", self.expose)
-        # self.da.show()
+        self.da = Gtk.DrawingArea()
+        self.add(self.da)
+        self.da.connect("configure_event", self.cb_configure)
+        self.da.connect("realize", self.realize)
+        self.da.connect("draw", self.expose)
+        self.da.show()
         self.base = base
         self.top = top
         self.lut = lut
@@ -1615,14 +1620,15 @@ class StackedMeter(Gtk.Frame):
     """Meter with three fill levels showing as different colours."""
 
     def realize(self, widget):
-        if not hasattr(self, "window"):
-            return
-        self.gc = Gdk.cairo_create(self.window)
-        self.gc.copy(self.da.get_style().fg_gc[Gtk.StateType.NORMAL])
-        self.ngc = Gdk.color_parse("#30D030")
-        self.dsc = Gdk.color_parse("#CCCF44")
-        self.compc = Gdk.color_parse("#D05044")
-        self.backc = Gdk.color_parse("darkgray")
+        self.ngc = Gdk.RGBA()
+        self.dsc = Gdk.RGBA()
+        self.compc = Gdk.RGBA()
+        self.backc = Gdk.RGBA()
+
+        self.ngc.parse("#30D030")
+        self.dsc.parse("#CCCF44")
+        self.compc.parse("#D05044")
+        self.backc.parse("darkgray")
 
     def expose(self, widget, event):
         self.set_meter_value(self.c, self.d, self.n, True)
@@ -1633,7 +1639,6 @@ class StackedMeter(Gtk.Frame):
         self.uh = self.height / float(self.top - self.base)
 
     def set_meter_value(self, c, d, n, force=False):
-        return  # TODO
         if not force and (self.c == c and self.d == d and self.n == n):
             # Values not changed from last time so no need to redraw.
             return
@@ -1653,40 +1658,39 @@ class StackedMeter(Gtk.Frame):
         self.d = d
         self.n = n
         if self.da.get_realized():
+            ctx = Gdk.cairo_create(self.da.get_window())
             nh = int(self.uh * n)
             dh = int(self.uh * d)
             ch = int(self.uh * c)
             if ch + dh + nh > self.height:
                 ch = self.height - dh - nh
             if nh:
-                self.gc.set_rgb_fg_color(self.ngc)
-                self.da.window.draw_rectangle(
-                    self.gc, True, 0, 0, self.width, nh)
+                ctx.set_source_rgb(self.ngc.red, self.ngc.green, self.ngc.blue)
+                ctx.rectangle(0, 0, self.width, nh)
+                ctx.fill()
             if dh:
-                self.gc.set_rgb_fg_color(self.dsc)
-                self.da.window.draw_rectangle(
-                    self.gc, True, 0, nh, self.width, dh)
+                ctx.set_source_rgb(self.dsc.red, self.dsc.green, self.dsc.blue)
+                ctx.rectangle(0, nh, self.width, dh)
+                ctx.fill()
             if ch:
-                self.gc.set_rgb_fg_color(self.compc)
-                self.da.window.draw_rectangle(
-                    self.gc, True, 0, nh + dh, self.width, ch)
+                ctx.set_source_rgb(self.compc.red, self.compc.green, self.compc.blue)
+                ctx.rectangle(0, nh + dh, self.width, ch)
+                ctx.fill()
 
-            self.gc.set_rgb_fg_color(self.backc)
-            self.da.window.draw_rectangle(
-                self.gc, True, 0, nh + dh + ch,
-                self.width, self.height - (nh + dh + ch))
+            ctx.set_source_rgb(self.backc.red, self.backc.green, self.backc.blue)
+            ctx.rectangle(0, nh + dh + ch, self.width, self.height - (nh + dh + ch))
+            ctx.fill()
 
     def __init__(self, base, top):
         self.base = base
         self.top = top
         assert top > base, "top must be greater than base"
-        GObject.GObject.__init__(self)
+        super(StackedMeter, self).__init__()
         self.set_shadow_type(Gtk.ShadowType.IN)
         self.da = Gtk.DrawingArea()
         self.add(self.da)
         self.da.connect("configure_event", self.cb_configure)
         self.da.connect("realize", self.realize)
-        #self.da.connect("expose_event", self.expose)
         self.da.connect("draw", self.expose)
         self.da.show()
         self.c = self.d = self.n = base - 1
@@ -1779,7 +1783,7 @@ class MicMeter(Gtk.VBox):
             return False
 
     def __init__(self, labelbasetext, index):
-        GObject.GObject.__init__(self)
+        super(MicMeter, self).__init__()
         self.set_border_width(0)
         lhbox = Gtk.Box()
         pad = Gtk.VBox()
