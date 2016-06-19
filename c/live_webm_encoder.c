@@ -87,9 +87,11 @@ static AVCodec *add_stream(WebMState *self,
     self->st->id = 0;
     self->st->time_base = (AVRational){ 1, sr };
 
+#ifdef AV_CODEC_FLAG_GLOBAL_HEADER
     if (self->oc->oformat->flags & AVFMT_GLOBALHEADER)
         c->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-        
+#endif
+
     return codec;
 }
 
@@ -137,10 +139,15 @@ static int open_stream(WebMState *self, AVCodec *codec)
         return 0;
     }
 
+#ifdef AV_CODEC_CAP_VARIABLE_FRAME_SIZE
     if (c->codec->capabilities & AV_CODEC_CAP_VARIABLE_FRAME_SIZE)
         nb_samples = 10000;
     else
         nb_samples = c->frame_size;
+#else
+	if (!(nb_samples = c->frame_size))
+		nb_samples = 10000;
+#endif
 
     self->frame     = alloc_audio_frame(c->sample_fmt, c->channel_layout,
                                        c->sample_rate, nb_samples);
