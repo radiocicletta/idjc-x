@@ -371,7 +371,7 @@ Public License instead of this License.
         self.hide()
         return True
     def __init__(self):
-        GObject.GObject.__init__(self)
+        super(LicenceWindow, self).__init__()
         self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.ALWAYS)
         self.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         text_view = Gtk.TextView()

@@ -84,7 +84,7 @@ class disconnection_notification_dialog(Gtk.Dialog):
         else:
             window_title += pm.title_extra
 
-        GObject.GObject.__init__(self)
+        super(disconnection_notification_dialog, self).__init__()
         self.set_title(window_title)
         #                                Gtk.DialogFlags.DESTROY_WITH_PARENT,
         self.add_buttons(Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE)
@@ -153,8 +153,8 @@ class autodisconnection_notification_dialog(Gtk.Dialog):
                  window_title="", additional_text=None,
                  actionok=None, actioncancel=None):
 
-        GObject.GObject.__init__(
-            self, window_title, None,
+        super(autodisconnection_notification_dialog, self).__init__(
+            window_title, None,
             Gtk.DialogFlags.DESTROY_WITH_PARENT, (
                 Gtk.STOCK_CANCEL,
                 Gtk.ResponseType.CANCEL,
@@ -297,7 +297,7 @@ class ReconnectionDialog(Gtk.Dialog):
 
     def __init__(self, tab):
         self.tab = tab
-        GObject.GObject.__init__(self)
+        super(ReconnectionDialog, self).__init__()
         self.set_title(pm.title_extra.strip())
         #            Gtk.DialogFlags.DESTROY_WITH_PARENT
         self.add_buttons(

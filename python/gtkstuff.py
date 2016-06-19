@@ -38,20 +38,6 @@ t = gettext.translation(FGlobs.package_name, FGlobs.localedir, fallback=True)
 _ = t.gettext
 
 
-# Fix PyGTK spin button binding.
-# def SB():
-#    GTK_SB = Gtk.SpinButton
-#
-#    class SpinButton(GTK_SB):
-#        def __init__(self, adjustment=None, climb_rate=0.0, digits=0):
-#            GTK_SB.__init__(self, adjustment, climb_rate, digits)
-#
-#    return SpinButton
-#
-#Gtk.SpinButton = SB()
-#del SB
-
-
 class NotebookSR(Gtk.Notebook):
 
     """Add methods so the save/restore scheme does not have to be extended."""
@@ -90,7 +76,7 @@ class CellRendererLED(Gtk.CellRendererPixbuf):
     }
 
     def __init__(self, size=10, actives=("clear", "green")):
-        GObject.GObject.__init__(self)
+        super(CellRendererLED, self).__init__()
         self._led = LEDDict(size)
         self._index = [self._led[key] for key in actives]
 
@@ -132,7 +118,7 @@ class CellRendererTime(Gtk.CellRendererText):
 class StandardDialog(Gtk.Dialog):
 
     def __init__(self, title, message, stock_item, label_width, modal, markup):
-        GObject.GObject.__init__(self)
+        super(StandardDialog, self).__init__()
         self.set_border_width(6)
         self.get_child().set_spacing(12)
         self.set_modal(modal)
@@ -248,7 +234,7 @@ def nullcm():
 class DefaultEntry(Gtk.Entry):
 
     def __init__(self, default_text, sensitive_override=False):
-        GObject.GObject.__init__(self)
+        super(DefaultEntry, self).__init__()
         self.connect("focus-in-event", self.on_focus_in)
         self.connect("focus-out-event", self.on_focus_out)
         self.props.primary_icon_activatable = True
@@ -318,7 +304,7 @@ class HistoryEntry(Gtk.ComboBoxText):
         self.max_size = max_size
         self.store_blank = store_blank
         self.ls = Gtk.ListStore(str)
-        GObject.GObject.__init__(self)
+        super(HistoryEntry, self).__init__()
         self.set_model(self.ls)
         self.connect("notify::popup-shown", self.update_history)
         #self.get_child().connect("activate", self.update_history)
@@ -486,7 +472,7 @@ class IconChooserButton(Gtk.Button):
     }
 
     def __init__(self, dialog):
-        GObject.GObject.__init__(self)
+        super(IconChooserButton, self).__init__()
         dialog.set_icon_from_file(PGlobs.default_icon)
 
         hbox = Gtk.HBox()
@@ -553,7 +539,7 @@ class IconChooserButton(Gtk.Button):
 class IconPreviewFileChooserDialog(Gtk.FileChooserDialog):
 
     def __init__(self, *args, **kwds):
-        GObject.GObject.__init__(self)  # , *args, **kwds)
+        super(IconPreviewFileChooserDialog, self).__init__(*args, **kwds)
         filefilter = Gtk.FileFilter()
         # TC: the file filter text of a file chooser dialog.
         filefilter.set_name(_("Supported Image Formats"))
@@ -589,7 +575,7 @@ class LabelSubst(Gtk.Frame):
     """User interface label substitution widget -- by the user."""
 
     def __init__(self, heading):
-        GObject.GObject.__init__(self)
+        super(LabelSubst, self).__init__()
         self.set_label(" %s " % heading)
         self.vbox = Gtk.VBox()
         self.vbox.set_border_width(2)
@@ -665,7 +651,7 @@ class FolderChooserButton(Gtk.Button):
                     }
 
     def __init__(self, dialog=None):
-        GObject.GObject.__init__(self)
+        super(FolderChooserButton, self).__init__()
         self._current_folder = None
         self._handler_ids = []
         hbox = Gtk.HBox()

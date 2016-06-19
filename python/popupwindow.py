@@ -40,7 +40,7 @@ class PopupWindow:
     class new_popup_window(Gtk.Window):
 
         def __init__(self):
-            GObject.GObject.__init__(self, type=Gtk.WindowType.POPUP)
+            Gtk.Window.__init__(self, type=Gtk.WindowType.POPUP)
             Gtk.Window.set_decorated(self, False)
 
     @threadslock

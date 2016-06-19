@@ -107,7 +107,7 @@ class IRCEntry(Gtk.Entry):  # pylint: disable=R0904
                          117: "\u001F", 111: "\u000F"}
 
     def __init__(self, *args, **kwds):
-        GObject.GObject.__init__(self)  # , *args, **kwds)
+        super(IRCEntry, self).__init__(*args, **kwds)
         self.connect("key-press-event", self._on_key_press_event)
         self.connect("populate-popup", self._popup_menu_populate)
 
@@ -277,7 +277,7 @@ class IRCView(Gtk.TextView):  # pylint: disable=R0904
     readable_equiv = tuple((x, "<%s>" % y) for x, y in CODES_AND_DESCRIPTIONS)
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        super(IRCView, self).__init__()
         self.set_size_request(500, -1)
         self.set_wrap_mode(Gtk.WrapMode.CHAR)
         self.set_editable(False)
@@ -414,7 +414,7 @@ class ServerDialog(Gtk.Dialog):
 
     # TC: Tab heading text.
     def __init__(self, title=_("IRC server")):
-        GObject.GObject.__init__(self)
+        super(ServerDialog, self).__init__()
         self.set_title(title + " - IDJC" + ProfileManager().title_extra)
 
         self.network = Gtk.Entry()
@@ -589,7 +589,7 @@ class ChannelsDialog(Gtk.Dialog):
         if title is None:
             title = self.title
 
-        GObject.GObject.__init__(self)
+        super(ChannelsDialog, self).__init__()
         self.set_title(title + " - IDJC" + ProfileManager().title_extra)
 
         chbox = Gtk.HBox()
@@ -871,7 +871,7 @@ class IRCTreeView(Gtk.TreeView):
     """A Gtk.TreeView that has a tooltip which handles IRC text formatting."""
 
     def __init__(self, model=None):
-        GObject.GObject.__init__(self)
+        super(IRCTreeView, self).__init__()
         self.set_model(model)
         self.set_headers_visible(False)
         self.set_enable_tree_lines(True)
@@ -961,7 +961,7 @@ class IRCTreeStore(Gtk.TreeStore):
         return (int, ) * 5 + (str, ) * 10
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        super(IRCTreeStore, self).__init__()
         self.set_column_types(self.data_format)
         self._row_changed_blocked = False
         self.connect_after("row-changed", self._on_row_changed)
@@ -999,7 +999,7 @@ class IRCPane(Gtk.VBox):
     """The main user interface."""
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        super(IRCPane, self).__init__()
         self.set_border_width(8)
         self.set_spacing(3)
         self._treestore = IRCTreeStore()
@@ -1329,7 +1329,7 @@ class IRCConnection(Gtk.TreeRowReference, threading.Thread):
     """Self explanatory really."""
 
     def __init__(self, model, path, stream_active):
-        GObject.GObject.__init__(self, model, path)
+        super(IRCConnection, self).__init__(model, path)
         threading.Thread.__init__(self)
         self._hooks = []
         self._queue = []
@@ -1733,7 +1733,7 @@ class MessageHandler(GObject.GObject):
     subst = dict.fromkeys(subst_keys, "<No data>")
 
     def __init__(self, model, path, stream_active):
-        GObject.GObject.__init__(self)
+        super(MessageHandler, self).__init__()
         self.tree_row_ref = Gtk.TreeRowReference(model, path)
 
         self._channels = frozenset()

@@ -172,7 +172,7 @@ class CueSheetListStore(Gtk.ListStore):
     assert len(_columns) == len(CueSheetTrack._fields)
 
     def __init__(self):
-        GObject.GObject.__init__(self, *self._columns)
+        super(CueSheetListStore, self).__init__(*self._columns)
         self.playing_index = None
 
     def element(self, offset):
@@ -255,7 +255,7 @@ class NumberedLabel(Gtk.Label):
         return None if text == "--" else int(self.text)
 
     def __init__(self, value=None):
-        GObject.GObject.__init__(self)
+        super(NumberedLabel, self).__init__()
         self.set_attributes(self.attrs)
         self.set_value(value)
 
@@ -272,7 +272,7 @@ class CellRendererDuration(Gtk.CellRendererText):
     }
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        super(CellRendererDuration, self).__init__()
         self.set_property("xalign", 1.0)
 
     def do_set_property(self, property, value):
@@ -290,7 +290,7 @@ class CuesheetPlaylist(Gtk.Frame):
     }
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        super(CuesheetPlaylist, self).__init__()
         self.set_label(" %s " % _('Cuesheet Playlist'))
         self.set_border_width(3)
 
@@ -404,7 +404,7 @@ class CuesheetPlaylist(Gtk.Frame):
 class ButtonFrame(Gtk.Frame):
 
     def __init__(self, title):
-        GObject.GObject.__init__(self)
+        super(ButtonFrame, self).__init__()
         attrlist = Pango.parse_markup(
             '<span size="{}">{}</span>'.format(
                 METER_TEXT_SIZE,
@@ -480,7 +480,7 @@ class ExternalPL(Gtk.Frame):
 
     def __init__(self, player):
         self.player = player
-        GObject.GObject.__init__(self)
+        super(ExternalPL, self).__init__()
         self.set_label(" %s " % _('External Playlist'))
         self.set_border_width(4)
         hbox = Gtk.HBox()
@@ -823,7 +823,7 @@ def get_number_for(token, string):
 class nice_listen_togglebutton(Gtk.ToggleButton):
 
     def __init__(self, label=None, use_underline=True):
-        GObject.GObject.__init__(self)
+        super(nice_listen_togglebutton, self).__init__()
         self.set_label(label)
         self.set_use_underline(use_underline)
 

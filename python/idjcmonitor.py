@@ -104,7 +104,7 @@ class IDJCMonitor(GObject.GObject):
         Can also handle sessions with "session.sessionname"
         """
 
-        GObject.GObject.__init__(self)
+        super(IDJCMonitor, self).__init__()
         self.__profile = profile
         self.__bus = dbus.SessionBus(mainloop=DBusGMainLoop())
         self.__bus_address = ".".join((BUS_BASENAME, profile))
