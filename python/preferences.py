@@ -65,7 +65,7 @@ class CSLEntry(Gtk.Entry):
         return False
 
     def __init__(self, max=0):
-        GObject.GObject.__init__(self, max)
+        super(CSLEntry, self).__init__(max)
         self.connect("key-press-event", self.cb_keypress)
 
 
@@ -73,7 +73,7 @@ class InitialPlayerConfig(Gtk.Frame):
 
     def __init__(self, title, player, prefix):
         self.player = player
-        GObject.GObject.__init__(self)
+        super(InitialPlayerConfig, self).__init__()
         self.set_label(" %s " % title)
         vbox = Gtk.VBox()
         vbox.set_border_width(3)
@@ -131,7 +131,7 @@ class PanWidget(Gtk.Frame):
     def __init__(self, title, commandname):
         self._instances.append(self)
 
-        GObject.GObject.__init__(self)
+        super(PanWidget, self).__init__()
         self.modes = (1, 2, 3)
         set_tip(
             self,
@@ -239,7 +239,7 @@ class PanPresetButton(Gtk.Button):
 
     def __init__(self, labeltext):
         self._labeltext = labeltext
-        GObject.GObject.__init__(self)
+        super(PanPresetButton, self).__init__()
         self._label = Gtk.Label(label=labeltext)
         self.add(self._label)
 
@@ -255,7 +255,7 @@ class PanPresetButton(Gtk.Button):
 class PanPresetChooser(Gtk.HBox):
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        super(PanPresetChooser, self).__init__()
         self.set_spacing(1)
 
         label = Gtk.Label(label="\u25C4")

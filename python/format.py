@@ -306,7 +306,7 @@ class FormatDropdown(Gtk.VBox):
         self.prev_object = prev_object
         self._ident = ident
         self._row = row
-        GObject.GObject.__init__(self)
+        super(FormatDropdown, self).__init__()
         frame = Gtk.Frame(label=" %s " % title)
         frame.set_label_align(0.5, 0.5)
         if tooltip is not None:
@@ -417,7 +417,7 @@ class FormatSpin(Gtk.VBox):
         self._row = row
         self._unit = unit
         self._next_element_name = next_element_name
-        GObject.GObject.__init__(self)
+        super(FormatSpin, self).__init__()
         frame = Gtk.Frame(label=" %s " % title)
         frame.set_label_align(0.5, 0.5)
         if tooltip is not None:
@@ -2157,7 +2157,7 @@ class FormatControl(Gtk.VBox):
     }
 
     def __init__(self, send, receive):
-        GObject.GObject.__init__(self)
+        super(FormatControl, self).__init__()
         self.set_border_width(6)
         self.set_spacing(4)
         elem_box = [Gtk.HBox()]

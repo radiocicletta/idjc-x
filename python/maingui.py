@@ -75,7 +75,7 @@ class FreewheelButton(Gtk.Button):
     LED = LEDDict(9)
 
     def __init__(self, mixer_write):
-        GObject.GObject.__init__(self)
+        super(FreewheelButton, self).__init__()
         hbox = Gtk.Box()
         self._indicator = Gtk.Image()
         self._indicator.set_alignment(0.0, 0.0)
@@ -171,7 +171,7 @@ class MenuMixin(object):
 class MainMenu(Gtk.MenuBar, MenuMixin):
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        super(MainMenu, self).__init__()
 
         self.build(self)(((
             "file", _('File')), ("view", _('View')),
@@ -488,7 +488,6 @@ class ColouredArea(Gtk.DrawingArea):
         super(ColouredArea, self).__init__()
         self.colour = colour
         self.rect = Gdk.Rectangle()
-        #self.connect("realize", self._on_realize)
         self.connect("configure-event", self._on_configure)
         self.connect("draw", self._on_expose)
 
@@ -574,7 +573,7 @@ class MicButton(Gtk.ToggleButton):
             each.set_colour(colour)
 
     def __init__(self, opener_settings, opener_tab, mic_agc_list):
-        GObject.GObject.__init__(self)
+        super(MicButton, self).__init__()
 
         self.opener_tab = opener_tab
 
@@ -700,7 +699,7 @@ class OpenerTab(Gtk.VBox):
     }
 
     def __init__(self, ident):
-        GObject.GObject.__init__(self)
+        super(OpenerTab, self).__init__()
         self.set_border_width(6)
         self.set_spacing(4)
         self.label = Gtk.Label()
@@ -889,7 +888,7 @@ class OpenerSettings(Gtk.Frame):
                                 (GObject.TYPE_PYOBJECT,))}
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        super(OpenerSettings, self).__init__()
         self.set_label(" %s " % _('Main Panel Opener Buttons'))
         self.set_border_width(3)
 
@@ -1230,7 +1229,7 @@ class MicOpener(Gtk.Box):
     def __init__(self, approot, flash_test):
         self.approot = approot
         self._flash_test = flash_test
-        GObject.GObject.__init__(self)
+        super(MicOpener, self).__init__()
         self.set_spacing(2)
         self.mic_list = []
         self.buttons = []
@@ -1255,7 +1254,7 @@ class PaddedVBox(Gtk.VBox):
         self.vbox.add(*args, **kwargs)
 
     def __init__(self, l, t, r, b, s):
-        GObject.GObject.__init__(self)
+        super(PaddedVBox, self).__init__()
         d = Gtk.VBox()
         self.pack_start(d, False, False, t)
         d.show()
@@ -1851,7 +1850,7 @@ class RecIndicator(Gtk.Box):
         self.image.set_from_pixbuf(self.led[self.colour.index(colour)])
 
     def __init__(self, label_text):
-        GObject.GObject.__init__(self)
+        super(RecIndicator, self).__init__()
         label = Gtk.Label(label=label_text)
         self.pack_start(label, True, True, 0)
         label.show()
@@ -1877,7 +1876,7 @@ class RecIndicator(Gtk.Box):
 class RecordingPanel(Gtk.VBox):
 
     def __init__(self, howmany):
-        GObject.GObject.__init__(self)
+        super(RecordingPanel, self).__init__()
 
         # TC: Record as in, to make a recording.
         label = Gtk.Label(label=" %s " % _('Record'))

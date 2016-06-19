@@ -378,7 +378,7 @@ class EffectConfigDialog(Gtk.FileChooserDialog):
             file_filter.add_pattern("*" + each.upper())
 
     def __init__(self, effect, window):
-        GObject.GObject.__init__(self)
+        super(EffectConfigDialog, self).__init__()
         self.set_title(_('Effect %d Config') % (effect.num + 1))
         self.set_parent(window)
         self.add_buttons(Gtk.STOCK_CLEAR, Gtk.ResponseType.NO,
@@ -448,7 +448,7 @@ class EffectBank(Gtk.Frame):
     """A vertical stack of effects with level controls."""
 
     def __init__(self, qty, base, filename, parent, all_effects, vol_adj, mute_adj):
-        GObject.GObject.__init__(self)
+        super(EffectBank, self).__init__()
         self.base = base
         self.session_filename = filename
 
@@ -533,7 +533,7 @@ class EffectBank(Gtk.Frame):
 class LabelSubst(Gtk.Frame):
 
     def __init__(self, heading):
-        GObject.GObject.__init__(self, " %s " % heading)
+        super(LabelSubst, self).__init__(" %s " % heading)
         self.vbox = Gtk.VBox()
         self.vbox.set_border_width(2)
         self.vbox.set_spacing(2)
@@ -606,7 +606,7 @@ class ExtraPlayers(Gtk.HBox):
         self.nb_label.pack_start(self.nb_effects_box, True, True, 0)
         self.nb_label.show_all()
         self.nb_effects_box.hide()
-        GObject.GObject.__init__(self)
+        super(ExtraPlayers, self).__init__()
         self.set_border_width(4)
         self.set_spacing(10)
         self.viewlevels = (5,)

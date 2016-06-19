@@ -1351,7 +1351,7 @@ class LookupComboBox(Gtk.ComboBox):
             model.append((texts[value], True, icons[value]))
          else:
             model.append((texts[value], True))
-      GObject.GObject.__init__(self)
+      super(LookupComboBox, self).__init__()
       self.set_model(model)
 
       if icons is not None:
@@ -1385,7 +1385,7 @@ class GroupedComboBox(Gtk.ComboBox):
             iter= model.append(group_rows[valuegroups[i]],
                                             [i, valuenames[values[i]], True])
             self._lookup[values[i]]= model.get_path(iter)
-        GObject.GObject.__init__(self, model=model)
+        super(GroupedComboBox, self).__init__(model=model)
 
         cr= Gtk.CellRendererText()
         self.pack_start(cr, True)
@@ -1420,7 +1420,7 @@ except ImportError:
 
 class CustomSpinButton(Gtk.SpinButton):
     def __init__(self, adjustment, climb_rate= 0.0, digits= 0):
-        GObject.GObject.__init__(self, adjustment=adjustment, climb_rate=climb_rate, digits=digits)
+        super(CustomSpinButton, self).__init__(adjustment=adjustment, climb_rate=climb_rate, digits=digits)
         self._value = adjustment.get_value()
         self._iscustom = ctypes is not None
         if self._iscustom:
@@ -1541,7 +1541,7 @@ class BindingEditor(Gtk.Dialog):
 
     def __init__(self, owner):
         self.owner= owner
-        GObject.GObject.__init__(self)
+        super(BindingEditor, self).__init__()
             # TC: Dialog window title text.
             # TC: User is expected to edit a control binding.
         self.set_title(_('Edit control binding'))
@@ -1832,7 +1832,7 @@ class ValueSnapHScale(Gtk.HBox):
     can_mark= all(hasattr(Gtk.Scale, x) for x in ('add_mark', 'clear_marks'))
 
     def __init__(self, *args, **kwds):
-        GObject.GObject.__init__(self)
+        super(ValueSnapHScale, self).__init__()
         self.set_spacing(2)
         self.label= Gtk.Label()
         self.label.set_width_chars(4)
@@ -1981,7 +1981,7 @@ class ControlsUI(Gtk.VBox):
     tooltip_coords = (0, 0)
 
     def __init__(self, owner):
-        GObject.GObject.__init__(self, spacing= 4)
+        super(ControlsUI, self).__init__(spacing=4)
         self.owner= owner
 
         self.source_icons= {}
@@ -2168,7 +2168,6 @@ class BindingListModel(GenericTreeModel):
     """TreeModel mapping the list of Bindings in Controls to a TreeView
     """
     def __init__(self, owner):
-        #GObject.GObject.__init__(self)
         super(BindingListModel, self).__init__()
         self.owner= owner
         self.bindings= owner.owner.bindings

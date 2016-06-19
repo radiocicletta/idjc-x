@@ -311,9 +311,7 @@ class Settings(Gtk.Table):
 
     def __init__(self, name):
         self._name = name
-        #GObject.GObject.__init__(self, 5, 4)
-        GObject.GObject.__init__(self)
-        self.resize(5, 4)
+        super(Settings, self).__init__(rows=5, columns=4)
         self.set_border_width(10)
         self.set_row_spacings(1)
         for col, spc in zip(range(3), (3, 10, 3)):
@@ -387,7 +385,7 @@ class PrefsControls(Gtk.Frame):
     """Database controls as visible in the preferences window."""
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        super(PrefsControls, self).__init__()
         self.set_border_width(3)
         label = Gtk.Label(label=" %s " %
                             _('Prokyon3 or Ampache (song title) Database'))
@@ -520,7 +518,7 @@ class PageCommon(Gtk.VBox):
     """Base class for all pages."""
 
     def __init__(self, notebook, label_text, controls):
-        GObject.GObject.__init__(self)
+        super(PageCommon, self).__init__()
         self.set_spacing(2)
         self.scrolled_window = Gtk.ScrolledWindow()
         self.scrolled_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.ALWAYS)
@@ -848,7 +846,7 @@ class ExpandAllButton(Gtk.Button):
         expander = Gtk.Expander()
         expander.set_expanded(expanded)
         expander.show_all()
-        GObject.GObject.__init__(self)
+        super(ExpandAllButton, self).__init__()
         self.add(expander)
         if tooltip is not None:
             set_tip(self, tooltip)
@@ -1520,7 +1518,7 @@ class CatalogsInterface(GObject.GObject):
                        N_('Days'): 86400, N_('Weeks'): 604800}
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        super(CatalogsInterface, self).__init__()
         self._dict = {}
 
     def clear(self):
@@ -1821,7 +1819,7 @@ class MediaPane(Gtk.VBox):
     """Database song details are displayed in this widget."""
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        super(MediaPane, self).__init__()
 
         self.notebook = Gtk.Notebook()
         self.pack_start(self.notebook, True, True, 0)

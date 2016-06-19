@@ -88,7 +88,7 @@ class SmallLabel(Gtk.Label):
     """A Gtk.Label with small text size."""
 
     def __init__(self, text=None):
-        GObject.GObject.__init__(self)
+        super(SmallLabel, self).__init__()
         self.set_label(text)
         attrlist = Pango.AttrList()
         #attrlist.insert(Pango.AttrSize(8000, 0, 1000000))
@@ -124,7 +124,7 @@ class HistoryEntryWithMenu(HistoryEntry):
 class ModuleFrame(Gtk.Frame):
 
     def __init__(self, frametext=None):
-        GObject.GObject.__init__(self)
+        super(ModuleFrame, self).__init__()
         self.set_label(frametext)
         Gtk.Frame.set_shadow_type(self, Gtk.ShadowType.ETCHED_OUT)
         self.vbox = Gtk.VBox()
@@ -135,7 +135,7 @@ class ModuleFrame(Gtk.Frame):
 class CategoryFrame(Gtk.Frame):
 
     def __init__(self, frametext=None):
-        GObject.GObject.__init__(self)
+        super(CategoryFrame, self).__init__()
         self.set_label(frametext)
         Gtk.Frame.set_shadow_type(self, Gtk.ShadowType.IN)
 
@@ -143,7 +143,7 @@ class CategoryFrame(Gtk.Frame):
 class SubcategoryFrame(Gtk.Frame):
 
     def __init__(self, frametext=None):
-        GObject.GObject.__init__(self)
+        super(SubcategoryFrame, self).__init__()
         self.set_label(frametext)
         Gtk.Frame.set_shadow_type(self, Gtk.ShadowType.ETCHED_IN)
 
@@ -158,8 +158,7 @@ class ConnectionDialog(Gtk.Dialog):
                     _('Icecast 2 Stats/Relay'), _('Shoutcast Stats/Relay'))
 
     def __init__(self, parent_window, tree_selection):
-        GObject.GObject.__init__(
-            self,
+        super(ConnectionDialog, self).__init__(
             title=_('Enter new server connection details'))
         self.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
                          Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT)
@@ -553,7 +552,7 @@ class CellRendererXCast(Gtk.CellRendererText):
     }
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        super(CellRendererXCast, self).__init__()
         self._servertype = 0
         self._sensitive = 1
         self.props.xalign = 0.5
@@ -803,7 +802,7 @@ class ConnectionPane(Gtk.VBox):
 
     def __init__(self, set_tip, tab):
         self.tab = tab
-        GObject.GObject.__init__(self)
+        super(ConnectionPane, self).__init__()
         self._streaming_set = False
         vbox = Gtk.VBox()
         vbox.set_border_width(6)
@@ -1002,7 +1001,7 @@ class TimeEntry(Gtk.HBox):
             self.seconds_past_midnight = -1
 
     def __init__(self, labeltext):
-        GObject.GObject.__init__(self)
+        super(TimeEntry, self).__init__()
         self.set_spacing(3)
         self.check = Gtk.CheckButton(labeltext)
         self.check.connect("toggled", self.__entry_activate)
@@ -1055,7 +1054,7 @@ class AutoAction(Gtk.HBox):
             self.radio_active = which
 
     def __init__(self, labeltext, names_actions):
-        GObject.GObject.__init__(self)
+        super(AutoAction, self).__init__()
         self.radio_active = 0
         self.check_button = Gtk.CheckButton(label=labeltext)
         self.set_spacing(4)
@@ -1098,7 +1097,7 @@ class FramedSpin(Gtk.Frame):
 
     def __init__(self, text, adj, adj_basis):
         self.adj_basis = adj_basis
-        GObject.GObject.__init__(self)
+        super(FramedSpin, self).__init__()
         self.check = Gtk.CheckButton(text)
         hbox = Gtk.HBox()
         hbox.pack_start(self.check, False, False, 2)
@@ -1127,7 +1126,7 @@ class SimpleFramedSpin(Gtk.Frame):
         self.spin.set_value(new_value)
 
     def __init__(self, text, adj):
-        GObject.GObject.__init__(self)
+        super(SimpleFramedSpin, self).__init__()
         label = Gtk.Label(label=text)
         hbox = Gtk.HBox()
         hbox.pack_start(label, False, False, 3)
@@ -1168,7 +1167,7 @@ class Tab(Gtk.VBox):
         self.indicator_lookup = indicator_lookup
         self.numeric_id = numeric_id
         self.source_client_gui = scg
-        GObject.GObject.__init__(self)
+        super(Tab, self).__init__()
         Gtk.VBox.set_border_width(self, 8)
         Gtk.VBox.show(self)
 
@@ -1178,7 +1177,7 @@ class Troubleshooting(Gtk.VBox):
     """Server connection management control widget."""
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        super(Troubleshooting, self).__init__()
         self.set_border_width(6)
         self.set_spacing(8)
 
@@ -2186,7 +2185,7 @@ class RecordTab(Tab):
 
         def __init__(self, parent):
             self.parentobject = parent
-            GObject.GObject.__init__(self)
+            Gtk.Entry.__init__(self)
             self.set_width_chars(7)
             self.set_sensitive(False)
             self.set_editable(False)
