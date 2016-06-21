@@ -3047,9 +3047,9 @@ class IDJC_Media_Player:
                     count = self.max_seek - int(progress.get_value())
             else:
                 count = self.progress_current_figure
-            hours = int(count / 3600)
+            hours = count // 3600
             count = count - (hours * 3600)
-            minutes = count / 60
+            minutes = count // 60
             seconds = count - (minutes * 60)
             if self.digiprogress_type == 0:
                 self.digiprogress.set_text(
