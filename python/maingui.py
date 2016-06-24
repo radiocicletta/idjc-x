@@ -2483,12 +2483,8 @@ class MainWindow(dbus.service.Object):
                          str(int(self.history_expander.get_expanded())) + "\n")
                 fh.write("pass_speed=" +
                          str(self.passspeed_adj.get_value()) + "\n")
-                # fh.write("prefs=" +
-                #            str(int((self.prefs_window.window.flags() &
-                #            Gtk.VISIBLE) != 0)) + "\n")
-                # fh.write("server=" +
-                #            str(int((self.server_window.window.flags() &
-                #            Gtk.VISIBLE) != 0)) + "\n")
+                fh.write("prefs={}\n".format(int(self.prefs_window.window.props.visible)))
+                fh.write("server={}\n".format(int(self.prefs_window.window.props.visible)))
                 fh.write("prefspage=" +
                          str(self.prefs_window.notebook.get_current_page()) +
                          "\n")
