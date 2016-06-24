@@ -665,7 +665,7 @@ class ConnectionPane(Gtk.VBox):
         for i in range(len(self.liststore)):
             s = self.row_to_dict(i)
             del s["listeners"]
-            s["password"] = base64.encodestring(s["password"])
+            s["password"] = base64.encodestring(s["password"].encode()).decode()
             d = []
             for key, value in s.items():
                 if type(value) == str:
@@ -710,7 +710,9 @@ class ConnectionPane(Gtk.VBox):
                             dtype)
                     d[key] = value
                 try:
-                    d["password"] = base64.decodestring(d["password"])
+                    d["password"] = base64.decodestring(
+                        d["password"].encode()
+                    ).decode()
                 except KeyError:
                     pass
                 self.dict_to_row(d)
@@ -907,18 +909,18 @@ class ConnectionPane(Gtk.VBox):
         lcmenu = Gtk.Menu()
         self.listener_count_button.connect(
             "button-press-event",
-            lambda w, e: lcmenu.popup(None, None, None, e.button, e.time))
+            lambda w, e: lcmenu.popup(None, None, None, None, e.button, e.time))
         lc_stats = Gtk.MenuItem("Update")
         lcmenu.append(lc_stats)
         lcsubmenu = Gtk.Menu()
         lc_stats.set_submenu(lcsubmenu)
-        self.stats_never = Gtk.RadioMenuItem(None, _('Never'))
+        self.stats_never = Gtk.RadioMenuItem(group=None, label=_('Never'))
         self.stats_never.connect(
             "toggled",
             lambda w: ihbox.set_sensitive(not w.get_active()))
-        self.stats_always = Gtk.RadioMenuItem(self.stats_never, _('Always'))
+        self.stats_always = Gtk.RadioMenuItem(group=self.stats_never, label=_('Always'))
         self.stats_ifconnected = Gtk.RadioMenuItem(
-            self.stats_never, _('If connected'))
+            group=self.stats_never, label=_('If connected'))
         self.stats_ifconnected.set_active(True)
         lcsubmenu.append(self.stats_never)
         lcsubmenu.append(self.stats_always)
@@ -1245,11 +1247,11 @@ class Troubleshooting(Gtk.VBox):
         self.pack_start(frame, False, False, 0)
 
         self.sbf_discard_audio = Gtk.RadioButton(
-            None,
-            _("Discard audio data for as long as needed."))
+            group=None,
+            label=_("Discard audio data for as long as needed."))
         self.sbf_reconnect = Gtk.RadioButton(
-            self.sbf_discard_audio,
-            _("Assume the connection is beyond saving and reconnect."))
+            group=self.sbf_discard_audio,
+            label=_("Assume the connection is beyond saving and reconnect."))
         for each in (self.sbf_discard_audio, self.sbf_reconnect):
             sbfbox.pack_start(each, True, False, 0)
 
@@ -1530,9 +1532,9 @@ class StreamTab(Tab):
         if self.format_control.finalised:
             fallback = self.metadata_fallback.get_text()
             songname = self.scg.songname or fallback
-            table = [("%%", "%")] + zip(("%r", "%t", "%l"), ((
+            table = [("%%", "%")] + list(zip(("%r", "%t", "%l"), ((
                 getattr(self.scg, x) or fallback) for x in (
-                "artist", "title", "album")))
+                "artist", "title", "album"))))
             table.append(("%s", songname))
             raw_cm = self.metadata.get_text().strip()
             cm = string_multireplace(raw_cm, table)
