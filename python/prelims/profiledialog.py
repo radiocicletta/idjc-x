@@ -89,7 +89,7 @@ class NewProfileDialog(Gtk.Dialog):
         self.set_destroy_with_parent(True)
         self._icon_dialog.set_transient_for(self)
         self._icon_dialog.set_title("Choose An Icon")
-        self._icon_dialog.set_buttons(
+        self._icon_dialog.add_buttons(
             Gtk.STOCK_CLEAR, Gtk.ResponseType.NONE,
             Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
             Gtk.STOCK_OK, Gtk.ResponseType.OK)
@@ -116,7 +116,7 @@ class NewProfileDialog(Gtk.Dialog):
             icon = Gtk.STOCK_COPY if row else Gtk.STOCK_NEW
         self.image = Gtk.Image.new_from_stock(icon, Gtk.IconSize.DIALOG)
         self.image.set_alignment(0.0, 0.0)
-        hbox.pack_start(self.image, False)
+        hbox.pack_start(self.image, False, False, 0)
         table = Gtk.Table(2, 4)
         table.set_row_spacings(6)
         table.set_col_spacing(0, 6)
@@ -463,7 +463,11 @@ class ProfileDialog(Gtk.Dialog, metaclass=ProfileSingleton):
         try:
             return vals.index(self._default)
         except ValueError:
-            return cmp(*vals)
+            if vals[0] < vals[1]:
+                return -1
+            if vals[0] > vals[1]:
+                return 1
+            return 0
 
     def set_data_function(self, f):
         self._data_function = f
