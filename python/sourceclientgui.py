@@ -98,8 +98,7 @@ class HistoryEntryWithMenu(HistoryEntry):
 
     def __init__(self):
         HistoryEntry.__init__(self, initial_text=("", "%s", "%r - %t"))
-        #self.get_child().connect("populate-popup", self._on_populate_popup)
-        self.get_child().connect("popup-menu", self._on_populate_popup)
+        self.get_child().connect("populate-popup", self._on_populate_popup)
 
     def _on_populate_popup(self, entry, menu):
         attr_menu_item = Gtk.MenuItem(_('Insert Attribute'))
@@ -1542,11 +1541,7 @@ class StreamTab(Tab):
             encoding = "utf-8"
             if fdata["family"] == "mpeg" and \
                     fdata["codec"] in ("mp2", "mp3", "aac", "aacpv2"):
-                if fdata["metadata_mode"] == "utf-8":
-                    disp = songname
-                else:
-                    encoding = "latin1"
-                    disp = songname.encode(encoding, "replace")
+                disp = songname
                 if not cm:
                     cm = songname
             elif fdata["family"] == "ogg":
@@ -1558,9 +1553,8 @@ class StreamTab(Tab):
             else:
                 disp = "no metadata string defined for this "\
                     "stream format: %s %s" % (fdata["family"], fdata["codec"])
-
             if cm:
-                cm = cm.encode(encoding, "replace")
+                cm = cm
                 disp = cm
 
             if fdata["metadata_mode"] == "suppressed":
@@ -1800,7 +1794,6 @@ class StreamTab(Tab):
         # TC: Label for the metadata fallback value.
         fallback_label = SmallLabel(_('Fallback'))
         self.metadata = HistoryEntryWithMenu()
-        #self.metadata.get_child().connect("changed", self.cb_new_metadata_format)
         self.metadata.get_child().connect(
             "notify",
             self.cb_new_metadata_format)

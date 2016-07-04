@@ -296,7 +296,7 @@ class DefaultEntry(Gtk.Entry):
                 pass
 
 
-class HistoryEntry(Gtk.ComboBoxText):
+class HistoryEntry(Gtk.ComboBox):
 
     """Combobox which performs history function."""
 
@@ -304,11 +304,11 @@ class HistoryEntry(Gtk.ComboBoxText):
         self.max_size = max_size
         self.store_blank = store_blank
         self.ls = Gtk.ListStore(str)
-        super(HistoryEntry, self).__init__()
-        self.set_model(self.ls)
+        super(HistoryEntry, self).__init__(has_entry=True, model=self.ls)
+        self.set_entry_text_column(0)
         self.connect("notify::popup-shown", self.update_history)
-        #self.get_child().connect("activate", self.update_history)
-        self.get_child().connect("event", self.update_history)
+        self.get_child().connect("activate", self.update_history)
+        #self.get_child().connect("event", self.update_history)
         self.set_history("\x00".join(initial_text))
         geo = self.get_screen().get_root_window().get_geometry()
         cells = self.get_cells()
@@ -318,10 +318,7 @@ class HistoryEntry(Gtk.ComboBoxText):
             cell.props.wrap_mode = Pango.WrapMode.CHAR
 
     def update_history(self, *args):
-        if self.get_has_entry():
-            text = self.get_child().get_text().strip()
-        else:
-            text = None
+        text = self.get_child().get_text().strip()
         if self.store_blank or text:
             # Remove duplicate stored text.
             for i, row in enumerate(self.ls):
@@ -338,8 +335,7 @@ class HistoryEntry(Gtk.ComboBoxText):
 
     def set_text(self, text):
         self.update_history()
-        if self.get_has_entry():
-            self.get_child().set_text(text)
+        self.get_child().set_text(text)
 
     def get_history(self):
         self.update_history()
