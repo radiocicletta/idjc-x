@@ -3385,13 +3385,12 @@ class IDJC_Media_Player:
             return
 
     def drag_data_delete(self, treeview, context):
-        if context.action == Gdk.DragAction.MOVE:
-            treeselection = treeview.get_selection()
-            model, iter = treeselection.get_selected()
-            data = model.get_value(iter, 0)
-            if data[:3] == "<b>":
-                self.iter_playing = 0
-                self.stop.clicked()
+        treeselection = treeview.get_selection()
+        model, iter = treeselection.get_selected()
+        data = model.get_value(iter, 0)
+        if data[:3] == "<b>":
+            self.iter_playing = 0
+            self.stop.clicked()
 
     def drag_data_get_data(self, treeview, context, selection, target_id,
                            etime):
@@ -4414,7 +4413,7 @@ class IDJC_Media_Player:
         self.treeview.enable_model_drag_source(
             Gdk.ModifierType.BUTTON1_MASK,
             self.sourcetargets,
-            Gdk.DragAction.DEFAULT | Gdk.DragAction.MOVE
+            Gdk.DragAction.MOVE
         )
         self.treeview.enable_model_drag_dest(
             self.droptargets,
