@@ -731,7 +731,10 @@ class ConnectionPane(Gtk.VBox):
                         d["password"] = ap
                 stats_thread = StatsThread(d)
                 stats_thread.start()
-                ref = Gtk.TreeRowReference(self.liststore, i)
+                ref = Gtk.TreeRowReference.new(
+                    self.liststore,
+                    Gtk.TreePath.new_from_indices([i])
+                )
                 self.stats_rows.append((ref, stats_thread))
             else:
                 row[5] = -1      # sets listeners text to 'unknown'
@@ -1530,15 +1533,20 @@ class StreamTab(Tab):
         if self.format_control.finalised:
             fallback = self.metadata_fallback.get_text()
             songname = self.scg.songname or fallback
-            table = [("%%", "%")] + list(zip(("%r", "%t", "%l"), ((
-                getattr(self.scg, x) or fallback) for x in (
-                "artist", "title", "album"))))
+            table = [("%%", "%")]
+            for placeholder, idx in (
+                ("%r", "artist"),
+                ("%t", "title"),
+                    ("%l", "album")):
+                val = getattr(self.scg, idx)
+                if type(val) == bytes:
+                    val = val.decode()
+                table.append((placeholder, val))
             table.append(("%s", songname))
             raw_cm = self.metadata.get_text().strip()
             cm = string_multireplace(raw_cm, table)
 
             fdata = self.format_control.get_settings()
-            encoding = "utf-8"
             if fdata["family"] == "mpeg" and \
                     fdata["codec"] in ("mp2", "mp3", "aac", "aacpv2"):
                 disp = songname
@@ -2735,7 +2743,7 @@ class SourceClientGui(dbus.service.Object):
         self.artist = artist
         self.title = title
         self.album = album
-        self.songname = songname
+        self.songname = songname if type(songname) == str else songname.decode()
         self.send(
             "artist=%s\ntitle=%s\nalbum=%s\n"
             "command=new_song_metadata\n" % (
