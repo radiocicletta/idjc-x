@@ -450,10 +450,10 @@ class Binding(tuple):
     # a simple 0..127 range, for easy use in a SpinButton.
     #
     MODIFIERS = (
-        (Gdk.ModifierType.SHIFT_MASK, '\u21D1'),
-        (Gdk.ModifierType.CONTROL_MASK, '^'),
-        (Gdk.ModifierType.MOD1_MASK, '\u2020'),  # alt/option
-        (Gdk.ModifierType.MOD5_MASK, '\u2021'),  # altgr/option
+        (int(Gdk.ModifierType.SHIFT_MASK), '\u21D1'),
+        (int(Gdk.ModifierType.CONTROL_MASK), '^'),
+        (int(Gdk.ModifierType.MOD1_MASK), '\u2020'),  # alt/option
+        (int(Gdk.ModifierType.MOD5_MASK), '\u2021'),  # altgr/option
         #(Gdk.EventMask.META_MASK, '\u25C6'),
         # (Gdk.EventMask.SUPER_MASK, '\u2318'), # win/command
         #(Gdk.EventMask.HYPER_MASK, '\u25CF'),
@@ -1364,10 +1364,10 @@ class LookupComboBox(Gtk.ComboBox):
         if icons is not None:
             cricon = Gtk.CellRendererPixbuf()
             self.pack_start(cricon, False)
-            #self.set_attributes(cricon, pixbuf= 2)
+            self.add_attribute(cricon, "pixbuf", 2)
         crtext = Gtk.CellRendererText()
         self.pack_start(crtext, False)
-        #self.set_attributes(crtext, text= 0, sensitive= 1)
+        self.add_attribute(crtext, "text", 0)
 
     def get_value(self):
         active = self.get_active()
@@ -1400,7 +1400,7 @@ class GroupedComboBox(Gtk.ComboBox):
 
         cr = Gtk.CellRendererText()
         self.pack_start(cr, True)
-        #self.set_attributes(cr, text= 1, sensitive= 2)
+        self.add_attribute(cr, "text", 1)
 
     def get_value(self):
         iter = self.get_active_iter()
@@ -1620,9 +1620,9 @@ class BindingEditor(Gtk.Dialog):
         # TC: Use reverse scale and invert the meaning of button presses.
         self.value_field_invert = Gtk.CheckButton(_('Reversed'))
         self.value_field_pulse_noinvert = Gtk.RadioButton(
-            None, label=_('Pressed'))
+            group=None, label=_('Pressed'))
         self.value_field_pulse_inverted = Gtk.RadioButton(
-            self.value_field_pulse_noinvert, _('Released'))
+            group=self.value_field_pulse_noinvert, label=_('Released'))
 
         # Layout
         #
@@ -2213,7 +2213,7 @@ class ControlsUI(Gtk.VBox):
         if iter_sort is None:
             return
         model = model_sort.get_model()
-        iter = model_sort.convert_iter_to_child_iter(None, iter_sort)
+        iter = model_sort.convert_iter_to_child_iter(iter_sort)
 
         self.editing = iter
         self.editor.set_binding(self.owner.bindings[model.get_path(iter)[0]])
@@ -2263,7 +2263,7 @@ class BindingListModel(GenericTreeModel):
                 # TreeView area invalidation to trigger a redraw.
                 if is_new or rowref not in d:
                     try:
-                        path = self.on_get_path(rowref)
+                        path = Gtk.TreePath.new_from_indices(self.on_get_path(rowref))
                     except ValueError:
                         # User craftily deleted the entry during highlighting.
                         pass
