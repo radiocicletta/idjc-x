@@ -2238,7 +2238,7 @@ class RecordTab(Tab):
             hbox.set_spacing(6)
 
             self.source_store = Gtk.ListStore(str, int)
-            self.source_combo = Gtk.ComboBoxText()
+            self.source_combo = Gtk.ComboBox()
             self.source_combo.set_model(self.source_store)
             rend = Gtk.CellRendererText()
             self.source_combo.pack_start(rend, True)
