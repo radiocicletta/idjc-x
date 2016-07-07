@@ -421,12 +421,12 @@ class JackMenu(MenuMixin):
             with open(where) as f:
                 cons = f.read()
         except Exception:
-            if where:
+            if where is not None:
                 print("problem reading JACK connections files,", where)
             try:
-                if args.no_default_jack_connections:
+                if startup and args.no_default_jack_connections:
                     cons = "[]"
-            except:
+            except Exception as e:
                 cons = "[]"
             else:
                 cons = """[
@@ -460,6 +460,7 @@ class JackMenu(MenuMixin):
                         ["system:playback_5", "{client_id}:output_in_l"]],
                     ["{client_id}:str_out_r",
                         ["system:playback_6", "{client_id}:output_in_r"]]] """
+                print(cons)
 
         try:
             cons = json.loads(cons.format(client_id=os.environ["client_id"]))
