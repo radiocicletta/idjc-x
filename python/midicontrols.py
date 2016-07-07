@@ -581,38 +581,38 @@ class Controls(dbus.service.Object):
         # This matches the hotkeys previously built into IDJC
         #
         self.bindings = [
-            Binding('k100.ffbe:pk_fire.0.127'),  # F-key effects
-            Binding('k100.ffbf:pk_fire.1.127'),
-            Binding('k100.ffc0:pk_fire.2.127'),
-            Binding('k100.ffc1:pk_fire.3.127'),
-            Binding('k100.ffc2:pk_fire.4.127'),
-            Binding('k100.ffc3:pk_fire.5.127'),
-            Binding('k100.ffc4:pk_fire.6.127'),
-            Binding('k100.ffc5:pk_fire.7.127'),
-            Binding('k100.ffc6:pk_fire.8.127'),
-            Binding('k100.ffc7:pk_fire.9.127'),
-            Binding('k100.ffc8:pk_fire.a.127'),
-            Binding('k100.ffc9:pk_fire.b.127'),
-            Binding('k100.ff1b:pb_stop.2.127'),  # Esc stop effects
-            Binding('k100.31:sx_fade.b.0'),  # 1-2 xfader sides
-            Binding('k100.32:sx_fade.b.127'),
-            Binding('k100.63:px_pass.0.127'),  # C, pass xfader
-            Binding('k100.6d:pm_on.0.127'),  # M, first channel toggle
-            Binding('k100.76:pv_on.0.127'),  # V, VoIP toggle
-            Binding('k100.70:pv_prep.0.127'),  # P, VoIP prefade
+            Binding('k0.ffbe:pk_fire.0.127'),  # F-key effects
+            Binding('k0.ffbf:pk_fire.1.127'),
+            Binding('k0.ffc0:pk_fire.2.127'),
+            Binding('k0.ffc1:pk_fire.3.127'),
+            Binding('k0.ffc2:pk_fire.4.127'),
+            Binding('k0.ffc3:pk_fire.5.127'),
+            Binding('k0.ffc4:pk_fire.6.127'),
+            Binding('k0.ffc5:pk_fire.7.127'),
+            Binding('k0.ffc6:pk_fire.8.127'),
+            Binding('k0.ffc7:pk_fire.9.127'),
+            Binding('k0.ffc8:pk_fire.a.127'),
+            Binding('k0.ffc9:pk_fire.b.127'),
+            Binding('k0.ff1b:pb_stop.2.127'),  # Esc stop effects
+            Binding('k0.31:sx_fade.b.0'),  # 1-2 xfader sides
+            Binding('k0.32:sx_fade.b.127'),
+            Binding('k0.63:px_pass.0.127'),  # C, pass xfader
+            Binding('k0.6d:pm_on.0.127'),  # M, first channel toggle
+            Binding('k0.76:pv_on.0.127'),  # V, VoIP toggle
+            Binding('k0.70:pv_prep.0.127'),  # P, VoIP prefade
             # backspace, stop focused player
-            Binding('k100.ff08:pp_stop.3.127'),
+            Binding('k0.ff08:pp_stop.3.127'),
             # slash, advance xfaded player
-            Binding('k100.2f:pp_advance.4.127'),
-            Binding('k100.74:pp_tag.3.127'),  # playlist editing keys
-            Binding('k100.73:pp_istop.3.127'),
-            Binding('k100.75:pp_ianno.3.127'),
-            Binding('k100.61:pp_itrans.3.127'),
-            Binding('k100.66:pp_ifade.3.127'),
-            Binding('k100.6e:pp_ipitch.3.127'),
-            Binding('k104.72:pr_on.0.127'),
-            Binding('k104.73:ps_on.0.127'),
-            Binding('k100.69:pc_tips.0.127'),  # Tooltips shown
+            Binding('k0.2f:pp_advance.4.127'),
+            Binding('k0.74:pp_tag.3.127'),  # playlist editing keys
+            Binding('k0.73:pp_istop.3.127'),
+            Binding('k0.75:pp_ianno.3.127'),
+            Binding('k0.61:pp_itrans.3.127'),
+            Binding('k0.66:pp_ifade.3.127'),
+            Binding('k0.6e:pp_ipitch.3.127'),
+            Binding('k4.72:pr_on.0.127'),
+            Binding('k4.73:ps_on.0.127'),
+            Binding('k0.69:pc_tips.0.127'),  # Tooltips shown
         ]
         self.update_lookup()
 
