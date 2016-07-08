@@ -75,7 +75,7 @@ class FreeTagFrame(Gtk.Frame):
         self.add(sw)
         sw.show()
         self.tb = Gtk.TextBuffer()
-        tv = Gtk.TextView(self.tb)
+        tv = Gtk.TextView.new_with_buffer(self.tb)
         tv.set_wrap_mode(Gtk.WrapMode.CHAR)
         tv.modify_font(Pango.FontDescription('sans 12'))
         sw.add(tv)
@@ -159,15 +159,13 @@ class WMATagger(MutagenTagger):
         for key in self.secondaries:
             values = tag.get(key, [ASFUnicodeAttribute("")])
             for val in values:
-                additional.append(key.encode("utf-8") + "=" + str(
-                                                        val).encode("utf-8"))
+                additional.append(key + "=" + str(val))
 
         for key in self.text_set:
             if key not in self.primary_data and key not in self.secondaries:
                 values = tag[key]
                 for val in values:
-                    additional.append(key.encode("utf-8") + "=" + str(
-                                                        val).encode("utf-8"))
+                    additional.append(key + "=" + str(val))
 
         self.tag_frame.tb.set_text("\n".join(additional))
 
@@ -297,7 +295,7 @@ class ID3Tagger(MutagenTagger):
                         # Handle occurrence of ID3Timestamp.
                         entry.set_text(str(frame.text[0]))
                     for each in frame.text[1:]:
-                        additional.append(fid + ":" + each.encode("utf-8"))
+                        additional.append(fid + ":" + each)
             except KeyError:
                 entry.set_text("")
 
@@ -307,7 +305,7 @@ class ID3Tagger(MutagenTagger):
             if fid[0] == "T" and fid not in done:
                 sep = "=" if fid.startswith("TXXX:") else ":"
                 for text in frame.text:
-                    additional.append(fid + sep + text.encode("utf-8"))
+                    additional.append(fid + sep + text)
 
         self.tag_frame.tb.set_text("\n".join(additional))
 
@@ -514,12 +512,12 @@ class NativeTagger(MutagenTagger):
                 lines.append(key + "=")
             else:
                 for val in values:
-                    lines.append(key + "=" + val.encode("utf-8"))
+                    lines.append(key + "=" + val)
 
         for key, values in tag.items():
             if key not in primaries and key not in self.blacklist:
                 for val in values:
-                    lines.append(key + "=" + val.encode("utf-8"))
+                    lines.append(key + "=" + val)
 
         self.tag_frame.tb.set_text("\n".join(lines))
 
@@ -591,12 +589,12 @@ class ApeTagger(MutagenTagger):
                 lines.append(key + "=")
             else:
                 for val in values:
-                    lines.append(key + "=" + val.encode("utf-8"))
+                    lines.append(key + "=" + val)
 
         for key, values in tag.items():
             if key not in primaries and isinstance(values, APETextValue):
                 for val in values:
-                    lines.append(key + "=" + val.encode("utf-8"))
+                    lines.append(key + "=" + val)
 
         self.tag_frame.tb.set_text("\n".join(lines))
 
@@ -697,33 +695,33 @@ class MutagenGUI:
         label = Gtk.Label()
         if idjcroot:
             if encoding is not None:
-                label.set_markup("<b>" + _('Filename:').decode("utf-8") + \
+                label.set_markup("<b>" + _('Filename:') + \
                 " " + GLib.markup_escape_text(str(os.path.split(
-                pathname)[1], encoding).encode("utf-8", "replace")) + "</b>")
+                pathname)[1], encoding)) + "</b>")
             else:
-                label.set_markup("<b>" + _('Filename:').decode("utf-8") + \
+                label.set_markup("<b>" + _('Filename:') + \
                 " " + GLib.markup_escape_text(os.path.split(
-                pathname)[1]).encode("utf-8", "replace") + "</b>")
+                pathname)[1]) + "</b>")
         else:
-            label.set_markup("<b>" + _('Filename:').decode("utf-8") + " " + \
+            label.set_markup("<b>" + _('Filename:') + " " + \
             GLib.markup_escape_text(str(os.path.split(
-            pathname)[1], "latin1").encode("utf-8", "replace")) + "</b>")
+            pathname)[1], "latin1")) + "</b>")
         vbox.pack_start(label, False, False, 6)
         label.show()
 
         hbox = Gtk.HBox()
         hbox.set_border_width(2)
-        apply_button = Gtk.Button(None, Gtk.STOCK_APPLY)
+        apply_button = Gtk.Button.new_with_label("_Apply")
         if idjcroot is not None:
             apply_button.connect_object_after("clicked", self.update_playlists,
                                                             pathname, idjcroot)
         hbox.pack_end(apply_button, False, False, 0)
         apply_button.show()
-        close_button = Gtk.Button(None, Gtk.STOCK_CLOSE)
+        close_button = Gtk.Button.new_with_label("_Close")
         close_button.connect_object("clicked", Gtk.Window.destroy, self.window)
         hbox.pack_end(close_button, False, False, 10)
         close_button.show()
-        reload_button = Gtk.Button(None, Gtk.STOCK_REVERT_TO_SAVED)
+        reload_button = Gtk.Button.new_with_label("_Revert")
         hbox.pack_start(reload_button, False, False, 10)
         reload_button.show()
         vbox.pack_end(hbox, False, False, 0)
