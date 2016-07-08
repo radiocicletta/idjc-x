@@ -2600,7 +2600,7 @@ class IDJC_Media_Player:
             # Check if the crossfade needs scheduling.
             if pl_mode == 7 or (pl_mode == 0 and self.fade_inspect()):
                 eot_crosstime = int(self.progress_stop_figure) - \
-                    self.parent.passspeed_adj.props.get_value() - \
+                    self.parent.passspeed_adj.get_value() - \
                     int(self.progress_current_figure)
                 # Start other player.
                 if not self.other_player_initiated and eot_crosstime <= 1:
