@@ -20,7 +20,6 @@ __all__ = ['MutagenGUI']
 
 import os
 import sys
-import string
 import re
 import gettext
 
@@ -33,7 +32,7 @@ from mutagen.mp3 import MP3
 from mutagen.apev2 import APEv2, APETextValue
 from mutagen.musepack import Musepack
 from mutagen.monkeysaudio import MonkeysAudio
-from mutagen.asf import ASF, ASFUnicodeAttribute
+from mutagen.asf import ASFUnicodeAttribute
 
 from idjc import FGlobs
 from .tooltips import set_tip
@@ -46,8 +45,8 @@ _ = t.gettext
 pm = ProfileManager()
 
 
-
 class LeftLabel(Gtk.HBox):
+
     """Use in place of Gtk.Label where left justification is needed."""
 
     def __init__(self, text):
@@ -56,8 +55,8 @@ class LeftLabel(Gtk.HBox):
         self.pack_start(self.label, False, False, 0)
 
 
-
 class RightLabel(Gtk.HBox):
+
     """Use in place of Gtk.Label where right justification is needed."""
 
     def __init__(self, text):
@@ -65,8 +64,8 @@ class RightLabel(Gtk.HBox):
         self.pack_end(Gtk.Label(text, True, True, 0), False, False, 0)
 
 
-
 class FreeTagFrame(Gtk.Frame):
+
     def __init__(self):
         super(FreeTagFrame, self).__init__()
         sw = Gtk.ScrolledWindow()
@@ -82,8 +81,8 @@ class FreeTagFrame(Gtk.Frame):
         tv.show()
 
 
-
 class MutagenTagger(Gtk.VBox):
+
     """Base class for ID3Tagger and NativeTagger."""
 
     def __init__(self, pathname):
@@ -91,8 +90,8 @@ class MutagenTagger(Gtk.VBox):
         self.pathname = pathname
 
 
-
 class WMATagger(MutagenTagger):
+
     """Handles tagging of WMA files"""
 
     primary_data = ("Title", "Author")
@@ -120,7 +119,8 @@ class WMATagger(MutagenTagger):
                 except KeyError:
                     pass
 
-        lines = tb.get_text(tb.get_start_iter(), tb.get_end_iter()).splitlines()
+        lines = tb.get_text(tb.get_start_iter(),
+                            tb.get_end_iter()).splitlines()
         for line in lines:
             try:
                 key, val = line.split("=", 1)
@@ -135,11 +135,10 @@ class WMATagger(MutagenTagger):
                     except (KeyError, AttributeError):
                         try:
                             tag[key] = [
-                                    ASFUnicodeAttribute(val.decode("utf-8"))]
+                                ASFUnicodeAttribute(val.decode("utf-8"))]
                         except KeyError:
                             print("Unacceptable key", key)
         tag.save()
-
 
     def load_tag(self):
         """(re)Writes the tag data to the GUI."""
@@ -168,7 +167,6 @@ class WMATagger(MutagenTagger):
                     additional.append(key + "=" + str(val))
 
         self.tag_frame.tb.set_text("\n".join(additional))
-
 
     def __init__(self, pathname):
         MutagenTagger.__init__(self, pathname)
@@ -206,18 +204,17 @@ class WMATagger(MutagenTagger):
 
         for key, val in self.tag.items():
             if key not in self.primary_line and all(isinstance(v, (
-                                ASFUnicodeAttribute, str)) for v in val):
+                    ASFUnicodeAttribute, str)) for v in val):
                 self.text_set.append(key)
 
 
-
 class ID3Tagger(MutagenTagger):
+
     """ID3 tagging with Mutagen."""
 
     primary_data = (("TIT2", _('title')), ("TPE1", _('artist')),
-                         ("TALB", _('album')), ("TRCK", _('track/total')),
-                         ("TCON", _('genre')), ("TDRC", _('record date')))
-
+                    ("TALB", _('album')), ("TRCK", _('track/total')),
+                    ("TCON", _('genre')), ("TDRC", _('record date')))
 
     def save_tag(self):
         """Updates the tag with the GUI data."""
@@ -238,7 +235,8 @@ class ID3Tagger(MutagenTagger):
 
         # Add the freeform text tags.
         tb = self.tag_frame.tb
-        lines = tb.get_text(tb.get_start_iter(), tb.get_end_iter()).splitlines()
+        lines = tb.get_text(tb.get_start_iter(),
+                            tb.get_end_iter()).splitlines()
 
         for line in lines:
             try:
@@ -278,7 +276,6 @@ class ID3Tagger(MutagenTagger):
 
         tag.save()
 
-
     def load_tag(self):
         """(re)Writes the tag data to the GUI."""
 
@@ -308,7 +305,6 @@ class ID3Tagger(MutagenTagger):
                     additional.append(fid + sep + text)
 
         self.tag_frame.tb.set_text("\n".join(additional))
-
 
     def __init__(self, pathname, force=False):
         MutagenTagger.__init__(self, pathname)
@@ -347,7 +343,7 @@ class ID3Tagger(MutagenTagger):
 
         self.primary_line = []
         for frame, text, entry in (
-                            (x, y, Gtk.Entry()) for x, y in self.primary_data):
+                (x, y, Gtk.Entry()) for x, y in self.primary_data):
             self.primary_line.append((frame, entry))
             vbox_frame.add(LeftLabel(frame))
             vbox_text.add(RightLabel(text))
@@ -356,9 +352,9 @@ class ID3Tagger(MutagenTagger):
 
         self.tag_frame = FreeTagFrame()
         set_tip(self.tag_frame, _('Add any other ID3 text frames here.\ne.g. '
-        'TIT2:Alternate Title\nThis will be appended onto the main TIT2 tag.'
-        '\n\nEnter user defined text frames like this:\nTXXX:foo=bar\n\n'
-        'For more information visit www.id3.org.'))
+                                  'TIT2:Alternate Title\nThis will be appended onto the main TIT2 tag.'
+                                  '\n\nEnter user defined text frames like this:\nTXXX:foo=bar\n\n'
+                                  'For more information visit www.id3.org.'))
         self.tag_frame.set_border_width(5)
         # TC: Remaining textual ID3 data is show below this heading.
         self.tag_frame.set_label(_(' Additional Text Frames '))
@@ -366,13 +362,13 @@ class ID3Tagger(MutagenTagger):
         self.tag_frame.show()
 
 
-
 class MP4Tagger(MutagenTagger):
+
     """MP4 tagging with Mutagen."""
 
     primary_data = (("\xa9nam", _('Title')), ("\xa9ART", _('Artist')),
-                         ("\xa9alb", _('Album')), ("trkn", _('Track')),
-                         ("\xa9gen", _('Genre')), ("\xa9day", _('Year')))
+                    ("\xa9alb", _('Album')), ("trkn", _('Track')),
+                    ("\xa9gen", _('Genre')), ("\xa9day", _('Year')))
 
     def save_tag(self):
         """Updates the tag with the GUI data."""
@@ -408,7 +404,6 @@ class MP4Tagger(MutagenTagger):
 
         tag.save()
 
-
     def load_tag(self):
         """(re)Writes the tag data to the GUI."""
 
@@ -427,7 +422,6 @@ class MP4Tagger(MutagenTagger):
                         entry.set_text(str(frame[0]))
                 else:
                     entry.set_text(frame)
-
 
     def __init__(self, pathname):
         MutagenTagger.__init__(self, pathname)
@@ -451,19 +445,18 @@ class MP4Tagger(MutagenTagger):
 
         self.primary_line = []
         for frame, text, entry in (
-                            (x, y, Gtk.Entry()) for x, y in self.primary_data):
+                (x, y, Gtk.Entry()) for x, y in self.primary_data):
             self.primary_line.append((frame, entry))
             vbox_text.add(LeftLabel(text))
             vbox_entry.add(entry)
         hbox.show_all()
 
 
-
 class NativeTagger(MutagenTagger):
+
     """Native format tagging with Mutagen. Mostly FLAC and Ogg."""
 
     blacklist = "coverart", "metadata_block_picture"
-
 
     def save_tag(self):
         """Updates the tag with the GUI data."""
@@ -475,7 +468,8 @@ class NativeTagger(MutagenTagger):
                 del tag[key]
 
         tb = self.tag_frame.tb
-        lines = tb.get_text(tb.get_start_iter(), tb.get_end_iter()).splitlines()
+        lines = tb.get_text(tb.get_start_iter(),
+                            tb.get_end_iter()).splitlines()
 
         for line in lines:
             try:
@@ -496,14 +490,13 @@ class NativeTagger(MutagenTagger):
 
         tag.save()
 
-
     def load_tag(self):
         """(re)Writes the tag data to the GUI."""
 
         tag = self.tag
         lines = []
         primaries = "title", "artist", "author", "album",\
-                                  "tracknumber", "tracktotal", "genre", "date"
+            "tracknumber", "tracktotal", "genre", "date"
 
         for key in primaries:
             try:
@@ -521,7 +514,6 @@ class NativeTagger(MutagenTagger):
 
         self.tag_frame.tb.set_text("\n".join(lines))
 
-
     def __init__(self, pathname, ext):
         MutagenTagger.__init__(self, pathname)
         self.tag = mutagen.File(pathname)
@@ -535,12 +527,11 @@ class NativeTagger(MutagenTagger):
         self.tag_frame.show()
 
 
-
 class ApeTagger(MutagenTagger):
+
     """APEv2 tagging with Mutagen."""
 
-    opener = {"ape": MonkeysAudio, "mpc": Musepack }
-
+    opener = {"ape": MonkeysAudio, "mpc": Musepack}
 
     def save_tag(self):
         """Updates the tag with the GUI data."""
@@ -552,7 +543,8 @@ class ApeTagger(MutagenTagger):
                 del tag[key]
 
         tb = self.tag_frame.tb
-        lines = tb.get_text(tb.get_start_iter(), tb.get_end_iter()).splitlines()
+        lines = tb.get_text(tb.get_start_iter(),
+                            tb.get_end_iter()).splitlines()
 
         for line in lines:
             try:
@@ -573,14 +565,13 @@ class ApeTagger(MutagenTagger):
 
         tag.save()
 
-
     def load_tag(self):
         """(re)Writes the tag data to the GUI."""
 
         tag = self.tag
         lines = []
         primaries = "TITLE", "ARTIST", "AUTHOR", "ALBUM",\
-                                  "TRACKNUMBER", "TRACKTOTAL", "GENRE", "DATE"
+            "TRACKNUMBER", "TRACKTOTAL", "GENRE", "DATE"
 
         for key in primaries:
             try:
@@ -597,7 +588,6 @@ class ApeTagger(MutagenTagger):
                     lines.append(key + "=" + val)
 
         self.tag_frame.tb.set_text("\n".join(lines))
-
 
     def __init__(self, pathname, extension):
         MutagenTagger.__init__(self, pathname)
@@ -630,29 +620,27 @@ class ApeTagger(MutagenTagger):
         self.tag_frame.show()
 
 
-
 class MutagenGUI:
-    ext2name = {"aac": "AAC", "mp3": "ID3", "mp2": "ID3", "mp4": "MP4", "m4a": "MP4", "spx": "Speex",
-                "flac": "FLAC", "ogg": "Ogg Vorbis", "oga": "XIPH Ogg audio", "opus": "Ogg Opus",
-                "m4b": "MP4", "m4p": "MP4", "wma": "Windows Media Audio"}
+    ext2name = {
+        "aac": "AAC", "mp3": "ID3", "mp2": "ID3", "mp4": "MP4", "m4a": "MP4", "spx": "Speex",
+        "flac": "FLAC", "ogg": "Ogg Vorbis", "oga": "XIPH Ogg audio", "opus": "Ogg Opus",
+        "m4b": "MP4", "m4p": "MP4", "wma": "Windows Media Audio"}
 
-
-    def destroy_and_quit(self, widget, data = None):
+    def destroy_and_quit(self, widget, data=None):
         Gtk.main_quit()
         sys.exit(0)
-
 
     def update_playlists(self, pathname, idjcroot):
         newplaylistdata = idjcroot.player_left.get_media_metadata(pathname)
         idjcroot.player_left.update_playlist(newplaylistdata)
         idjcroot.player_right.update_playlist(newplaylistdata)
 
-
     @staticmethod
     def is_supported(pathname):
-        supported = [ "mp2", "mp3", "ogg", "oga" ]
+        supported = ["mp2", "mp3", "ogg", "oga"]
         if FGlobs.avenabled:
-            supported += ["aac", "mp4", "m4a", "m4b", "m4p", "ape", "mpc", "wma"]
+            supported += ["aac", "mp4", "m4a",
+                          "m4b", "m4p", "ape", "mpc", "wma"]
         if FGlobs.flacenabled:
             supported.append("flac")
         if FGlobs.speexenabled:
@@ -667,8 +655,7 @@ class MutagenGUI:
         else:
             return extension
 
-
-    def __init__(self, pathname, encoding, idjcroot = None):
+    def __init__(self, pathname, encoding, idjcroot=None):
         if not pathname:
             print("Tagger not supplied any pathname.")
             return
@@ -695,17 +682,17 @@ class MutagenGUI:
         label = Gtk.Label()
         if idjcroot:
             if encoding is not None:
-                label.set_markup("<b>" + _('Filename:') + \
-                " " + GLib.markup_escape_text(str(os.path.split(
-                pathname)[1], encoding)) + "</b>")
+                label.set_markup("<b>" + _('Filename:') +
+                                 " " + GLib.markup_escape_text(str(os.path.split(
+                                     pathname)[1], encoding)) + "</b>")
             else:
-                label.set_markup("<b>" + _('Filename:') + \
-                " " + GLib.markup_escape_text(os.path.split(
-                pathname)[1]) + "</b>")
+                label.set_markup("<b>" + _('Filename:') +
+                                 " " + GLib.markup_escape_text(os.path.split(
+                                     pathname)[1]) + "</b>")
         else:
-            label.set_markup("<b>" + _('Filename:') + " " + \
-            GLib.markup_escape_text(str(os.path.split(
-            pathname)[1], "latin1")) + "</b>")
+            label.set_markup("<b>" + _('Filename:') + " " +
+                             GLib.markup_escape_text(str(os.path.split(
+                                 pathname)[1], "latin1")) + "</b>")
         vbox.pack_start(label, False, False, 6)
         label.show()
 
@@ -714,7 +701,7 @@ class MutagenGUI:
         apply_button = Gtk.Button.new_with_label("_Apply")
         if idjcroot is not None:
             apply_button.connect_object_after("clicked", self.update_playlists,
-                                                            pathname, idjcroot)
+                                              pathname, idjcroot)
         hbox.pack_end(apply_button, False, False, 0)
         apply_button.show()
         close_button = Gtk.Button.new_with_label("_Close")
@@ -769,18 +756,18 @@ class MutagenGUI:
 
             if self.native is not None and self.native.tag is not None:
                 reload_button.connect("clicked",
-                                            lambda x: self.native.load_tag())
+                                      lambda x: self.native.load_tag())
                 apply_button.connect("clicked",
-                                            lambda x: self.native.save_tag())
+                                     lambda x: self.native.save_tag())
                 label = Gtk.Label(label=_('Native') + " (" + self.ext2name[
-                                                            extension] + ")")
+                    extension] + ")")
                 notebook.append_page(self.native, label)
                 self.native.show()
 
             reload_button.clicked()
 
             apply_button.connect_object_after("clicked",
-                                            Gtk.Window.destroy, self.window)
+                                              Gtk.Window.destroy, self.window)
             self.window.show()
         except IOError as e:
             print(e)
