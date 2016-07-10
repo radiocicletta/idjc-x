@@ -4488,7 +4488,7 @@ class IDJC_Media_Player:
         pbox.pack_start(plframe, True, True, 0)
 
         self.fill_stopper = FillStopper()
-        pbox.pack_start(self.fill_stopper, False)
+        pbox.pack_start(self.fill_stopper, False, False, 0)
 
         # A box for the playback speed controls
         self.pbspeedbox = Gtk.HBox(False, 0)
@@ -4611,7 +4611,7 @@ class IDJC_Media_Player:
         store = Gtk.ListStore(str, str)
         self.pl_mode = Gtk.ComboBox(model=store)
         rend = Gtk.CellRendererText()
-        self.pl_mode.pack_start(rend)
+        self.pl_mode.pack_start(rend, False)
         self.pl_mode.add_attribute(rend, "text", 1)
         # TC: playlist modes
         for each in (N_('Play All'), N_('Loop All'), N_('Random'),
