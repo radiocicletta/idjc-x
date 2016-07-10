@@ -457,7 +457,7 @@ class StatsThread(Thread):
                 else:
                     raise
         except IOError:
-            print "failed to obtain server stats data for", self.url
+            print("failed to obtain server stats data for", self.url)
             return
 
         try:
@@ -501,9 +501,9 @@ class StatsThread(Thread):
                     raise BadXML
 
         except GoodXML:
-            print "server", self.url, "has", self.listeners, "listeners"
+            print("server", self.url, "has", self.listeners, "listeners")
         except BadXML:
-            print "unexpected to parse server stats XML file"
+            print("unexpected to parse server stats XML file")
         finally:
             dom.unlink()
 

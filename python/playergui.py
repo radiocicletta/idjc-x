@@ -1760,7 +1760,7 @@ class IDJC_Media_Player:
                     if self.is_paused:
                         self.pause.set_active(False)
                 else:
-                    print "scrolling the playlist window to the current track"
+                    print("scrolling the playlist window to the current track")
                     path = self.model_playing.get_path(self.iter_playing)
                     self.treeview.scroll_to_cell(path)
             else:
