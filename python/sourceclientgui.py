@@ -406,7 +406,7 @@ class ConnectionDialog(Gtk.Dialog):
         self.loginname.set_sensitive(sens)
 
     def _on_file_response(self, dialog, response_id, chooser):
-        if response_id == gtk.RESPONSE_NONE:
+        if response_id == Gtk.ResponseType.NONE:
             chooser.unselect_all()
 
 class StatsThread(Thread):
@@ -884,7 +884,7 @@ class ConnectionPane(Gtk.VBox):
         scrolled.add(self.treeview)
         self.treeview.show()
 
-        hbox = gtk.HBox()
+        hbox = Gtk.HBox()
 
         self.listener_count_button = Gtk.Button()
         ihbox = Gtk.HBox()
@@ -906,7 +906,7 @@ class ConnectionPane(Gtk.VBox):
         frame.add(self.listeners_display)
         self.listeners_display.show()
         self.listener_count_button.add(ihbox)
-        hbox.pack_start(self.listener_count_button, False)
+        hbox.pack_start(self.listener_count_button, False, False, 0)
 
         lcmenu = Gtk.Menu()
         self.listener_count_button.connect(
@@ -1205,7 +1205,7 @@ class Troubleshooting(Gtk.VBox):
             _("If the connection breaks reconnect to the server"))
         self.automatic_reconnection.set_active(True)
         frame.set_label_widget(self.automatic_reconnection)
-        self.pack_start(frame, False)
+        self.pack_start(frame, False, False, 0)
 
         reconbox = Gtk.HBox()
         reconbox.set_border_width(6)
@@ -1660,8 +1660,8 @@ class StreamTab(Tab):
         self.tab_type = "streamer"
         self.set_spacing(10)
 
-        self.ic_expander = gtk.Expander(_('Individual Controls'))
-        self.pack_start(self.ic_expander, False)
+        self.ic_expander = Gtk.Expander(label=_('Individual Controls'))
+        self.pack_start(self.ic_expander, False, False, 0)
         self.ic_expander.show()
 
         self.ic_frame = Gtk.Frame()
@@ -1861,7 +1861,7 @@ class StreamTab(Tab):
         table.attach(self.metadata_display, 0, 3, 2, 3, x | f, s | f)
         self.metadata_display.show()
 
-        self.pack_start(self.ic_frame, False)
+        self.pack_start(self.ic_frame, False, False, 0)
 
         self.details = Gtk.Expander(label=_('Configuration'))
         set_tip(self.details, _('The controls for configuring a stream.'))
