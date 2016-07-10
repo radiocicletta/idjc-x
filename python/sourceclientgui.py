@@ -2376,7 +2376,7 @@ class StreamTabFrame(TabFrame):
         tab.metadata_update.clicked()
 
     def cb_connect_toggle(self, tab, val):
-        if tab.server_connect.flags() & Gtk.SENSITIVE:
+        if tab.server_connect.is_sensitive():
             tab.server_connect.set_active(val)
 
     def cb_kick_group(self, tab):

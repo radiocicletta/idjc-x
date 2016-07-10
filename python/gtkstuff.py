@@ -719,7 +719,7 @@ class FolderChooserButton(Gtk.Button):
     def _on_dialog_destroy(self, dialog):
         del self._handler_ids[:]
         self._dialog = None
-        if not self.flags() & Gtk.IN_DESTRUCTION:
+        if not self.in_destruction:
             self._update_visual()
 
     def _on_clicked(self, button):
