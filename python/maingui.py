@@ -1062,7 +1062,7 @@ class MicOpener(Gtk.Box):
             closer_button.show_all()
 
             if closer == "left":
-                self.pack_start(closer_button, False)
+                self.pack_start(closer_button, True)
 
             for i, g in enumerate(group_list):
                 if g:
@@ -1091,11 +1091,6 @@ class MicOpener(Gtk.Box):
 
         if aux_qty:
             build(aux_group_list, closer=("right" if aux_qty > 1 else None))
-            if mic_qty:
-                spc = Gtk.Box()
-                spc.set_size_request(3, -1)
-                self.pack_start(spc, False, False, 0)
-                spc.show()
 
         if mic_qty:
             build(mic_group_list, closer=("left" if mic_qty > 1 else None))
@@ -1215,6 +1210,7 @@ class MicOpener(Gtk.Box):
         self._flash_test = flash_test
         super(MicOpener, self).__init__()
         self.set_spacing(2)
+        self.set_homogeneous(True)
         self.mic_list = []
         self.buttons = []
         self.mic2button = {}
@@ -2484,8 +2480,8 @@ class MainWindow(dbus.service.Object):
                          str(int(self.history_expander.get_expanded())) + "\n")
                 fh.write("pass_speed=" +
                          str(self.passspeed_adj.get_value()) + "\n")
-                fh.write("prefs={}\n".format(int(self.prefs_window.window.props.visible)))
-                fh.write("server={}\n".format(int(self.prefs_window.window.props.visible)))
+                fh.write("prefs={}\n".format(int(self.prefs_window.window.is_visible())))
+                fh.write("server={}\n".format(int(self.prefs_window.window.is_visible())))
                 fh.write("prefspage=" +
                          str(self.prefs_window.notebook.get_current_page()) +
                          "\n")
@@ -3010,8 +3006,8 @@ class MainWindow(dbus.service.Object):
         """ hide widget when all it's children are hidden or non existent """
         c1 = widget.get_child1()
         c2 = widget.get_child2()
-        if (not c1 or not c1.flags() & Gtk.VISIBLE) and \
-                (not c2 or not c2.flags() & Gtk.VISIBLE):
+        if (not c1 or not c1.is_visible()) and \
+                (not c2 or not c2.is_visible()):
             widget.hide()
 
     def strip_focusability(self, widget):
@@ -3140,7 +3136,7 @@ class MainWindow(dbus.service.Object):
         self.window_group.add_window(self.window)
         self.window.set_title(self.appname + pm.title_extra)
         self.window.connect("delete_event", self.delete_event)
-        self.hbox10 = Gtk.Box(False)
+        self.hbox10 = Gtk.Box(homogeneous=False)
         self.hbox10.set_spacing(6)
         self.paned = Gtk.HPaned()
         self.leftpane = Gtk.VPaned()
