@@ -344,12 +344,12 @@ class JackMenu(MenuMixin):
         else:
             for destport in reply:
                 self.build(menu, use_underline=False)(
-                (("targetport", unhexlify(destport[1:])),), how=Gtk.CheckMenuItem)
+                (("targetport", unhexlify(destport[1:]).decode()),), how=Gtk.CheckMenuItem)
                 mi = getattr(self, "targetportmenu_i")
                 if destport.startswith("@"):
                     mi.set_active(True)
                 mi.connect(
-                    "activate", self.cb_activate, port, unhexlify(destport[1:]))
+                    "activate", self.cb_activate, port, unhexlify(destport[1:]).decode())
 
     def cb_activate(self, mi, local, dest):
         cmd = "connect" if mi.get_active() else "disconnect"
@@ -362,8 +362,8 @@ class JackMenu(MenuMixin):
         while not reply.startswith("jackports="):
             reply = self.read()
 
-        match = "-" + hexlify("system:playback_")
-        pbports = [x for x in reply[10:-1].split() if x.startswith(match)]
+        match = b"-" + hexlify("system:playback_".encode())
+        pbports = [x for x in reply[10:-1].split() if x.startswith(match.decode())]
         return len(pbports)
 
     def standard_save(self):
@@ -398,7 +398,7 @@ class JackMenu(MenuMixin):
             while not reply.startswith("jackports="):
                 reply = self.read()
 
-            element.append([unhexlify(x.lstrip("@-")) for x in reply[10:-1].split()
+            element.append([unhexlify(x.lstrip("@-")).decode() for x in reply[10:-1].split()
                                                         if x.startswith("@")])
             total.append(element)
         return total
