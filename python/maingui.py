@@ -145,7 +145,8 @@ class MenuMixin(object):
                 if autowipe:
                     mi.connect("activate", self.cb_autowipe)
 
-                if issubclass(how, Gtk.CheckMenuItem) and use_underline is True:
+                if issubclass(how, Gtk.CheckMenuItem) and \
+                        use_underline is True:
                     a = Gtk.ToggleAction(None, text, None, None)
                     mi.set_related_action(a)
                     setattr(self, name + "menu_a", a)
@@ -251,7 +252,6 @@ class JackMenu(MenuMixin):
         self.submenu(self.othermenu_i, "other")
 
         out2_in2 = itertools.cycle(("_out_",) * 2 + ("_in_",) * 2)
-        out2_in1 = itertools.cycle(("_out_",) * 2 + ("_in_",) * 1)
         lr = itertools.cycle("lr")
         dj2_str2 = itertools.cycle(("dj",) * 2 + ("str",) * 2)
 
@@ -344,12 +344,16 @@ class JackMenu(MenuMixin):
         else:
             for destport in reply:
                 self.build(menu, use_underline=False)(
-                (("targetport", unhexlify(destport[1:]).decode()),), how=Gtk.CheckMenuItem)
+                    (("targetport", unhexlify(destport[1:]).decode()),),
+                    how=Gtk.CheckMenuItem)
                 mi = getattr(self, "targetportmenu_i")
                 if destport.startswith("@"):
                     mi.set_active(True)
                 mi.connect(
-                    "activate", self.cb_activate, port, unhexlify(destport[1:]).decode())
+                    "activate",
+                    self.cb_activate,
+                    port,
+                    unhexlify(destport[1:]).decode())
 
     def cb_activate(self, mi, local, dest):
         cmd = "connect" if mi.get_active() else "disconnect"
@@ -363,7 +367,8 @@ class JackMenu(MenuMixin):
             reply = self.read()
 
         match = b"-" + hexlify("system:playback_".encode())
-        pbports = [x for x in reply[10:-1].split() if x.startswith(match.decode())]
+        pbports = [x for x in reply[10:-1]
+                   .split() if x.startswith(match.decode())]
         return len(pbports)
 
     def standard_save(self):
@@ -398,8 +403,11 @@ class JackMenu(MenuMixin):
             while not reply.startswith("jackports="):
                 reply = self.read()
 
-            element.append([unhexlify(x.lstrip("@-")).decode() for x in reply[10:-1].split()
-                                                        if x.startswith("@")])
+            element.append([
+                unhexlify(x.lstrip("@-")).decode()
+                for x in reply[10:-1].split()
+                if x.startswith("@")
+            ])
             total.append(element)
         return total
 
@@ -426,7 +434,7 @@ class JackMenu(MenuMixin):
             try:
                 if startup and args.no_default_jack_connections:
                     cons = "[]"
-            except Exception as e:
+            except Exception:
                 cons = "[]"
             else:
                 cons = """[
@@ -745,9 +753,12 @@ class OpenerTab(Gtk.VBox):
         self.pack_start(lhbox, False, False, 0)
 
         hbox = Gtk.Box()
-        set_tip(hbox, _('The headroom is the amount by which to reduce player '
-                        'volume when this opener is active. Note that the actual amount will be'
-                        ' the largest value of all the currently open buttons.'))
+        set_tip(
+            hbox,
+            _('The headroom is the amount by which to reduce player '
+              'volume when this opener is active. Note that the actual'
+              'amount will be the largest value of all '
+              'the currently open buttons.'))
 
         self.pack_start(hbox, False, False, 0)
         label = Gtk.Label(label=_('The amount of headroom required (dB)'))
@@ -763,8 +774,10 @@ class OpenerTab(Gtk.VBox):
         set_tip(
             self.has_reminder_flash,
             _("After a number of seconds where a "
-              "main player is active this button's status indicator will start to "
-              "flash and will continue to do so until the button is closed or the "
+              "main player is active this button's "
+              "status indicator will start to "
+              "flash and will continue to do so "
+              "until the button is closed or the "
               "player stops.")
         )
 
@@ -776,8 +789,10 @@ class OpenerTab(Gtk.VBox):
         set_tip(
             self.is_microphone,
             _("The button will be grouped with the "
-              "other microphone opener buttons. It will be affected by signals to "
-              "close microphone buttons. Channels associated with this button will "
+              "other microphone opener buttons. It "
+              "will be affected by signals to "
+              "close microphone buttons. Channels "
+              "associated with this button will "
               "be mixed differently when using the VoIP modes."))
 
         self.is_microphone.connect("toggled", lambda w: self.emit("changed"))
@@ -904,8 +919,9 @@ class OpenerSettings(Gtk.Frame):
         self.button_numbers = Gtk.CheckButton(
             _('Indicate button numbers and associated channel numbers'))
 
-        set_tip(self.button_numbers, _("A useful feature to have switched on "
-                                       "while allocating channel openers."))
+        set_tip(self.button_numbers,
+                _("A useful feature to have switched on "
+                  "while allocating channel openers."))
 
         self.button_numbers.connect("toggled", changed)
         vbox.pack_start(self.button_numbers, False, False, 0)
@@ -914,8 +930,10 @@ class OpenerSettings(Gtk.Frame):
         frame.set_label(" %s " % _('Status Indicator Appearance'))
 
         set_tip(frame,
-                _('Each opener button has two vertical bars at the side to make the '
-                  'button state more apparent. These settings control their appearance.'))
+                _('Each opener button has two vertical '
+                  'bars at the side to make the '
+                  'button state more apparent. '
+                  'These settings control their appearance.'))
 
         vbox.pack_start(frame, False, False, 6)
         hbox = Gtk.Box()
@@ -1026,8 +1044,9 @@ class MicOpener(Gtk.Box):
         for mic in mics:
             mic.open.set_active(button.get_active())
 
-        self._any_mic_selected = any(mb.get_active() for mb in self.buttons
-                                     if mb.opener_tab.is_microphone.get_active())
+        self._any_mic_selected = any(
+            mb.get_active() for mb in self.buttons
+            if mb.opener_tab.is_microphone.get_active())
 
         try:
             self._headroom = max(mb.opener_tab.headroom.get_value()
@@ -1046,7 +1065,6 @@ class MicOpener(Gtk.Box):
         self.mic2button = {}
         self.buttons = []
         self.ix2button = {}
-        joiner = ' <span foreground="red">&#64262;</span> '
 
         mic_group_list = [[] for x in range(PGlobs.num_micpairs * 2)]
         aux_group_list = [[] for x in range(PGlobs.num_micpairs * 2)]
@@ -1100,8 +1118,10 @@ class MicOpener(Gtk.Box):
                     mb.set_active(active)
                     mb.block_shell_command = False
 
-                    closer_button.connect("clicked",
-                                          lambda w, btn: btn.set_active(False), mb)
+                    closer_button.connect(
+                        "clicked",
+                        lambda w, btn: btn.set_active(False),
+                        mb)
 
             if closer == "right":
                 self.pack_start(closer_button, False, False, 0)
@@ -1382,11 +1402,13 @@ def make_stream_meter_unit(text, meters):
         meter.show()
         hbox.pack_start(vbox, True, True, 0)
         vbox.show()
-    set_tip(frame,
-            _('This indicates the state of the various streams. Flashing'
-              ' means stream packets are being discarded because of network congestion. '
-              'Partial red means the send buffer is partially full indicating difficulty'
-              ' communicating with the server. Green means everything is okay.'))
+    set_tip(
+        frame,
+        _('This indicates the state of the various streams. Flashing'
+          ' means stream packets are being discarded because of network '
+          'congestion. Partial red means the send buffer is partially '
+          'full indicating difficulty communicating with the server. '
+          'Green means everything is okay.'))
 
     frame = Gtk.Frame()  # Main panel listener figures box.
     frame.set_label_align(0.5, 0.5)
@@ -1669,12 +1691,15 @@ class StackedMeter(Gtk.Frame):
                 ctx.rectangle(0, nh, self.width, dh)
                 ctx.fill()
             if ch:
-                ctx.set_source_rgb(self.compc.red, self.compc.green, self.compc.blue)
+                ctx.set_source_rgb(
+                    self.compc.red, self.compc.green, self.compc.blue)
                 ctx.rectangle(0, nh + dh, self.width, ch)
                 ctx.fill()
 
-            ctx.set_source_rgb(self.backc.red, self.backc.green, self.backc.blue)
-            ctx.rectangle(0, nh + dh + ch, self.width, self.height - (nh + dh + ch))
+            ctx.set_source_rgb(
+                self.backc.red, self.backc.green, self.backc.blue)
+            ctx.rectangle(0, nh + dh + ch, self.width,
+                          self.height - (nh + dh + ch))
             ctx.fill()
 
     def __init__(self, base, top):
@@ -2034,7 +2059,8 @@ class MainWindow(dbus.service.Object):
             self.vu_update(False)
             self.jingles.interludeflush = self.jingles.interludeflush & \
                 self.interlude_playing.value
-            self.jingles.flush = self.jingles.flush & self.jingles_playing.value
+            self.jingles.flush = self.jingles.flush & \
+                self.jingles_playing.value
             self.player_left.flush = self.player_left.flush & \
                 self.player_left.mixer_playing.value
             self.player_right.flush = self.player_right.flush & \
@@ -2497,8 +2523,16 @@ class MainWindow(dbus.service.Object):
                          str(int(self.history_expander.get_expanded())) + "\n")
                 fh.write("pass_speed=" +
                          str(self.passspeed_adj.get_value()) + "\n")
-                fh.write("prefs={}\n".format(int(self.prefs_window.window.is_visible())))
-                fh.write("server={}\n".format(int(self.prefs_window.window.is_visible())))
+                fh.write(
+                    "prefs={}\n".format(
+                        int(self.prefs_window.window.is_visible())
+                    )
+                )
+                fh.write(
+                    "server={}\n".format(
+                        int(self.prefs_window.window.is_visible())
+                    )
+                )
                 fh.write("prefspage=" +
                          str(self.prefs_window.notebook.get_current_page()) +
                          "\n")
@@ -2517,7 +2551,8 @@ class MainWindow(dbus.service.Object):
                 fh.write("cw_catalogs=" +
                          self.topleftpane.get_col_widths("catalogs") + "\n")
                 fh.write("dbpage=" +
-                         str(self.topleftpane.notebook.get_current_page()) + "\n")
+                         str(self.topleftpane.notebook.get_current_page()) +
+                         "\n")
                 fh.write("playerpage=" +
                          str(self.player_nb.get_current_page()) + "\n")
                 fh.close()
@@ -2763,7 +2798,8 @@ class MainWindow(dbus.service.Object):
 
                 read = ctypes.c_int()
                 write = ctypes.c_int()
-                if not self.backend.init_backend(ctypes.byref(read), ctypes.byref(write)):
+                if not self.backend.init_backend(ctypes.byref(read),
+                                                 ctypes.byref(write)):
                     print("call to init_backend failed")
                     continue
 
@@ -2825,7 +2861,7 @@ class MainWindow(dbus.service.Object):
     def vu_update(self, locking=True, vu_update_counter=[0]):
         session_ns = {}
         player_metadata = []
-        session_cmd = midis = ''
+        midis = ''
         cons_changed = False
 
         with (gdklock if locking else nullcm)():
@@ -3564,11 +3600,12 @@ class MainWindow(dbus.service.Object):
                 "hear what the listeners are hearing including the "
                 "effects of the crossfader. '{0}' needs to be set to "
                 "'{2}' in order to make proper use of the "
-                "VoIP features.").format(
+                "VoIP features."
+            ).format(
                 _("Monitor Mix"),
                 _("Stream"),
                 _("DJ")
-                )
+            )
         )
 
         cross_sizegroup.add_widget(smhbox)
