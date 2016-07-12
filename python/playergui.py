@@ -2084,7 +2084,10 @@ class IDJC_Media_Player:
     def invoke_end_of_track_policy(self, mode_text=None):
         # This is where we implement the playlist modes for the most part.
         if mode_text is None:
-            mode_text = self.pl_mode.get_active_text()
+            mode_text = self.pl_mode.get_model().get_value(
+                self.pl_mode.get_active_iter(),
+                0
+            )
             if self.is_playing is False:
                 print("Assertion failed in: invoke_end_of_track_policy")
                 return
