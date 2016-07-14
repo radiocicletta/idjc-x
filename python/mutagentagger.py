@@ -46,25 +46,6 @@ _ = t.gettext
 pm = ProfileManager()
 
 
-class LeftLabel(Gtk.HBox):
-
-    """Use in place of Gtk.Label where left justification is needed."""
-
-    def __init__(self, text):
-        super(LeftLabel, self).__init__()
-        self.label = Gtk.Label(label=text)
-        self.pack_start(self.label, False, False, 0)
-
-
-class RightLabel(Gtk.HBox):
-
-    """Use in place of Gtk.Label where right justification is needed."""
-
-    def __init__(self, text):
-        super(RightLabel, self).__init__()
-        self.pack_end(Gtk.Label(text, True, True, 0), False, False, 0)
-
-
 class FreeTagFrame(Gtk.Frame):
 
     def __init__(self):
@@ -82,7 +63,7 @@ class FreeTagFrame(Gtk.Frame):
         tv.show()
 
 
-class MutagenTagger(Gtk.VBox):
+class MutagenTagger(Gtk.Grid):
 
     """Base class for ID3Tagger and NativeTagger."""
 
@@ -180,28 +161,26 @@ class WMATagger(MutagenTagger):
             self.tag = None
             return
 
-        hbox = Gtk.HBox()
-        hbox.set_border_width(5)
-        hbox.set_spacing(8)
-        self.pack_start(hbox, False, False, 0)
-        vbox_text = Gtk.VBox()
-        hbox.pack_start(vbox_text, False, False, 0)
-        vbox_entry = Gtk.VBox()
-        hbox.pack_start(vbox_entry, True, True, 0)
 
+        row = 0
         self.primary_line = []
         for text, entry in ((x, Gtk.Entry()) for x in self.primary_data):
             self.primary_line.append((text, entry))
-            vbox_text.add(LeftLabel(text))
-            vbox_entry.add(entry)
-        hbox.show_all()
+            lbl_text = Gtk.Label(label=text, halign=Gtk.Align.END)
+            lbl_text.set_hexpand(True)
+            entry.set_hexpand(True)
+            self.attach(lbl_text, 0, row, 1, 1)
+            self.attach_next_to(entry, lbl_text, Gtk.PositionType.RIGHT, 1, 1)
+            row = row + 1
 
         self.tag_frame = FreeTagFrame()
         self.tag_frame.set_border_width(5)
-        self.add(self.tag_frame)
+        self.tag_frame.set_vexpand(True)
+        self.attach(self.tag_frame, 0, row, 2, 1)
         self.tag_frame.show()
 
         self.text_set = []
+        self.show_all()
 
         for key, val in self.tag.items():
             if key not in self.primary_line and all(isinstance(v, (
@@ -331,25 +310,19 @@ class ID3Tagger(MutagenTagger):
                 self.tag = None
                 return
 
-        hbox = Gtk.HBox()
-        hbox.set_border_width(5)
-        hbox.set_spacing(8)
-        self.pack_start(hbox, False, False, 0)
-        vbox_frame = Gtk.VBox()
-        hbox.pack_start(vbox_frame, False, False, 0)
-        vbox_text = Gtk.VBox()
-        hbox.pack_start(vbox_text, False, False, 0)
-        vbox_entry = Gtk.VBox()
-        hbox.pack_start(vbox_entry, True, True, 0)
-
         self.primary_line = []
+        row = 0
         for frame, text, entry in (
                 (x, y, Gtk.Entry()) for x, y in self.primary_data):
             self.primary_line.append((frame, entry))
-            vbox_frame.add(LeftLabel(frame))
-            vbox_text.add(RightLabel(text))
-            vbox_entry.add(entry)
-        hbox.show_all()
+            lbl_frame = Gtk.Label(label=frame)
+            lbl_text = Gtk.Label(label=text, halign=Gtk.Align.END)
+            lbl_text.set_hexpand(True)
+            entry.set_hexpand(True)
+            self.attach(lbl_frame, 0, row, 1, 1)
+            self.attach_next_to(lbl_text, lbl_frame, Gtk.PositionType.RIGHT, 1, 1)
+            self.attach_next_to(entry, lbl_text, Gtk.PositionType.RIGHT, 1, 1)
+            row = row + 1
 
         self.tag_frame = FreeTagFrame()
         set_tip(self.tag_frame, _('Add any other ID3 text frames here.\ne.g. '
@@ -357,10 +330,11 @@ class ID3Tagger(MutagenTagger):
                                   '\n\nEnter user defined text frames like this:\nTXXX:foo=bar\n\n'
                                   'For more information visit www.id3.org.'))
         self.tag_frame.set_border_width(5)
+        self.tag_frame.set_vexpand(True)
         # TC: Remaining textual ID3 data is show below this heading.
         self.tag_frame.set_label(_(' Additional Text Frames '))
-        self.add(self.tag_frame)
-        self.tag_frame.show()
+        self.attach(self.tag_frame, 0, row, 3, 1)
+        self.show_all()
 
 
 class MP4Tagger(MutagenTagger):
@@ -435,23 +409,19 @@ class MP4Tagger(MutagenTagger):
             self.tag = None
             return
 
-        hbox = Gtk.HBox()
-        hbox.set_border_width(5)
-        hbox.set_spacing(8)
-        self.pack_start(hbox, False, False, 0)
-        vbox_text = Gtk.VBox()
-        hbox.pack_start(vbox_text, False, False, 0)
-        vbox_entry = Gtk.VBox()
-        hbox.pack_start(vbox_entry, True, True, 0)
-
+        self.set_hexpand(True)
         self.primary_line = []
+        row = 0
         for frame, text, entry in (
                 (x, y, Gtk.Entry()) for x, y in self.primary_data):
             self.primary_line.append((frame, entry))
-            vbox_text.add(LeftLabel(text))
-            vbox_entry.add(entry)
-        hbox.show_all()
-
+            lbl_text = Gtk.Label(label=text, halign=Gtk.Align.END)
+            lbl_text.set_hexpand(True)
+            entry.set_hexpand(True)
+            self.attach(lbl_text, 0, row, 1, 1)
+            self.attach_next_to(entry, lbl_text, Gtk.PositionType.RIGHT, 1, 1)
+            row = row + 1
+        self.show_all()
 
 class NativeTagger(MutagenTagger):
 
@@ -525,6 +495,8 @@ class NativeTagger(MutagenTagger):
 
         self.tag_frame = FreeTagFrame()
         self.add(self.tag_frame)
+        self.tag_frame.set_hexpand(True)
+        self.tag_frame.set_vexpand(True)
         self.tag_frame.show()
 
 
@@ -557,10 +529,10 @@ class ApeTagger(MutagenTagger):
                 val = val.strip()
                 if val:
                     try:
-                        tag[key].value += "\0" + val.decode("utf-8")
+                        tag[key].value += "\0" + val.decode()
                     except (KeyError, AttributeError):
                         try:
-                            tag[key] = APETextValue(val.decode("utf-8"), 0)
+                            tag[key] = APETextValue(val.decode(), 0)
                         except KeyError:
                             print("Unacceptable key", key)
 
@@ -617,6 +589,8 @@ class ApeTagger(MutagenTagger):
                 print("no existing ape tags found")
 
         self.tag_frame = FreeTagFrame()
+        self.tag_frame.set_hexpand(True)
+        self.tag_frame.set_vexpand(True)
         self.add(self.tag_frame)
         self.tag_frame.show()
 
@@ -677,9 +651,9 @@ class MutagenGUI:
         self.window.set_resizable(True)
         if idjcroot == None:
             self.window.connect("destroy", self.destroy_and_quit)
-        vbox = Gtk.VBox()
-        self.window.add(vbox)
-        vbox.show()
+        grid = Gtk.Grid()
+        self.window.add(grid)
+        grid.show()
         label = Gtk.Label()
         if idjcroot:
             if encoding is not None:
@@ -694,34 +668,33 @@ class MutagenGUI:
             label.set_markup("<b>" + _('Filename:') + " " +
                              GLib.markup_escape_text(str(os.path.split(
                                  pathname)[1], "latin1")) + "</b>")
-        vbox.pack_start(label, False, False, 6)
+        grid.add(label)
+        grid.set_column_homogeneous(True)
         label.show()
 
-        hbox = Gtk.HBox()
-        hbox.set_border_width(2)
         apply_button = Gtk.Button.new_with_label("_Apply")
         if idjcroot is not None:
             apply_button.connect_object_after("clicked", self.update_playlists,
                                               pathname, idjcroot)
-        hbox.pack_end(apply_button, False, False, 0)
-        apply_button.show()
-        close_button = Gtk.Button.new_with_label("_Close")
-        close_button.connect_object("clicked", Gtk.Window.destroy, self.window)
-        hbox.pack_end(close_button, False, False, 10)
-        close_button.show()
-        reload_button = Gtk.Button.new_with_label("_Revert")
-        hbox.pack_start(reload_button, False, False, 10)
-        reload_button.show()
-        vbox.pack_end(hbox, False, False, 0)
-        hbox.show()
-        hbox = Gtk.HBox()
-        vbox.pack_end(hbox, False, False, 2)
-        hbox.show()
-
         notebook = Gtk.Notebook()
         notebook.set_border_width(2)
-        vbox.pack_start(notebook, True, True, 0)
+        notebook.set_vexpand(True)
+        grid.attach_next_to(notebook, label, Gtk.PositionType.BOTTOM, 3, 1)
         notebook.show()
+
+        reload_button = Gtk.Button.new_with_label("_Revert")
+        grid.attach_next_to(reload_button, notebook, Gtk.PositionType.BOTTOM, 1, 1)
+        reload_button.show()
+
+        close_button = Gtk.Button.new_with_label("_Close")
+        close_button.connect_object("clicked", Gtk.Window.destroy, self.window)
+        grid.attach_next_to(close_button, reload_button, Gtk.PositionType.RIGHT, 1, 1)
+        close_button.show()
+
+        grid.attach_next_to(apply_button, close_button, Gtk.PositionType.RIGHT, 1, 1)
+        apply_button.show()
+        grid.insert_next_to(reload_button, Gtk.PositionType.RIGHT)
+
 
         try:
             self.ape = ApeTagger(pathname, extension)
