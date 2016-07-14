@@ -517,64 +517,6 @@ class EffectBank(Gtk.Frame):
         return (x.pathname for x in self.widgets)
 
 
-class LabelSubst(Gtk.Frame):
-
-    def __init__(self, heading):
-        super(LabelSubst, self).__init__(" %s " % heading)
-        self.vbox = Gtk.VBox()
-        self.vbox.set_border_width(2)
-        self.vbox.set_spacing(2)
-        self.add(self.vbox)
-        self.textdict = {}
-        self.activedict = {}
-
-    def add_widget(self, widget, ui_name, default_text):
-        frame = Gtk.Frame(" %s " % default_text)
-        frame.set_label_align(0.5, 0.5)
-        frame.set_border_width(3)
-        self.vbox.pack_start(frame, True, True, 0)
-        hbox = Gtk.HBox()
-        hbox.set_spacing(3)
-        frame.add(hbox)
-        hbox.set_border_width(2)
-        use_supplied = Gtk.RadioButton(None, label=_("Alternative"))
-        use_default = Gtk.RadioButton(None, label=_('Default'))
-        self.activedict[ui_name + "_use_supplied"] = use_supplied
-        hbox.pack_start(use_default, False)
-        hbox.pack_start(use_supplied, False)
-        entry = Gtk.Entry()
-        self.textdict[ui_name + "_text"] = entry
-        hbox.pack_start(entry, True, True, 0)
-
-        if isinstance(widget, Gtk.Frame):
-            def set_text(new_text):
-                new_text = new_text.strip()
-                if new_text:
-                    new_text = " %s " % new_text
-                widget.set_label(new_text or None)
-            widget.set_text = set_text
-
-        entry.connect("changed", self.cb_entry_changed, widget, use_supplied)
-        args = default_text, entry, widget
-        use_default.connect("toggled", self.cb_radio_default, *args)
-        use_supplied.connect_object("toggled", self.cb_radio_default,
-                                    use_default, *args)
-        use_default.set_active(True)
-
-    def cb_entry_changed(self, entry, widget, use_supplied):
-        if use_supplied.get_active():
-            widget.set_text(entry.get_text())
-        elif entry.has_focus():
-            use_supplied.set_active(True)
-
-    def cb_radio_default(self, use_default, default_text, entry, widget):
-        if use_default.get_active():
-            widget.set_text(default_text)
-        else:
-            widget.set_text(entry.get_text())
-            entry.grab_focus()
-
-
 class ExtraPlayers(Gtk.Grid):
 
     """For effects, and background tracks."""
