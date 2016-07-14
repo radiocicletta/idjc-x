@@ -3413,13 +3413,13 @@ class IDJC_Media_Player:
                                 etime):
         if info != 0:
             text = dragged.get_data().decode()
+            model = treeview.get_model()
             if text[:20] == "idjcplayercontrol://":
                 newrow = NOTVALID._replace(**dict(zip(
                     "rsmeta length meta encoding".split(),
                     (x[0](x[1]) for x in zip((str, int, str, str),
                                              text[20:].split("+"))))))
                 drop_info = treeview.get_dest_row_at_pos(x, y)
-                model = treeview.get_model()
                 if drop_info is None:
                     model.append(newrow)
                 else:
