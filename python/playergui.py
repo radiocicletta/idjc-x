@@ -51,7 +51,7 @@ from .mutagentagger import *
 from .utils import SlotObject
 from .utils import LinkUUIDRegistry
 from .utils import PathStr
-from .gtkstuff import threadslock, FolderChooserButton
+from .gtkstuff import threadslock
 from .gtkstuff import idle_add, timeout_add, source_remove, nullcm, gdklock
 from .prelims import *
 from .tooltips import set_tip
@@ -469,7 +469,7 @@ class ExternalPL(Gtk.Frame):
         radio.set_active(True)
 
     def make_line(self, radio, dialog, widget):
-        button = widget(dialog)
+        button = widget(action=Gtk.FileChooserAction.SELECT_FOLDER, dialog=dialog)
         button.set_current_folder(os.path.expanduser("~"))
         hbox = Gtk.HBox()
         hbox.pack_start(radio, False, False, 0)
@@ -541,7 +541,7 @@ class ExternalPL(Gtk.Frame):
         dbox = self.make_line(
             self.radio_directory,
             self.directorychooser,
-            FolderChooserButton)
+            Gtk.FileChooserButton)
         set_tip(dbox, _('Choose a folder/directory of music.'))
 
         self.vbox.pack_start(fbox, True, True, 0)
