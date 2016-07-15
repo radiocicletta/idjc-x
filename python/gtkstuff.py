@@ -308,7 +308,6 @@ class HistoryEntry(Gtk.ComboBox):
         self.set_entry_text_column(0)
         self.connect("notify::popup-shown", self.update_history)
         self.get_child().connect("activate", self.update_history)
-        #self.get_child().connect("event", self.update_history)
         self.set_history("\x00".join(initial_text))
         geo = self.get_screen().get_root_window().get_geometry()
         cells = self.get_cells()
@@ -471,22 +470,22 @@ class IconChooserButton(Gtk.Button):
         super(IconChooserButton, self).__init__()
         dialog.set_icon_from_file(PGlobs.default_icon)
 
-        hbox = Gtk.HBox()
-        hbox.set_spacing(4)
+        grid = Gtk.Grid()
+        grid.set_column_spacing(4)
         image = Gtk.Image()
-        hbox.pack_start(image, False, False, 1)
+        grid.add(image)
         label = Gtk.Label()
         label.set_alignment(0, 0.5)
         label.set_ellipsize(Pango.EllipsizeMode.END)
-        hbox.pack_start(label, True, True, 0)
+        grid.add(label)
 
         vsep = Gtk.VSeparator()
-        hbox.pack_start(vsep, False, False, 0)
+        grid.add(vsep)
         rightmost_icon = Gtk.Image.new_from_stock(Gtk.STOCK_OPEN,
                                                   Gtk.IconSize.MENU)
-        hbox.pack_start(rightmost_icon, False, False, 0)
-        self.add(hbox)
-        hbox.show_all()
+        grid.add(rightmost_icon)
+        self.add(grid)
+        grid.show_all()
 
         self.connect("clicked", self._cb_clicked, dialog)
         self._dialog = dialog
@@ -542,17 +541,14 @@ class IconPreviewFileChooserDialog(Gtk.FileChooserDialog):
         filefilter.add_pixbuf_formats()
         self.add_filter(filefilter)
 
-        vbox = Gtk.VBox()
         frame = Gtk.Frame()
-        vbox.pack_start(frame, True, False, 0)
         frame.show()
         image = Gtk.Image()
         frame.add(image)
         self.set_use_preview_label(False)
-        self.set_preview_widget(vbox)
+        self.set_preview_widget(frame)
         self.set_preview_widget_active(False)
         self.connect("update-preview", self._cb_update_preview, image)
-        vbox.show_all()
 
     def _cb_update_preview(self, dialog, image):
         f = self.get_preview_filename()
@@ -573,10 +569,11 @@ class LabelSubst(Gtk.Frame):
     def __init__(self, heading):
         super(LabelSubst, self).__init__()
         self.set_label(" %s " % heading)
-        self.vbox = Gtk.VBox()
-        self.vbox.set_border_width(2)
-        self.vbox.set_spacing(2)
-        self.add(self.vbox)
+        self.grid = Gtk.Grid()
+        self.grid.set_border_width(2)
+        self.grid.set_column_spacing(2)
+        self.grid.set_orientation(Gtk.Orientation.VERTICAL)
+        self.add(self.grid)
         self.textdict = {}
         self.activedict = {}
 
@@ -585,20 +582,22 @@ class LabelSubst(Gtk.Frame):
         frame.set_label(" %s " % default_text)
         frame.set_label_align(0.5, 0.5)
         frame.set_border_width(3)
-        self.vbox.pack_start(frame, True, True, 0)
-        hbox = Gtk.HBox()
-        hbox.set_spacing(3)
-        frame.add(hbox)
-        hbox.set_border_width(2)
+        frame.set_vexpand(True)
+        self.grid.add(frame)
+        inner_grid = Gtk.Grid()
+        inner_grid.set_column_spacing(3)
+        frame.add(inner_grid)
+        inner_grid.set_border_width(2)
         use_supplied = Gtk.RadioButton(None, label=_("Alternative"))
         use_default = Gtk.RadioButton(None, label=_('Default'))
         use_default.join_group(use_supplied)
         self.activedict[ui_name + "_use_supplied"] = use_supplied
-        hbox.pack_start(use_default, False, False, 0)
-        hbox.pack_start(use_supplied, False, False, 0)
+        inner_grid.add(use_default)
+        inner_grid.add(use_supplied)
         entry = Gtk.Entry()
         self.textdict[ui_name + "_text"] = entry
-        hbox.pack_start(entry, True, True, 0)
+        entry.set_hexpand(True)
+        inner_grid.add(entry)
 
         if isinstance(widget, Gtk.Frame):
             def set_text(new_text):
@@ -627,114 +626,6 @@ class LabelSubst(Gtk.Frame):
         else:
             widget.set_text(entry.get_text())
             entry.grab_focus()
-
-
-class FolderChooserButton(Gtk.Button):
-
-    """Replaces the now-broken Gtk.FileChosserButton for folder selection.
-
-    The old chooser also had some issues with being able to visually select
-    unmounted partitions that resulted in no change from the last valid
-    selection. This button fixes that by dispensing with the drop down list
-    entirely.
-
-    In order to work properly this button's dialog must be in folder select
-    mode.
-    """
-
-    __gsignals__ = {'current-folder-changed': (GObject.SignalFlags.RUN_FIRST,
-                                               None, (GObject.TYPE_STRING,))
-                    }
-
-    def __init__(self, dialog=None):
-        super(FolderChooserButton, self).__init__()
-        self._current_folder = None
-        self._handler_ids = []
-        hbox = Gtk.HBox()
-        hbox.set_spacing(3)
-        self.add(hbox)
-        self._icon = Gtk.Image.new_from_stock(
-            Gtk.STOCK_DIRECTORY, Gtk.IconSize.MENU)
-        hbox.pack_start(self._icon, False, False, 0)
-        # TC: FolderChooserButton text for null -- no directory is set.
-        self._label = Gtk.Label(label=_("(None)"))
-        self._label.set_alignment(0.0, 0.5)
-        self._label.set_ellipsize(Pango.EllipsizeMode.END)
-        hbox.pack_start(self._label, True, True, 0)
-        self._label.show()
-        self.set_dialog(dialog)
-        self.connect("clicked", self._on_clicked)
-        self.get_child().show_all()
-
-    def set_dialog(self, dialog):
-        self._disconnect_from_dialog()
-
-        if dialog is None:
-            self._update_visual()
-        else:
-            self._connect_to_dialog(dialog)
-            self.set_current_folder(dialog.get_current_folder())
-
-    def get_dialog(self):
-        return self._dialog
-
-    def get_current_folder(self):
-        return self._dialog and self._current_folder
-
-    def set_current_folder(self, new_folder):
-        """Call this, not the underlying dialog."""
-
-        if new_folder is not None:
-            new_folder = new_folder.strip()
-            if new_folder != os.sep:
-                new_folder = new_folder.rstrip(os.sep)
-
-            if new_folder != self._current_folder:
-                self._dialog.set_current_folder(new_folder)
-                self.emit("current-folder-changed", new_folder)
-
-    def unselect_all(self):
-        self.set_current_folder("")
-
-    def _update_visual(self):
-        folder_name = self.get_current_folder()
-        if not folder_name:
-            folder_name = _("(None)")
-        else:
-            folder_name = os.path.split(folder_name)[1]
-        self._label.set_text(folder_name)
-
-    def _disconnect_from_dialog(self):
-        for hid in self._handler_ids:
-            self._dialog.handler_disconnect(hid)
-        del self._handler_ids[:]
-        self._dialog = None
-
-    def _connect_to_dialog(self, dialog):
-        app = self._handler_ids.append
-        app(dialog.connect("destroy", self._on_dialog_destroy))
-        self._dialog = dialog
-
-    def _on_dialog_destroy(self, dialog):
-        del self._handler_ids[:]
-        self._dialog = None
-        if not self.in_destruction:
-            self._update_visual()
-
-    def _on_clicked(self, button):
-        if self._dialog is not None:
-            self._dialog.set_current_folder(self._current_folder or "")
-            if self._dialog.run() == Gtk.ResponseType.ACCEPT:
-                new_folder = self._dialog.get_current_folder()
-                if new_folder != self._current_folder:
-                    self.emit('current-folder-changed', new_folder)
-            else:
-                self._dialog.set_current_folder(self._current_folder or "")
-            self._dialog.hide()
-
-    def do_current_folder_changed(self, new_folder):
-        self._current_folder = new_folder
-        self._update_visual()
 
 
 def _source_wrapper(data):

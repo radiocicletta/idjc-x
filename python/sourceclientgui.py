@@ -45,7 +45,7 @@ from gi.repository import GObject
 from idjc import FGlobs, PGlobs
 from .utils import string_multireplace
 from .gtkstuff import DefaultEntry, threadslock, HistoryEntry
-from .gtkstuff import WindowSizeTracker, FolderChooserButton
+from .gtkstuff import WindowSizeTracker
 from .gtkstuff import timeout_add, source_remove
 from .dialogs import *
 from .irc import IRCPane
@@ -249,7 +249,7 @@ class ConnectionDialog(Gtk.Dialog):
         file_dialog.set_title(_('Certificate Authority Directory'
                                                         ) + pm.title_extra)
         file_dialog.set_do_overwrite_confirmation(True)
-        self.ca_directory = FolderChooserButton(file_dialog)
+        self.ca_directory = Gtk.FileChooserButton(action=Gtk.FileChooserAction.SELECT_FOLDER, dialog=file_dialog)
         file_dialog.connect("response", self._on_file_response, self.ca_directory)
 
         file_dialog = Gtk.FileChooserDialog(title="", parent=None,
@@ -2261,7 +2261,7 @@ class RecordTab(Tab):
             file_dialog.set_title(
                 _('Select the folder to record to') + pm.title_extra)
             file_dialog.set_do_overwrite_confirmation(True)
-            self.file_chooser_button = FolderChooserButton(file_dialog)
+            self.file_chooser_button = Gtk.FileChooserButton(action=Gtk.FileChooserAction.SELECT_FOLDER, dialog=file_dialog)
             self.file_chooser_button.connect(
                 "current-folder-changed",
                 self.cb_new_folder)
