@@ -125,24 +125,22 @@ class StandardDialog(Gtk.Dialog):
         self.set_destroy_with_parent(True)
         self.set_title(title)
 
-        hbox = Gtk.HBox()
-        hbox.set_spacing(12)
-        hbox.set_border_width(6)
+        grid = Gtk.Grid()
+        grid.set_row_spacing(12)
+        grid.set_border_width(6)
         image = Gtk.Image.new_from_stock(stock_item,
                                          Gtk.IconSize.DIALOG)
         image.set_alignment(0.0, 0.0)
-        hbox.pack_start(image, False, False, 0)
-        vbox = Gtk.VBox()
-        hbox.pack_start(vbox, True, True, 0)
-        for each in message.split("\n"):
-            label = Gtk.Label(label=each)
+        grid.add(image)
+        for row, msg in enumerate(message.split("\n")):
+            label = Gtk.Label(label=msg)
             label.set_use_markup(markup)
             label.set_alignment(0.0, 0.0)
             label.set_size_request(label_width, -1)
             label.set_line_wrap(True)
-            vbox.pack_start(label, True, True, 0)
+            grid.attach(label, 1, row, 1, 1)
         ca = self.get_content_area()
-        ca.add(hbox)
+        ca.add(grid)
         aa = self.get_action_area()
         aa.set_spacing(6)
 
