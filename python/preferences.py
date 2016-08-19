@@ -16,16 +16,11 @@
 #   If not, see <http://www.gnu.org/licenses/>.
 
 
-import os
-import shutil
 import gettext
 import itertools
 
-from gi.repository import GObject
 from gi.repository import Gtk
-from gi.repository import Gdk
 from gi.repository import GdkPixbuf
-from gi.repository import GLib
 
 from idjc import FGlobs, PGlobs
 from . import licence_window
@@ -34,7 +29,6 @@ from . import midicontrols
 from .gtkstuff import WindowSizeTracker, DefaultEntry, threadslock
 from .gtkstuff import timeout_add, source_remove
 from .prelims import ProfileManager
-from .utils import PathStr
 from .tooltips import set_tip, MAIN_TIPS
 
 __all__ = ['mixprefs', 'PanPresetChooser']
@@ -209,7 +203,8 @@ class PanWidget(Gtk.Frame):
     def _timeout(self, target):
         current_value = int(self.pan.get_value() + 0.5)
         new_value = current_value + (
-            -1 if target < current_value else 0 if target == current_value else 1
+            -1 if target < current_value else
+            0 if target == current_value else 1
         )
         self.pan.set_value(new_value)
 
@@ -646,7 +641,9 @@ class AGCControl(Gtk.Frame, Gtk.Activatable):
 
         invert_simple = self.check("", "invert")
         invert_simple.set_related_action(invertaction)
-        grid.attach_next_to(invert_simple, micgain, Gtk.PositionType.BOTTOM, 1, 1)
+        grid.attach_next_to(
+            invert_simple, micgain,
+            Gtk.PositionType.BOTTOM, 1, 1)
         set_tip(
             invert_simple,
             _('Useful for when microphones are cancelling '
@@ -655,7 +652,9 @@ class AGCControl(Gtk.Frame, Gtk.Activatable):
 
         indjmix = self.check("", "indjmix")
         indjmix.set_related_action(indjmixaction)
-        grid.attach_next_to(indjmix, invert_simple, Gtk.PositionType.BOTTOM, 1, 1)
+        grid.attach_next_to(
+            indjmix, invert_simple,
+            Gtk.PositionType.BOTTOM, 1, 1)
         set_tip(
             indjmix,
             _('Make the microphone audio audible in the DJ mix. '
@@ -681,7 +680,7 @@ class AGCControl(Gtk.Frame, Gtk.Activatable):
                         "name": "hpcutoff",
                         "values": [100.0, 30.0, 120.0, 1.0, 1]
                     },
-        # TC: User can set the number of filter stages.
+                    # TC: User can set the number of filter stages.
                     {
                         "label": _('Stages'),
                         "name": "hpstages",
@@ -690,12 +689,12 @@ class AGCControl(Gtk.Frame, Gtk.Activatable):
                 ]
             },
             {
-        # TC: this is the treble control. HF = high frequency.
+                # TC: this is the treble control. HF = high frequency.
                 "frame": _('HF Detail'),
                 "tip": _('You can use this to boost the amount of treble in the audio.'),
                 "fxs": [
                     {
-                        "label":_('Effect'),
+                        "label": _('Effect'),
                         "name": "hfmulti",
                         "values": [0.0, 0.0, 9.0, 0.1, 1],
                     },
@@ -707,7 +706,7 @@ class AGCControl(Gtk.Frame, Gtk.Activatable):
                 ]
             },
             {
-        # TC: this is the bass control. LF = low frequency.
+                # TC: this is the bass control. LF = low frequency.
                 "frame": _('LF Detail'),
                 "tip": _('You can use this to boost the amount of bass in the audio.'),
                 "fxs": [
@@ -724,7 +723,7 @@ class AGCControl(Gtk.Frame, Gtk.Activatable):
                 ]
             },
             {
-        # TC: lookahead brick wall limiter.
+                # TC: lookahead brick wall limiter.
                 "frame": _('Limiter'),
                 "tip": _('A look-ahead brick-wall limiter. Audio signals are '
                          'capped at the upper limit.'),
@@ -734,7 +733,7 @@ class AGCControl(Gtk.Frame, Gtk.Activatable):
                         "name": "gain",
                         "values": [0, 0, 0, 0, 1, micgainadj]
                     },
-        # TC: this is the peak signal limit.
+                    # TC: this is the peak signal limit.
                     {
                         "label": _('Upper Limit'),
                         "name": "limit",
@@ -748,12 +747,12 @@ class AGCControl(Gtk.Frame, Gtk.Activatable):
                          "noise which you don't want your listeners to hear with this."),
                 "fxs": [
                     {
-        # TC: noise gate triggers at this level.
+                        # TC: noise gate triggers at this level.
                         "label": _('Threshold'),
                         "name":  "ngthresh",
                         "values": [-30.0, -62.0, -20.0, 1.0, 0]
                     },
-        # TC: negative gain when the noise gate is active.
+                    # TC: negative gain when the noise gate is active.
                     {
                         "label": _('Gain'),
                         "name": "nggain",
@@ -763,19 +762,19 @@ class AGCControl(Gtk.Frame, Gtk.Activatable):
             },
             {
                 "frame": _('De-esser'),
-                "tip":_('Reduce the S, T, and P sounds which microphones tend '
-                        'to exaggerate. Ideally the Bias control will be set '
-                        'low so that the de-esser is off when there is silence '
-                        'but is set high enough that mouse clicks are detected '
-                        'and suppressed.'),
+                "tip": _('Reduce the S, T, and P sounds which microphones tend '
+                         'to exaggerate. Ideally the Bias control will be set '
+                         'low so that the de-esser is off when there is silence '
+                         'but is set high enough that mouse clicks are detected '
+                         'and suppressed.'),
                 "fxs": [
-        # TC: Bias has a numeric setting.
+                    # TC: Bias has a numeric setting.
                     {
                         "label": _('Bias'),
                         "name": "deessbias",
                         "values": [0.35, 0.1, 10.0, 0.05, 2]
                     },
-        # TC: The de-esser attenuation in ess-detected state.
+                    # TC: The de-esser attenuation in ess-detected state.
                     {
                         "label": _('Gain'),
                         "name": "deessgain",
@@ -805,7 +804,6 @@ class AGCControl(Gtk.Frame, Gtk.Activatable):
             _('The ducker automatically reduces the level of player '
               'audio when the DJ speaks. These settings allow you to adjust'
               ' the timings of that audio reduction.'))
-
 
         grid = self.frame(" " + _('Other options') + " ", self.processed_box)
         grid.set_orientation(Gtk.Orientation.VERTICAL)
@@ -1078,10 +1076,7 @@ class mixprefs:
         generalwindow.show()
         outergrid.set_border_width(3)
 
-
-
         # User can use this to set the audio level in the headphones
-
         # TC: The DJ's sound level controller.
         dj_frame = Gtk.Frame(label=" %s " % _('DJ Audio Level'))
         dj_frame.set_label_align(0.5, 0.5)
@@ -1171,7 +1166,6 @@ class mixprefs:
         outergrid.attach(rsm_frame, 2, 0, 1, 1)
         rsm_frame.show()
 
-
         # TC: the set of features - section heading.
         featuresframe = Gtk.Frame(label=" %s " % _('Feature Set'))
         featuresframe.set_border_width(3)
@@ -1179,7 +1173,10 @@ class mixprefs:
         featuresgrid.set_column_spacing(5)
         featuresframe.add(featuresgrid)
         featuresgrid.show()
-        outergrid.attach_next_to(featuresframe, dj_frame, Gtk.PositionType.BOTTOM, 3, 1)
+        outergrid.attach_next_to(
+            featuresframe,
+            dj_frame,
+            Gtk.PositionType.BOTTOM, 3, 1)
         featuresframe.show()
 
         self.maxi = Gtk.Button(" %s " % _('Fully Featured'))
@@ -1223,7 +1220,6 @@ class mixprefs:
         self.startmini.join_group(self.startfull)
         set_tip(self.startmini,
                 _('Indicates which mode IDJC will be in when launched.'))
-
 
         requires_restart = Gtk.Frame(
             label=" %s " %
@@ -1370,7 +1366,9 @@ class mixprefs:
 
         # ReplayGain controls
 
-        loud_frame = Gtk.Frame(label=" %s " % _('Player Loudness Normalisation'))
+        loud_frame = Gtk.Frame(
+            label=" %s " %
+            _('Player Loudness Normalisation'))
         loud_frame.set_border_width(3)
         outergrid.attach_next_to(
             loud_frame,
@@ -1775,7 +1773,7 @@ class mixprefs:
         # about tab
 
         self.aboutframe = Gtk.Frame()
-        #frame.set_border_width(9)
+        # frame.set_border_width(9)
         about_grid = Gtk.Grid()
         about_grid.set_orientation(Gtk.Orientation.VERTICAL)
         self.aboutframe.add(about_grid)
@@ -1844,17 +1842,21 @@ class mixprefs:
 
         contribs_page(
             _('Contributors'),
-            ("Stephen Fairchild (s-fairchild@users.sourceforge.net)",
-             "And Clover (and@doxdesk.com)",
-             "Dario Abatianni (eisfuchs@users.sourceforge.net)",
-             "Stefan Fendt (stefan@sfendt.de)",
-             "Brian Millham (bmillham@users.sourceforge.net)"))
+            (
+                "Stephen Fairchild (s-fairchild@users.sourceforge.net)",
+                "And Clover (and@doxdesk.com)",
+                "Dario Abatianni (eisfuchs@users.sourceforge.net)",
+                "Stefan Fendt (stefan@sfendt.de)",
+                "Brian Millham (bmillham@users.sourceforge.net)")
+        )
 
         contribs_page(
             _('Translators'),
-            ("<b>es</b> Blank Frank (frank@rhizomatica.org)",
-             "<b>fr</b> nvignot (nicotux@users.sf.net)",
-             "<b>it</b>  Raffaele Morelli (raffaele.morelli@gmail.com)"))
+            (
+                "<b>es</b> Blank Frank (frank@rhizomatica.org)",
+                "<b>fr</b> nvignot (nicotux@users.sf.net)",
+                "<b>it</b>  Raffaele Morelli (raffaele.morelli@gmail.com)")
+        )
 
         label = Gtk.Label(label=_('Build Info'))
         igrid = Gtk.Grid()
