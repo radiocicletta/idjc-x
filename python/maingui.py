@@ -2304,7 +2304,7 @@ class MainWindow(dbus.service.Object):
             except AttributeError:
                 pass
             else:
-                if level == l:
+                if level in l:
                     widget.show()
                 else:
                     widget.hide()
@@ -3238,6 +3238,7 @@ class MainWindow(dbus.service.Object):
         self.hbox10.pack_start(self.freewheel_button, False, False, 0)
 
         self.dsp_button = Gtk.ToggleButton()
+        self.dsp_button.viewlevels = (5,)
         label = Gtk.Label()
         label.set_markup(
             "<span weight='bold' size='9000' "
@@ -3253,6 +3254,7 @@ class MainWindow(dbus.service.Object):
         self.dsp_button.show()
 
         phonebox = Gtk.Box()
+        phonebox.viewlevels = (5,)
         phonebox.set_spacing(2)
 
         pixbuf4 = GdkPixbuf.Pixbuf.new_from_file(
@@ -3288,11 +3290,13 @@ class MainWindow(dbus.service.Object):
         phonebox.show()
 
         self.pan_preset_chooser = PanPresetChooser()
+        self.pan_preset_chooser.viewlevels = (5,)
         self.hbox10.pack_start(self.pan_preset_chooser, False, False, 0)
         self.pan_preset_chooser.show_all()
 
         # microphone open/unmute dynamic widget cluster thingy
         self.mic_opener = MicOpener(self, self.flash_test)
+        self.mic_opener.viewlevels = (5,)
         self.hbox10.pack_start(self.mic_opener, True, True, 0)
         self.mic_opener.show()
 
@@ -3330,6 +3334,7 @@ class MainWindow(dbus.service.Object):
         self.vboxvol = Gtk.VBox(False, 0)
         self.vboxvol.set_border_width(2)
         self.volframe = Gtk.Frame()
+        self.volframe.viewlevels = (5,)
         self.volframe.set_border_width(5)
         self.volframe.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         self.volframe.add(self.vboxvol)
@@ -3433,6 +3438,7 @@ class MainWindow(dbus.service.Object):
 
         # A box for the second deck.
         self.vbox3R = Gtk.VBox(False, 0)
+        self.vbox3R.viewlevels = (5,)
         self.vbox3R.set_border_width(2)
         self.hbox4.pack_start(self.vbox3R, True, True, 0)
 
@@ -3508,6 +3514,7 @@ class MainWindow(dbus.service.Object):
         self.history_buffer = self.history_textview.get_buffer()
 
         self.abox = Gtk.Box()
+        self.abox.viewlevels = (5,)
         self.abox.set_border_width(2)
         self.vbox6.pack_start(self.abox, False, False, 0)
         self.abox.show()
@@ -3515,6 +3522,7 @@ class MainWindow(dbus.service.Object):
         # The crossfader.  No DJ should be without one. ;)
         self.outercrossbox = Gtk.Box()
 
+        self.outercrossbox.viewlevels = (5,)
         crossframe = Gtk.Frame()
         self.outercrossbox.pack_start(crossframe, True, True, 6)
         self.outercrossbox.show()
@@ -3887,6 +3895,7 @@ class MainWindow(dbus.service.Object):
 
         # The various meters
         self.metereventbox = Gtk.EventBox()
+        self.metereventbox.viewlevels = (5,)
         self.meterbox = Gtk.Box()
         self.metereventbox.add(self.meterbox)
         self.rightpane.pack_start(self.metereventbox, False, False, 0)
