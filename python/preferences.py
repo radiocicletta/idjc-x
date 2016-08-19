@@ -77,6 +77,7 @@ class InitialPlayerConfig(Gtk.Frame):
         pl_label = Gtk.Label(label=_("Playlist Mode"))
         fade_label = Gtk.Label(label=_("Fade"))
         self.pl_mode = Gtk.ComboBoxText()
+        self.pl_mode.set_hexpand(True)
         self.pl_mode.set_model(player.pl_mode.get_model())
         self.fade = Gtk.ComboBoxText()
         self.fade.set_model(player.pl_delay.get_model())
@@ -1073,6 +1074,7 @@ class mixprefs:
             Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         outergrid = Gtk.Grid()
         outergrid.set_column_spacing(5)
+        outergrid.set_column_homogeneous(False)
         generalwindow.add_with_viewport(outergrid)
         generalwindow.show()
         outergrid.set_border_width(3)
@@ -1091,8 +1093,6 @@ class mixprefs:
         dj_aud = Gtk.SpinButton(
             adjustment=self.dj_aud_adj, climb_rate=1, digits=1)
         dj_aud.connect("value-changed", self.cb_vol_changed)
-        dj_aud.set_margin_start(5)
-        dj_aud.set_margin_end(5)
         dj_frame.add(dj_aud)
         dj_aud.show()
         set_tip(dj_aud, _('This adjusts the sound level of the DJ audio.'))
@@ -1112,8 +1112,6 @@ class mixprefs:
         alarm_aud = Gtk.SpinButton(
             adjustment=self.alarm_aud_adj, climb_rate=1, digits=1)
         alarm_aud.connect("value-changed", self.cb_vol_changed)
-        alarm_aud.set_margin_start(5)
-        alarm_aud.set_margin_end(5)
         alm_frame.add(alarm_aud)
         alarm_aud.show()
         set_tip(
@@ -1134,6 +1132,7 @@ class mixprefs:
         rsm_frame.set_border_width(3)
         rs_grid = Gtk.Grid()
         rs_grid.set_border_width(5)
+        rs_grid.set_column_homogeneous(True)
         set_tip(
             rs_grid,
             _('This adjusts the quality of the audio resampling method '
@@ -1180,33 +1179,35 @@ class mixprefs:
             Gtk.PositionType.BOTTOM, 3, 1)
         featuresframe.show()
 
+        minimaxi = Gtk.Grid()
+
         self.maxi = Gtk.Button(" %s " % _('Fully Featured'))
         self.maxi.connect("clicked", self.callback, "fully featured")
-        self.maxi.set_hexpand(True)
         self.maxi.set_border_width(5)
-        featuresgrid.attach(self.maxi, 0, 0, 1, 2)
+        minimaxi.add(self.maxi)
         self.maxi.show()
         set_tip(self.maxi,
                 _('Run in full functionality mode which uses more CPU power.'))
 
         self.mini = Gtk.Button(" %s " % _('Basic Streamer'))
         self.mini.connect("clicked", self.callback, "basic streamer")
-        self.mini.set_hexpand(True)
-        featuresgrid.attach_next_to(
-            self.mini,
-            self.maxi, Gtk.PositionType.RIGHT, 1, 2)
+        self.mini.set_border_width(5)
+        minimaxi.add(self.mini)
         self.mini.show()
+        minimaxi.show()
         set_tip(
             self.mini,
             _('Run in a reduced functionality mode that lowers '
               'the burden on the CPU and takes up less screen space.'))
+
+        featuresgrid.add(minimaxi)
 
         # TC: Start in the full featured user interface mode.
         self.startfull = Gtk.RadioButton(None, label=_('Start Full'))
         self.startfull.set_border_width(2)
         featuresgrid.attach_next_to(
             self.startfull,
-            self.mini, Gtk.PositionType.RIGHT, 1, 1)
+            minimaxi, Gtk.PositionType.RIGHT, 1, 1)
         self.startfull.show()
         set_tip(self.startfull,
                 _('Indicates which mode IDJC will be in when launched.'))
@@ -1227,6 +1228,7 @@ class mixprefs:
             _('These settings take effect after restarting')
         )
         requires_restart.set_border_width(7)
+        requires_restart.set_hexpand(True)
         featuresgrid.attach_next_to(
             requires_restart,
             self.maxi, Gtk.PositionType.BOTTOM, 3, 1)
@@ -1235,21 +1237,27 @@ class mixprefs:
         rr_grid = Gtk.Grid()
         rr_grid.set_border_width(9)
         rr_grid.set_column_spacing(4)
+        rr_grid.set_column_homogeneous(False)
+        rr_grid.set_row_homogeneous(False)
         requires_restart.add(rr_grid)
 
+        fx_grid = Gtk.Grid()
         self.more_effects = Gtk.RadioButton(
             None,
             label=_('Reserve 24 sound effects slots')
         )
+        self.more_effects.set_hexpand(True)
         fewer_effects = Gtk.RadioButton(self.more_effects, label=_("Only 12"))
         fewer_effects.join_group(self.more_effects)
+        fewer_effects.set_hexpand(True)
         if PGlobs.num_effects == 24:
             self.more_effects.clicked()
         else:
             fewer_effects.clicked()
 
-        rr_grid.add(self.more_effects)
-        rr_grid.add(fewer_effects)
+        fx_grid.add(self.more_effects)
+        fx_grid.add(fewer_effects)
+        rr_grid.attach(fx_grid, 0, 0, 2, 1)
 
         self.mic_qty_adj = Gtk.Adjustment(
             value=PGlobs.num_micpairs * 2,
@@ -1258,10 +1266,13 @@ class mixprefs:
             step_increment=2.0)
         spin = Gtk.SpinButton(adjustment=self.mic_qty_adj)
         rr_grid.attach(spin, 0, 1, 1, 1)
+        lbl = Gtk.Label(
+            label=_('Audio input channels')
+        )
+        lbl.set_halign(Gtk.Align.START)
+        lbl.set_hexpand(True)
         rr_grid.attach_next_to(
-            Gtk.Label(
-                label=_('Audio input channels')
-            ),
+            lbl,
             spin,
             Gtk.PositionType.RIGHT, 1, 1)
 
@@ -1272,10 +1283,13 @@ class mixprefs:
             step_increment=1.0)
         spin = Gtk.SpinButton(adjustment=self.stream_qty_adj)
         rr_grid.attach(spin, 0, 2, 1, 1)
+        lbl = Gtk.Label(
+            label=_('Simultaneous stream(s)')
+        )
+        lbl.set_halign(Gtk.Align.START)
+        lbl.set_hexpand(True)
         rr_grid.attach_next_to(
-            Gtk.Label(
-                label=_('Simultaneous stream(s)')
-            ),
+            lbl,
             spin,
             Gtk.PositionType.RIGHT, 1, 1)
 
@@ -1286,10 +1300,13 @@ class mixprefs:
             step_increment=1.0)
         spin = Gtk.SpinButton(adjustment=self.recorder_qty_adj)
         rr_grid.attach(spin, 0, 3, 1, 1)
+        lbl = Gtk.Label(
+            label=_('Simultaneous recording(s)')
+        )
+        lbl.set_halign(Gtk.Align.START)
+        lbl.set_hexpand(True)
         rr_grid.attach_next_to(
-            Gtk.Label(
-                label=_('Simultaneous recording(s)')
-            ),
+            lbl,
             spin,
             Gtk.PositionType.RIGHT, 1, 1)
 
@@ -1310,6 +1327,7 @@ class mixprefs:
         view_frame.set_border_width(3)
 
         view_grid = Gtk.Grid()
+        view_grid.set_border_width(9)
         view_frame.add(view_grid)
         view_grid.show()
         self.show_stream_meters = Gtk.CheckButton()
@@ -1416,10 +1434,10 @@ class mixprefs:
               'default level since it is rather quiet. This should be'
               ' set 4 or 5 dB higher than the ReplayGain setting.')
         )
+        label.set_hexpand(True)
         table.attach(label, 0, 1, 0, 1)
         table.attach(self.r128_boost, 1, 2, 0, 1)
         label = Gtk.Label(label=_('ReplayGain'))
-        label.set_alignment(1.0, 0.5)
         rg_boostadj = Gtk.Adjustment(
             value=0.0,
             lower=-10.0,
@@ -1639,6 +1657,7 @@ class mixprefs:
         sess_grid.show()
         self.restore_session_option = Gtk.CheckButton(
             _('Restore the previous session'))
+        self.restore_session_option.set_border_width(8)
         sess_grid.attach(self.restore_session_option, 0, 0, 2, 1)
         self.restore_session_option.show()
         set_tip(
@@ -1654,6 +1673,8 @@ class mixprefs:
             _("Player 1"), parent.player_left, "l")
         self.rpconfig = InitialPlayerConfig(
             _("Player 2"), parent.player_right, "r")
+        self.lpconfig.set_border_width(6)
+        self.rpconfig.set_border_width(6)
         sess_grid.attach_next_to(
             self.lpconfig,
             self.restore_session_option,
