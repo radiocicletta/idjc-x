@@ -1338,7 +1338,7 @@ def make_meter_unit(text, l_meter, r_meter):
     l_meter.set_size_request(16, -1)
     hbox.add(l_meter)
     scalebox = make_meter_scale()
-    hbox.add(scalebox)
+    hbox.pack_start(scalebox, True, True, 0)
     scalebox.show()
     r_meter.set_size_request(16, -1)
     hbox.add(r_meter)
