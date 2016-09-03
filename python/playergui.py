@@ -4271,7 +4271,7 @@ class IDJC_Media_Player:
                 label2.show()
                 if self.album:
                     # TC: Previous line: Playing track {0} of {1}
-                    label3 = Gtk.Label(_('From the album, %s') % self.album)
+                    label3 = Gtk.Label(label=_('From the album, %s') % self.album)
                     vbox.add(label3)
                     label3.show()
                 blank = Gtk.Label(label="")
