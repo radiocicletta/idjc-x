@@ -4528,6 +4528,11 @@ class IDJC_Media_Player:
             _('This sets the playback speed back to normal.')
         )
 
+        buttons_style = Gtk.CssProvider()
+        buttons_style.load_from_data(
+            b'* { font: Sans 10 }'
+        )
+
         # The box for the mute widgets.
         self.hbox2 = Gtk.HBox()
         self.hbox2.set_border_width(2)
@@ -4535,68 +4540,48 @@ class IDJC_Media_Player:
         pbox.pack_start(self.hbox2, False, False, 0)
         frame.show()
 
-        image = Gtk.Image()
-        image.set_from_file(FGlobs.pkgdatadir / "prev.png")
-        image.show()
-        self.prev = Gtk.Button()
-        self.prev.add(image)
+        self.prev = Gtk.Button(label="\u23ee")
+        self.prev.get_style_context().add_provider(
+            buttons_style, Gtk.STYLE_PROVIDER_PRIORITY_USER)
         self.prev.connect("clicked", self.callback, "Prev")
         self.hbox1.add(self.prev)
         self.prev.show()
         set_tip(self.prev, _('Previous track.'))
 
         # TODO:shrink code here
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file(
-            FGlobs.pkgdatadir / "play2.png"
-        )
-        pixbuf = pixbuf.scale_simple(14, 14, GdkPixbuf.InterpType.BILINEAR)
-        image = Gtk.Image()
-        image.set_from_pixbuf(pixbuf)
-        image.show()
-        self.play = Gtk.ToggleButton()
-        self.play.add(image)
+        self.play = Gtk.ToggleButton(label="\u23f4")
+        self.play.get_style_context().add_provider(
+            buttons_style, Gtk.STYLE_PROVIDER_PRIORITY_USER)
         self.play.connect("toggled", self.cb_toggle, "Play")
         self.hbox1.add(self.play)
         self.play.show()
         set_tip(self.play, _('Play.'))
 
-        image = Gtk.Image()
-        image.set_from_file(FGlobs.pkgdatadir / "pause.png")
-        image.show()
-        self.pause = Gtk.ToggleButton()
-        self.pause.add(image)
+        self.pause = Gtk.ToggleButton(label="\u23f8")
+        self.pause.get_style_context().add_provider(
+            buttons_style, Gtk.STYLE_PROVIDER_PRIORITY_USER)
         self.pause.connect("toggled", self.cb_toggle, "Pause")
         self.hbox1.add(self.pause)
         self.pause.show()
         set_tip(self.pause, _('Pause.'))
 
-        image = Gtk.Image()
-        image.set_from_file(FGlobs.pkgdatadir / "stop.png")
-        image.show()
-        self.stop = Gtk.Button()
-        self.stop.add(image)
+        self.stop = Gtk.Button(label="\u23f9")
+        self.stop.get_style_context().add_provider(
+            buttons_style, Gtk.STYLE_PROVIDER_PRIORITY_USER)
         self.stop.connect("clicked", self.callback, "Stop")
         self.hbox1.add(self.stop)
         self.stop.show()
         set_tip(self.stop, _('Stop.'))
 
-        image = Gtk.Image()
-        image.set_from_file(FGlobs.pkgdatadir / "next.png")
-        image.show()
-        self.next = Gtk.Button()
-        self.next.add(image)
+        self.next = Gtk.Button(label="\u23ed")
+        self.next.get_style_context().add_provider(
+            buttons_style, Gtk.STYLE_PROVIDER_PRIORITY_USER)
         self.next.connect("clicked", self.callback, "Next")
         self.hbox1.add(self.next)
         self.next.show()
         set_tip(self.next, _('Next track.'))
 
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file(FGlobs.pkgdatadir / "add3.png")
-        pixbuf = pixbuf.scale_simple(14, 14, GdkPixbuf.InterpType.HYPER)
-        image = Gtk.Image()
-        image.set_from_pixbuf(pixbuf)
-        image.show()
-        self.add = Gtk.Button()
-        self.add.add(image)
+        self.add = Gtk.Button(label="\u23cf")
         self.add.connect("clicked", self.callback, "Add Files")
         self.hbox1.add(self.add)
         self.add.show()
