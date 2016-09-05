@@ -558,7 +558,7 @@ class AnnouncementDialog(Gtk.Dialog):
         s = "%02d" % int(self.seconds.get_value())
         self.model.set_value(self.iter, 3, "00" + m + s)
         b = self.tv.get_buffer()
-        text = b.get_text(b.get_start_iter(), b.get_end_iter())
+        text = b.get_text(b.get_start_iter(), b.get_end_iter(), False)
         self.model.set_value(self.iter, 4, urllib.parse.quote(text))
         self.player.reselect_please = True
 
@@ -585,13 +585,14 @@ class AnnouncementDialog(Gtk.Dialog):
                     stime = "%2d:%02d" % divmod(inttime, 60)
                     self.countdownlabel.set_text(stime)
                     if inttime == 5:
-                        self.attrlist.change(self.fontcolour_red)
+                        self.attrlist = self.fontcolour_red
+                        self.countdownlabel.set_attributes(self.attrlist)
                     if lock:
                         Gdk.threads_leave()
                     return True
                 else:
                     self.countdownlabel.set_text("--:--")
-                    self.attrlist.change(self.fontcolour_black)
+                    self.attrlist = self.fontcolour_black
                     if lock:
                         Gdk.threads_leave()
                     return False
@@ -660,8 +661,8 @@ class AnnouncementDialog(Gtk.Dialog):
             countdown_label.show()
             minutes_adj = Gtk.Adjustment(0.0, 0.0, 59.0, 1.0)
             seconds_adj = Gtk.Adjustment(0.0, 0.0, 59.0, 1.0)
-            self.minutes = Gtk.SpinButton(minutes_adj)
-            self.seconds = Gtk.SpinButton(seconds_adj)
+            self.minutes = Gtk.SpinButton(adjustment=minutes_adj)
+            self.seconds = Gtk.SpinButton(adjustment=seconds_adj)
             sep = Gtk.Label(label=":")
             chbox.pack_start(self.minutes, False, False, 0)
             self.minutes.show()
@@ -677,12 +678,14 @@ class AnnouncementDialog(Gtk.Dialog):
                 self.cdt = time.time() + cd + 1
                 self.countdownlabel = Gtk.Label()
                 self.attrlist = Pango.AttrList()
-                fontdesc = Pango.FontDescription("monospace bold condensed 15")
-                self.attrlist.insert(Pango.AttrFontDesc(fontdesc, 0, 5))
-                self.fontcolour_black = Pango.AttrForeground(0, 0, 0, 0, 5)
-                self.fontcolour_red = Pango.AttrForeground(65535, 0, 0, 0, 5)
-                self.attrlist.insert(self.fontcolour_black)
-                self.countdownlabel.set_attributes(self.attrlist)
+                self.fontcolour_black = Pango.parse_markup(
+                    "font='monospace bold condensed 15' color='#000000'", -1, '0'
+                )[1]
+                self.fontcolour_red = Pango.parse_markup(
+                    "font='monospace bold condensed 15' color='red'", -1, '0'
+                )[1]
+                self.countdownlabel.set_attributes(self.fontcolour_black)
+                print(self.countdownlabel.get_attributes())
                 self.oldinttime = -2
                 self.timer_update(False)
                 self.timeout = timeout_add(100, self.timer_update)
