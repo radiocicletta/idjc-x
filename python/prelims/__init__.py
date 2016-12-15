@@ -15,9 +15,9 @@
 #   along with this program in the file entitled COPYING.
 #   If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 
 __all__ = ["ArgumentParserImplementation", "ProfileManager"]
-
 
 import os
 import sys
@@ -717,8 +717,8 @@ class ProfileManager(object):
                 if args.jackserver is not None:
                     ap.error("supplied parameter to -j is not a UUID")
                 session_uuid = uuid.uuid4()
-                print "creating random UUID for JACK session = {%s}" % \
-                                                                session_uuid
+                print("creating random UUID for JACK session = {%s}" %
+                      session_uuid)
         else:
             session_uuid = None
 
@@ -801,7 +801,7 @@ class ProfileManager(object):
                 with open(PGlobs.profile_dir / newprofile / name, "w") as f:
                     f.write(data or "")
 
-        except ProfileError, e:
+        except ProfileError as e:
             text = _("<span weight='bold' size='12000'>Error while editing "
                 "profile: {0}.</span>\n\n{1}").format(oldprofile, e.gui_text)
             dialog.display_error(text, markup=True,
@@ -847,7 +847,7 @@ class ProfileManager(object):
                 self._dbus_bus_name = self._grab_bus_name_for_profile(profile)
             except dbus.DBusException:
                 if verbose:
-                    print _("the profile '%s' is in use") % profile
+                    print(_("the profile '%s' is in use") % profile)
             else:
                 self._init_time = time.time()
                 self._profile = profile
@@ -860,8 +860,8 @@ class ProfileManager(object):
                 self._uprep.activate_for_profile(
                                 self._dbus_bus_name, self.get_uptime)
         else:
-            print "%s run -p %s" % (FGlobs.bindir /
-                                                FGlobs.package_name, profile)
+            print("%s run -p %s" % (FGlobs.bindir / FGlobs.package_name,
+                  profile))
             subprocess.Popen([FGlobs.bindir / FGlobs.package_name,
                 "run", "-p", profile], close_fds=True)
 
@@ -909,7 +909,7 @@ class ProfileManager(object):
                                             shutil.copyfile(tdir / filename,
                                                                 tmp / filename)
                                         except EnvironmentError as e:
-                                            print e
+                                            print(e)
 
                         try:
                             shutil.copytree(tdir / "links", tmp / "links")
@@ -997,8 +997,8 @@ class ProfileManager(object):
             table.append(row)
 
         for row in sorted(table):
-            print "{1} {0:{5}} {2:>16} {3} {4}".format(*(tuple(row) +
-                                                        (MAX_PROFILE_LENGTH,)))
+            print("{1} {0:{5}} {2:>16} {3} {4}".format(*(tuple(row) +
+                  (MAX_PROFILE_LENGTH,))))
 
 
     _profile_has_owner = profileclosure(dbus.SessionBus().name_has_owner,

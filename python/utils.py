@@ -19,10 +19,10 @@ But strictly no third party module dependencies.
 #   along with this program in the file entitled COPYING.
 #   If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 
 __all__ = ["Singleton", "PolicedAttributes", "FixedAttributes",
                 "PathStr", "SlotObject", "string_multireplace"]
-
 
 import os
 import uuid
@@ -31,12 +31,6 @@ import glob
 import shutil
 import threading
 from functools import wraps
-
-
-# pylint: disable=C0203
-#
-# The mcs parameter goes to the __new__ method, not any other.
-
 
 class Singleton(type):
     """Enforce the singleton pattern upon the user class."""
@@ -156,9 +150,6 @@ class PathStr(str):
     In this case the higher precedence of / is unfortunate.
     """
 
-    # pylint: disable=R0904
-
-
     __metaclass__ = PathStrMeta
 
 
@@ -177,9 +168,6 @@ class PathStr(str):
 
 class SlotObject(object):
     """A mutable object containing an immutable object."""
-
-
-    # pylint: disable=R0903
 
 
     __slots__ = ['value']
@@ -259,14 +247,14 @@ class LinkUUIDRegistry(dict):
         if os.path.exists(pathname):
             self[uuid_] = pathname
         else:
-            print "LinkUUIDRegistry: pathname does not exist", pathname
+            print("LinkUUIDRegistry: pathname does not exist", pathname)
 
 
     def remove(self, uuid_):
         try:
             del self[uuid_]
         except KeyError:
-            print "LinkUUIDRegisty: remove -- UUID does not exist: {%s}" % uuid_
+            print("LinkUUIDRegisty: remove -- UUID does not exist: {%s}" % uuid_)
 
 
     def _purge(self, where):
@@ -279,7 +267,7 @@ class LinkUUIDRegistry(dict):
                 if match is None or str(uuid.UUID(match.group(0))) not in self:
                     os.unlink(os.path.join(basedir, filename))
             except EnvironmentError as e:
-                print "LinkUUIDRegistry: link purge failed: %s" % e
+                print("LinkUUIDRegistry: link purge failed: %s" % e)
 
 
     def _save(self, where, copy):
@@ -294,7 +282,7 @@ class LinkUUIDRegistry(dict):
             try:
                 os.mkdir(where)
             except EnvironmentError as e:
-                print "LinkUUIDRegistry: link directory creation failed:", e
+                print("LinkUUIDRegistry: link directory creation failed:", e)
                 return
 
         for uuid_, source in self.iteritems():
@@ -308,7 +296,7 @@ class LinkUUIDRegistry(dict):
                 cmd(source, os.path.join(where, "{%s}%s" % (uuid_, ext)))
             except EnvironmentError as e:
                 if e.errno != 17:
-                    print "LinkUUIDRegistry: link failed:", e
+                    print("LinkUUIDRegistry: link failed:", e)
             except shutil.Error:
                 pass
 

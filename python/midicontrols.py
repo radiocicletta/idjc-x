@@ -15,6 +15,7 @@
 #   along with this program in the file entitled COPYING.
 #   If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 
 import sys
 import re
@@ -617,9 +618,10 @@ class Controls(dbus.service.Object):
                 if line!='' and not line.startswith('#'):
                     try:
                         self.bindings.append(Binding(line))
-                    except ValueError, e:
-                        print >>sys.stderr, 'Warning: controls prefs file ' \
-                                        'contained unreadable binding %r' % line
+                    except ValueError as e:
+                        print('Warning: controls prefs file '
+                              'contained unreadable binding %r' % line,
+                              file=sys.stderr)
             fp.close()
             self.update_lookup()
 
@@ -886,7 +888,7 @@ class Controls(dbus.service.Object):
         player= self._get_player(n)
         if player is None: return
         if player not in (self.owner.player_left, self.owner.player_right):
-            print "player unsupported for this binding"
+            print("player unsupported for this binding")
             return
         other= self.owner.player_left if player is self.owner.player_right \
                                                 else self.owner.player_right

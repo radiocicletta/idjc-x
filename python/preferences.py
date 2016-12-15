@@ -15,6 +15,7 @@
 #   along with this program in the file entitled COPYING.
 #   If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 
 import os
 import shutil
@@ -174,7 +175,7 @@ class PanWidget(gtk.Frame):
         try:
             target = int(self._presets[index].get_value() + 0.5)
         except IndexError:
-            print "Attempt made to load a non existent pan preset"
+            print("Attempt made to load a non existent pan preset")
         else:
             if self._source_id:
                 source_remove(self._source_id)
@@ -726,7 +727,7 @@ class mixprefs:
                     f.write(name + "=" + str(int(widget.get_value())) + "\n")
                 f.write("num_effects=%d\n" % (24 if self.more_effects.get_active() else 12))
         except IOError:
-            print "Error while writing out player defaults"
+            print("Error while writing out player defaults")
 
 
     def save_player_prefs(self, where=None):
@@ -743,7 +744,7 @@ class mixprefs:
                     else:
                         f.write(name + "=\n")
         except IOError:
-            print "Error while writing out player defaults"
+            print("Error while writing out player defaults")
 
             
     def load_player_prefs(self):
@@ -777,7 +778,7 @@ class mixprefs:
                     self.textdict[key].set_text(value)
             file.close()
         except IOError:
-            print "Failed to read playerdefaults file"
+            print("Failed to read playerdefaults file")
         if songdb_active:
             self.activedict["songdb_active"].set_active(songdb_active)
         self.parent.send_new_mixer_stats()

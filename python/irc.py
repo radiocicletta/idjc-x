@@ -17,6 +17,7 @@
 #   along with this program in the file entitled COPYING.
 #   If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 from __future__ import absolute_import
 
 import re
@@ -38,7 +39,7 @@ try:
     from irc import events
 except ImportError:
     traceback.print_exc()
-    print "No IRC support"
+    print("No IRC support")
     HAVE_IRC = False
 else:
     HAVE_IRC = True
@@ -1005,7 +1006,7 @@ class IRCPane(gtk.VBox):
                 return
 
             if store.pop(0) != self._m_signature():
-                print "IRC server data format mismatch."
+                print("IRC server data format mismatch.")
                 return
                 
             selection = self._treeview.get_selection()
@@ -1128,7 +1129,7 @@ class IRCPane(gtk.VBox):
 
     @staticmethod
     def _unhandled_mode(mode):
-        print "unhandled message category with numerical code,", mode
+        print("unhandled message category with numerical code,", mode)
 
     def _standard_edit(self, d, model, iter, start):
         model.row_changed_block()
@@ -1343,28 +1344,28 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
                         model = ref.get_model()
                         path = ref.get_path()
                         if not ref.valid() or not model.path_is_active(path):
-                            print "IRC connection attempt cancelled"
+                            print("IRC connection attempt cancelled")
                             return
 
-                        print "Attempting to connect IRC %s:%d" % (
-                                                            hostname, port)
+                        print("Attempting to connect IRC %s:%d" % 
+                              (hostname, port))
                         try:
                             connect()
                         except client.ServerConnectionError as e:
-                            print e
+                            print(e)
                             try:
                                 delay = delays[0]
                             except IndexError:
-                                print "No more connection attempts"
+                                print("No more connection attempts")
                                 self._ui_set_nick("")
                             else:
-                                print "%d more tries" % len(delays)
+                                print("%d more tries" % len(delays))
                                 self.server.execute_delayed(delay, try_connect,
                                                                     delays[1:])
                         else:
                             self._ui_set_nick(nickname)
-                            print "New IRC connection: %s@%s:%d" % (
-                                                    nickname, hostname, port)
+                            print("New IRC connection: %s@%s:%d" %
+                                  (nickname, hostname, port))
                                                     
                     try_connect(1, 2, 3)
             else:
@@ -1372,7 +1373,7 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
                     try:
                         self.server.disconnect()
                     except client.ServerConnectionError as e:
-                        print >>sys.stderr, str(e)
+                        print(str(e), file=sys.stderr)
                     self._ui_set_nick("")
 
             self._queue.append(deferred)
@@ -1405,7 +1406,7 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
                 try:
                     self.server.disconnect()
                 except client.ServerConnectionError as e:
-                    print >>sys.stderr, str(e)
+                    print(str(e), file=sys.stderr)
                 self._ui_set_nick("")
 
             self._queue.append(deferred)
@@ -1437,7 +1438,7 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
 
     @threadslock
     def _on_welcome(self, server, event):
-        print "Got IRC welcome", event.source
+        print("Got IRC welcome", event.source)
         self._have_welcome = True
         self._channels_invalidate()
         model = self.get_model()
@@ -1457,7 +1458,7 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
             self._nick_recover(server, target, nspw)
 
     def _nick_recover(self, server, target, nspw):
-        print "Will issue recover and release commands to NickServ"
+        print("Will issue recover and release commands to NickServ")
         for i, (func, args) in enumerate((
                 (server.privmsg, (
                                 "NickServ", "RECOVER %s %s" % (target, nspw))),
@@ -1473,7 +1474,7 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
             source = source.split("@")[0]
             
             if source != "Global!services":
-                print "-%s- %s" % (source, event.arguments[0])
+                print("-%s- %s" % (source, event.arguments[0]))
                 
             if source == "NickServ!services":
                 with gdklock():
@@ -1481,7 +1482,7 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
 
                 if "NickServ IDENTIFY" in event.arguments[0] and nspw:
                     server.privmsg("NickServ", "IDENTIFY %s" % nspw)
-                    print "Issued IDENTIFY command to NickServ"
+                    print("Issued IDENTIFY command to NickServ")
                     self._ui_set_nick(event.target)
                 elif "Guest" in event.arguments[0]:
                     newnick = event.arguments[0].split()[-1].strip(ASCII_C0)
@@ -1496,7 +1497,7 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
     def _on_disconnect(self, server, event):
         self._have_welcome = False
         self._ui_set_nick("")
-        print event.source, "disconnected"
+        print(event.source, "disconnected")
 
     def _on_nicknameinuse(self, server, event):
         self._try_alternate_nick()
@@ -1511,7 +1512,7 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
         self._try_alternate_nick()
 
     def _on_join(self, server, event):
-        print "Channel joined", event.target
+        print("Channel joined", event.target)
 
     def _on_ctcp(self, server, event):
         source = event.source.split("!")[0]
@@ -1565,17 +1566,17 @@ class IRCConnection(gtk.TreeRowReference, threading.Thread):
 
         else:
             pass
-            #print "CTCP from", source, args
+            #print("CTCP from", source, args)
 
     def _on_motd(self, server, event):
         pass
 
     def _generic_handler(self, server, event):
         return
-        print "Type:", event.eventtype()
-        print "Source:", event.source()
-        print "Target:", event.target()
-        print "Args:", event.arguments()
+        print("Type:", event.eventtype())
+        print("Source:", event.source())
+        print("Target:", event.target())
+        print("Args:", event.arguments())
 
 
 class MessageHandler(gobject.GObject):

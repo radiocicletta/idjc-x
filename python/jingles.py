@@ -15,6 +15,7 @@
 #   along with this program in the file entitled COPYING.
 #   If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 
 import os
 import time
@@ -456,14 +457,14 @@ class EffectBank(gtk.Frame):
             with open(PM.basedir / self.session_filename, "r") as f:
                 self.unmarshall(f.read())
         except IOError:
-            print "failed to read effects session file"
+            print("failed to read effects session file")
 
     def save_session(self, where):
         try:
             with open((where or PM.basedir) / self.session_filename, "w") as f:
                 f.write(self.marshall())
         except IOError:
-            print "failed to write effects session file"
+            print("failed to write effects session file")
 
     def update_leds(self, bits):
         for bit, each in enumerate(self.effects):

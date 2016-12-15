@@ -16,8 +16,9 @@
 #   along with this program in the file entitled COPYING.
 #   If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ['SourceClientGui']
+from __future__ import print_function
 
+__all__ = ['SourceClientGui']
 
 import os
 import time
@@ -414,13 +415,13 @@ class StatsThread(Thread):
                 else:
                     raise
         except IOError:
-            print "failed to obtain server stats data for", self.url
+            print("failed to obtain server stats data for", self.url)
             return
 
         try:
             dom = mdom.parseString(data)
         except Exception as e:
-            print "server stats data is not valid xml: %s" % e
+            print("server stats data is not valid xml: %s" % e)
             return
 
         try:
@@ -456,9 +457,9 @@ class StatsThread(Thread):
                     raise BadXML                
 
         except GoodXML:
-            print "server", self.url, "has", self.listeners, "listeners"
+            print("server", self.url, "has", self.listeners, "listeners")
         except BadXML:
-            print "unexpected to parse server stats XML file"
+            print("unexpected to parse server stats XML file")
         finally:
             dom.unlink()
 
@@ -635,8 +636,8 @@ class ConnectionPane(gtk.VBox):
             try:
                 dom = mdom.parseString(xmldata)
             except:
-                print "ConnectionPane.loader: failed to parse xml data...\n", \
-                                                                        xmldata
+                print("ConnectionPane.loader: "
+                      "failed to parse xml data...\n", xmldata)
                 raise
             assert(dom.documentElement.tagName == "connections")
             for server in dom.getElementsByTagName("server"):
@@ -659,8 +660,8 @@ class ConnectionPane(gtk.VBox):
                 except KeyError:
                     pass
                 self.dict_to_row(d)
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
         self.treeview.get_selection().select_path(0)
             
     def stats_commence(self):
@@ -685,8 +686,8 @@ class ConnectionPane(gtk.VBox):
         count = 0
         for ref, thread in self.stats_rows:
             if ref.valid() == False:
-                print "stats_collate:", thread.url, \
-                            "invalidated by its removal from the stats list"
+                print("stats_collate:", thread.url, 
+                      "invalidated by its removal from the stats list")
                 continue
             row = ref.get_model()[ref.get_path()[0]]
             row[5] = thread.listeners
@@ -716,7 +717,7 @@ class ConnectionPane(gtk.VBox):
                                                                 tree_selection)
             self.connection_dialog.show()
         else:
-            print "nothing selected for edit"
+            print("nothing selected for edit")
     
     def on_remove_clicked(self, button, tree_selection):
         model, iter = tree_selection.get_selected()
@@ -724,7 +725,7 @@ class ConnectionPane(gtk.VBox):
             if model.remove(iter):
                 tree_selection.select_iter(iter)
         else:
-            print "nothing selected for removal"
+            print("nothing selected for removal")
 
     def on_keypress(self, widget, event):
         if gtk.gdk.keyval_name(event.keyval) == "Delete":
@@ -1521,7 +1522,7 @@ class StreamTab(Tab):
                 else:
                     rslt = "succeeded" if elem.findtext("return") == "1" else \
                                                                         "failed"
-                    print "kick %s: %s" % (rslt, elem.findtext("message"))
+                    print("kick %s: %s" % (rslt, elem.findtext("message")))
                     return rslt == "succeeded"
 
         elif mode == 2:
@@ -1534,7 +1535,7 @@ class StreamTab(Tab):
             def check_reply(reply):
                 # Could go to lengths to check the XML stats here.
                 # Thats one whole extra HTTP request.
-                print "kick succeeded"
+                print("kick succeeded")
                 return True
 
         opener = urllib2.build_opener(auth_handler)
@@ -1542,10 +1543,10 @@ class StreamTab(Tab):
 
         def threaded():
             try:
-                print url
+                print(url)
                 reply = opener.open(url).read()
-            except urllib2.URLError, e:
-                print "kick failed:", e
+            except urllib2.URLError as e:
+                print("kick failed:", e)
             else:
                 check_reply(reply)
                 post_action()
@@ -2292,7 +2293,7 @@ class SourceClientGui(dbus.service.Object):
 
     @dbus.service.method(dbus_interface=PGlobs.dbus_bus_basename)
     def new_plugin_started(self):
-        print "streamstate_cache purge"
+        print("streamstate_cache purge")
         self._streamstate_cache = {}
         self._recordstate_cache = {}
 
@@ -2356,8 +2357,8 @@ class SourceClientGui(dbus.service.Object):
                             else:
                                 streamtab.server_connect.set_active(False)
                                 streamtab.server_connect.set_active(True)
-                                print "remade the connection because stream " \
-                                                            "buffer was full"
+                                print("remade the connection "
+                                      "because stream buffer was full")
                             del tshoot
                         else:
                             mi.set_flash(False)
@@ -2375,11 +2376,11 @@ class SourceClientGui(dbus.service.Object):
                         streamtab.server_connect.set_active(False)
                         streamtab.reconnection_dialog.activate()
                 else:
-                    print "sourceclientgui.monitor: bad reply for" \
-                                                    " streamer data:", reply
+                    print("sourceclientgui.monitor: "
+                          "bad reply for streamer data:", reply)
             else:
-                print "sourceclientgui.monitor:" \
-                                    " failed to get a report from the streamer"
+                print("sourceclientgui.monitor: "
+                      "failed to get a report from the streamer")
             # the connection start/stop timers are processed here
             if streamtab.start_timer.get_active():
                 diff = time.localtime(time.time() - \
@@ -2471,7 +2472,7 @@ class SourceClientGui(dbus.service.Object):
                     self.comms_reply_pending = False
                 return reply
             else:
-                print self.unexpected_reply, reply
+                print(self.unexpected_reply, reply)
             if reply == "" or reply == "Segmentation Fault\n":
                 self.comms_reply_pending = False
                 return "failed"
@@ -2516,7 +2517,7 @@ class SourceClientGui(dbus.service.Object):
                                     artist.strip(), title.strip(),
                                     album.strip()))
         if self.receive() == "succeeded":
-            print "updated song metadata successfully"
+            print("updated song metadata successfully")
 
         ircmetadata = {"artist": artist, "title": title, "album": album,
                                                         "songname": songname}
@@ -2534,13 +2535,13 @@ class SourceClientGui(dbus.service.Object):
         if reply != "failed" and self.receive() == "succeeded":
             sample_rate_string = reply
         else:
-            print self.unexpected_reply
-            print "failed to obtain the sample rate"
+            print(self.unexpected_reply)
+            print("failed to obtain the sample rate")
             self.app_exit()
         if not sample_rate_string.startswith("sample_rate="):
-            print self.unexpected_reply
-            print "sample rate reply contains the following:", \
-                                                            sample_rate_string
+            print(self.unexpected_reply)
+            print("sample rate reply contains the following:",
+                  sample_rate_string)
             self.app_exit()
         self.send("command=encoder_lame_availability\n")
         reply = self.receive()
@@ -2551,11 +2552,11 @@ class SourceClientGui(dbus.service.Object):
             else:
                 lame_enabled = 0
         else:
-            print self.unexpected_reply
+            print(self.unexpected_reply)
             self.app_exit()
-        print "threads initialised"
+        print("threads initialised")
         self.jack_sample_rate = int(sample_rate_string[12:])
-        print "jack sample rate is", self.jack_sample_rate
+        print("jack sample rate is", self.jack_sample_rate)
         try:
             for streamtab in self.streamtabframe.tabs:
                 streamtab.stream_resample_frame.jack_sample_rate = \
@@ -2623,14 +2624,14 @@ class SourceClientGui(dbus.service.Object):
                             elif method == "marshall":
                                 rvalue = widget.marshall()
                             else:
-                                print "unsupported", lvalue, widget, method
+                                print("unsupported", lvalue, widget, method)
                                 continue
                             if method != "password" or \
                                 self.parent.prefs_window.keeppass.get_active():
                                 f.write("".join((lvalue, "=", rvalue, "\n")))
                         f.write("\n")
         except Exception as e:
-            print "error attempting to write file: serverdata", e
+            print("error attempting to write file: serverdata", e)
             raise
 
     def load_previous_session(self):
@@ -2649,7 +2650,7 @@ class SourceClientGui(dbus.service.Object):
                         try:
                             name, numeric_id = line[1:-1].split(" ")
                         except:
-                            print "malformed line:", line, "in serverdata file"
+                            print("malformed line:", line, "in serverdata file")
                             tabframe = None
                         else:
                             if name == "server_window":
@@ -2659,28 +2660,28 @@ class SourceClientGui(dbus.service.Object):
                             elif name == "recorder":
                                 tabframe = self.recordtabframe
                             else:
-                                print "unsupported element:", line, "in serverdata file"
+                                print("unsupported element:", line, "in serverdata file")
                                 tabframe = None
                             if tabframe is not None:
                                 try:
                                     tab = tabframe.tabs[int(numeric_id)]
                                 except:
-                                    print "unsupported tab number:", line, "in serverdata file"
+                                    print("unsupported tab number:", line, "in serverdata file")
                                     tabframe = None
                     else:
                         if tabframe is not None:
                             try:
                                 lvalue, rvalue = line.split("=", 1)
                             except:
-                                print "not a valid key, value pair:", line, "in serverdata file"
+                                print("not a valid key, value pair:", line, "in serverdata file")
                             else:
                                 if not lvalue:
-                                    print "key value is missing:", line, "in serverdata file"         
+                                    print("key value is missing:", line, "in serverdata file")
                                 else:
                                     try:
                                         (widget, method) = tab.objects[lvalue]
                                     except KeyError:
-                                        print "key value not recognised:", line, "in serverdata file"
+                                        print("key value not recognised:", line, "in serverdata file")
                                     else:
                                         try:
                                             int_rvalue = int(rvalue)
@@ -2724,10 +2725,10 @@ class SourceClientGui(dbus.service.Object):
                                         elif method == "marshall":
                                             widget.unmarshall(rvalue)
                                         else:
-                                            print "method", method, "is unsupported at this time hence widget pertaining to", lvalue, "will not be set"
+                                            print("method", method, "is unsupported at this time hence widget pertaining to", lvalue, "will not be set")
         except Exception as e:
             if isinstance(e, IOError):
-                print e
+                print(e)
             else:
                 traceback.print_exc()
 

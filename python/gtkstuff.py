@@ -15,6 +15,7 @@
 #   along with this program in the file entitled COPYING.
 #   If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 
 import os
 import json
@@ -200,7 +201,7 @@ def threadslock(inner):
                 return inner(*args, **kwargs)
             else:
                 # Cancel timeouts and idle functions.
-                print "callback cancelled"
+                print("callback cancelled")
                 return False
         finally:
             gtk.gdk.threads_leave()

@@ -17,6 +17,7 @@
 #   along with this program in the file entitled COPYING.
 #   If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 
 import os
 import ntpath
@@ -187,7 +188,7 @@ class DBAccessor(threading.Thread):
                             except sql.Error as e:
                                 notify(_("Connection failed (try %d)") %
                                                                     trycount)
-                                print e
+                                print(e)
                                 time.sleep(0.5)
                             else:
                                 # This causes problems if other
@@ -505,7 +506,7 @@ class PrefsControls(gtk.Frame):
     def _notify(self, message):
         """Display status messages beneath the prefs settings."""
         
-        print "Song title database:", message
+        print("Song title database:", message)
         cid = self._statusbar.get_context_id("all output")
         self._statusbar.pop(cid)
         self._statusbar.push(cid, message)
@@ -551,7 +552,7 @@ class PageCommon(gtk.VBox):
                 if width != "0":
                     col.set_fixed_width(int(width))
         else:
-            print "can't restore column widths"
+            print("can't restore column widths")
 
     def activate(self, accessor, db_type, usesettings):
         self._acc = accessor
@@ -613,7 +614,7 @@ class PageCommon(gtk.VBox):
         try:
             self._old_cursor.close()
         except sql.Error as e:
-            print str(e)
+            print(str(e))
         except AttributeError:
             pass
 
@@ -829,7 +830,7 @@ class ViewerCommon(PageCommon):
 
     @staticmethod
     def _set_color(text, percent=1.0):
-        #print "text: ", text
+        #print("text: ", text)
         if percent == 1.0:
             bg_col = "white"
         elif int(text) == 1:
@@ -1032,7 +1033,7 @@ class TreePage(ViewerCommon):
                     
             query = self._query_cook_common(query)
         else:
-            print "unsupported database type:", self._db_type
+            print("unsupported database type:", self._db_type)
             return
             
         self._pulse_id.append(timeout_add(1000, self._progress_pulse))
@@ -1079,7 +1080,7 @@ class TreePage(ViewerCommon):
         if isinstance(exception, sql.InterfaceError):
             raise exception  # Recover.
         
-        print exception
+        print(exception)
         
         notify(_('Tree fetch failed'))
         idle_add(threadslock(self.loading_label.set_text), _('Fetch Failed!'))
@@ -1405,7 +1406,7 @@ class FlatPage(ViewerCommon):
         try:
             table = self._queries_table[self._db_type]
         except KeyError:
-            print "unsupported database type"
+            print("unsupported database type")
             return
 
         user_text = self.fuzzy_entry.get_text().strip()
@@ -1430,7 +1431,7 @@ class FlatPage(ViewerCommon):
         elif access_mode == DIRTY:  # Accepting of SQL code in user data.
             query = (query % ((user_text,) * qty),)
         else:
-            print "unknown database access mode", access_mode
+            print("unknown database access mode", access_mode)
             return
 
         self._acc.request(query, self._handler, self._failhandler)
@@ -1852,7 +1853,7 @@ class MediaPane(gtk.VBox):
         try:
             target = getattr(self, "_%s_page" % keyval)
         except AttributeError as e:
-            print e
+            print(e)
             return ""
         else:
             return target.get_col_widths()
@@ -1864,7 +1865,7 @@ class MediaPane(gtk.VBox):
             try:
                 target = getattr(self, "_%s_page" % keyval)
             except AttributeError as e:
-                print e
+                print(e)
                 return
             else:
                 target.set_col_widths(data)
@@ -1916,7 +1917,7 @@ class MediaPane(gtk.VBox):
 
         if code != 1061:
             notify(_('Failed to create FULLTEXT index'))
-            print exception
+            print(exception)
             raise
 
         notify(_('Found existing FULLTEXT index'))

@@ -1,5 +1,7 @@
 * Changes in version 0.8.17 *
 
+Python3 friendly syntax changes to fix install time byte compilation errors.
+
 Fix for regression in session support causing problems at save time.
 
 * Changes in version 0.8.16 *

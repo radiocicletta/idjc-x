@@ -15,8 +15,9 @@
 #   along with this program in the file entitled COPYING.
 #   If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ['PopupWindow']
+from __future__ import print_function
 
+__all__ = ['PopupWindow']
 
 import gobject
 import gtk
@@ -26,7 +27,7 @@ from .gtkstuff import threadslock, timeout_add, source_remove
 class PopupWindow:
     def message(self, text):
         if self.messages:
-            print "PopupWindow:", text
+            print("PopupWindow:", text)
 
         
     def set_messages(self, boolean):

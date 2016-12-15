@@ -1,6 +1,7 @@
 """The profile management dialog."""
 
-#   Copyright (C) 2011 Stephen Fairchild (s-fairchild@users.sourceforge.net)
+#   Copyright (C) 2011, 2016 Stephen Fairchild
+#   (s-fairchild@users.sourceforge.net)
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 2 of the License, or
@@ -15,9 +16,9 @@
 #   along with this program in the file entitled COPYING.
 #   If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 
 __all__ = ["ProfileDialog"]
-
 
 import atexit
 
@@ -535,7 +536,7 @@ class ProfileDialog(gtk.Dialog):
         try:
             self.set_icon_from_file(iconpathname)
         except glib.GError:
-            print "Profile icon image file not found:", iconpathname
+            print("Profile icon image file not found:", iconpathname)
         else:
             gtk.window_set_default_icon_from_file(iconpathname)
 

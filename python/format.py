@@ -15,6 +15,7 @@
 #   along with this program in the file entitled COPYING.
 #   If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 
 import json
 import gettext
@@ -1374,7 +1375,7 @@ class FormatControl(gtk.VBox):
             try:
                 self._current.value = dict_[self._current.ident]
             except KeyError:
-                print "key error", self._current.ident
+                print("key error", self._current.ident)
                 break
             else:
                 if self._current.applied or self._current.ident == unapplied or oldcurr == self._current:
@@ -1431,7 +1432,7 @@ class FormatControl(gtk.VBox):
                 self._back_button.set_sensitive(False)
             return ret
         else:
-            print "encoder settings are not finalised"
+            print("encoder settings are not finalised")
             return False
 
     def _stop_encoder(self):
