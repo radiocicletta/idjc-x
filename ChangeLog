@@ -1,3 +1,7 @@
+* Changes in version 0.8.17 *
+
+Fix for regression in session support causing problems at save time.
+
 * Changes in version 0.8.16 *
 
 VoIP documentation update for Skype IDJC integration.

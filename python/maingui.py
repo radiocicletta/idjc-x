@@ -2476,8 +2476,8 @@ class MainWindow(dbus.service.Object):
                 else:
                     link_uuid_reg.add(uuid_, row[1])
 
-            effects = self.jingles.effects
-            for uuid_, pathname in zip(effects.uuids(), effects.pathnames()):
+            effects = self.jingles.all_effects
+            for uuid_, pathname in ((x.uuid, x.pathname) for x in effects):
                 if pathname is not None:
                     link_uuid_reg.add(str(uuid_), pathname)
 
@@ -2606,7 +2606,8 @@ class MainWindow(dbus.service.Object):
         self.window.hide()
         self.prefs_window.window.hide()
         self.server_window.window.hide()
-        pm.profile_dialog.hide()
+        if pm.profile_dialog:
+			pm.profile_dialog.hide()
 
         if gtk.main_level():
             gtk.main_quit()
