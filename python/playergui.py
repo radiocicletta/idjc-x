@@ -4533,7 +4533,7 @@ class IDJC_Media_Player:
 
         buttons_style = Gtk.CssProvider()
         buttons_style.load_from_data(
-            b'* { font: Sans 10 }'
+            b'* { font: 10 Sans, sans-serif }'
         )
 
         # The box for the mute widgets.
