@@ -34,6 +34,9 @@
 #ifndef HAVE_AV_FRAME_UNREF
 #define av_frame_unref avcodec_get_frame_defaults
 #endif
+#ifndef HAVE_AV_PACKET_UNREF
+#define av_packet_unref av_free_packet
+#endif
 
 #define BYTE_ALIGNMENT (8)
 
@@ -221,7 +224,7 @@ static void live_avcodec_encoder_main(struct encoder *encoder)
                 if (got_packet) {
                     s->samples_written += out_samples;
                     write_packet(encoder, s, s->avpkt.data, s->avpkt.size, s->pkt_flags);
-                    av_free_packet(&s->avpkt);
+                    av_packet_unref(&s->avpkt);
                     s->pkt_flags &= ~PF_INITIAL;
                 }
             } else {

@@ -85,6 +85,7 @@ if test $makelibav != "no" ; then
             AC_SUBST(HAVE_AVUTIL, 1)
             AC_CHECK_LIB([avutil],[av_frame_alloc], AC_DEFINE(HAVE_AV_FRAME_ALLOC, 1, [Set if av_frame_alloc function exists]))
             AC_CHECK_LIB([avutil],[av_frame_unref], AC_DEFINE(HAVE_AV_FRAME_UNREF, 1, [Set if av_frame_unref function exists]))
+            AC_CHECK_LIB([avcodec],[av_packet_unref], AC_DEFINE(HAVE_AV_PACKET_UNREF, 1, [Set if av_packet_unref function exists]))
             ],
             AC_SUBST(HAVE_AVUTIL, 0)
 

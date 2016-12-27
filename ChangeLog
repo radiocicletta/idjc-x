@@ -1,5 +1,7 @@
 * Changes in version 0.8.17 *
 
+Removed deprecated av_free_packet calls.
+
 Fix for regression in session support causing problems at save time.
 
 * Changes in version 0.8.16 *
