@@ -428,7 +428,7 @@ class FormatSpin(Gtk.VBox):
         frame.add(vbox)
 
         adjustment = Gtk.Adjustment(*(float(x) for x in elements))
-        self._spin_button = Gtk.SpinButton(adjustment)
+        self._spin_button = Gtk.SpinButton(adjustment=adjustment)
         if suggested_values is not None:
             self._spin_button.connect(
                 "populate_popup",

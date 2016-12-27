@@ -1110,7 +1110,7 @@ class FramedSpin(Gtk.Frame):
         hbox.show()
         vbox = Gtk.VBox()
         vbox.set_border_width(2)
-        self.spin = Gtk.SpinButton(adj)
+        self.spin = Gtk.SpinButton(adjustment=adj)
         vbox.add(self.spin)
         self.spin.show()
         self.spin.set_sensitive(False)
@@ -1139,7 +1139,7 @@ class SimpleFramedSpin(Gtk.Frame):
         hbox.show()
         vbox = Gtk.VBox()
         vbox.set_border_width(2)
-        self.spin = Gtk.SpinButton(adj)
+        self.spin = Gtk.SpinButton(adjustment=adj)
         vbox.add(self.spin)
         self.spin.show()
         self.add(vbox)
@@ -2227,7 +2227,9 @@ class RecordTab(Tab):
                     "notify::cap-recordable",
                     lambda w, v: self.source_combo.emit("changed"))
 
-        def cb_new_folder(self, folder_chooser_button, path):
+        def cb_new_folder(self, folder_chooser_button, path=None):
+            if not path:
+                return
             self.cansave = os.access(path, os.W_OK)
             self.source_combo.emit("changed")
 
