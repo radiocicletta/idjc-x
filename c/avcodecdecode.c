@@ -48,6 +48,9 @@
 #ifndef HAVE_AV_FRAME_UNREF
 #define av_frame_unref avcodec_get_frame_defaults
 #endif
+#ifndef HAVE_AV_PACKET_UNREF
+#define av_packet_unref av_free_packet
+#endif
 
 extern int dynamic_metadata_form[];
 
@@ -58,7 +61,7 @@ static void avcodecdecode_eject(struct xlplayer *xlplayer)
     struct avcodecdecode_vars *self = xlplayer->dec_data;
 
     if (self->pkt.data)
-        av_free_packet(&self->pkt);
+        av_packet_unref(&self->pkt);
     if (self->resample)
         {
         xlplayer->src_state = src_delete(xlplayer->src_state);
@@ -145,7 +148,7 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
         if (av_read_frame(self->ic, &self->pkt) < 0 || (self->size = self->pkt.size) == 0)
             {
             if (self->pkt.data)
-                av_free_packet(&self->pkt);
+                av_packet_unref(&self->pkt);
 
             if (self->resample)       /* flush the resampler */
                 {
@@ -169,7 +172,7 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
     if (self->pkt.stream_index != (int)self->stream)
         {
         if (self->pkt.data)
-            av_free_packet(&self->pkt);
+            av_packet_unref(&self->pkt);
         self->size = 0;
         return;
         }
@@ -420,7 +423,7 @@ static void avcodecdecode_play(struct xlplayer *xlplayer)
     if (self->size <= 0)
         {
         if (self->pkt.data)
-            av_free_packet(&self->pkt);
+            av_packet_unref(&self->pkt);
         int delay = xlplayer_calc_rbdelay(xlplayer);
         struct chapter *chapter = mp3_tag_chapter_scan(&self->taginfo, xlplayer->play_progress_ms + delay);
         if (chapter && chapter != self->current_chapter)
