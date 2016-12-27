@@ -4225,6 +4225,13 @@ class MainWindow(dbus.service.Object):
             "periodic"
         )
 
+        # DBus object initialization
+        dbus.service.Object.__init__(
+            self,
+            pm.dbus_bus_name,
+            PGlobs.dbus_objects_basename + "/main"
+        )
+
         for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
             signal.signal(
                 sig,
@@ -4269,13 +4276,6 @@ class MainWindow(dbus.service.Object):
 
         self.player_left.treeview.emit("cursor-changed")
         self.player_right.treeview.emit("cursor-changed")
-
-        # DBus object initialization
-        dbus.service.Object.__init__(
-            self,
-            pm.dbus_bus_name,
-            PGlobs.dbus_objects_basename + "/main"
-        )
 
         try:
             if args.channels is not None:
