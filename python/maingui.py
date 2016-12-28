@@ -945,8 +945,8 @@ class OpenerSettings(Gtk.Frame):
         self.indicator_width = Gtk.SpinButton(
             adjustment=Gtk.Adjustment(4.0, 0.0, 10.0, 1.0), digits=0)
         self.indicator_width.connect("value-changed", changed)
-        hbox.pack_start(self.indicator_width, False)
-        hbox.pack_start(gtk.HBox())
+        hbox.pack_start(self.indicator_width, False, False, 0)
+        hbox.pack_start(Gtk.HBox(), False, False, 0)
 
         hbox.pack_start(Gtk.Label(_('Opened')), True, True, 0)
         self.open_colour = ColourButton(Gdk.Color(0.95, 0.2, 0.2))
@@ -4305,21 +4305,24 @@ class MainWindow(dbus.service.Object):
             pass
 
         try:
+            if args.crossfader is not None:
+                if args.crossfader == "1":
+                    self.passleft.clicked()
+                elif args.crossfader == "2":
+                    self.passright.clicked()
+        except:
+            pass
 
-
-        if args.crossfader is not None:
-            if args.crossfader == "1":
-                self.passleft.clicked()
-            elif args.crossfader == "2":
-                self.passright.clicked()
-
-        if args.players is not None:
-            if "1" in args.players:
-                self.player_left.play.clicked()
-            if "2" in args.players:
-                self.player_right.play.clicked()
-            if "3" in args.players:
-                self.jingles.interlude.play.clicked()
+        try:
+            if args.players is not None:
+                if "1" in args.players:
+                    self.player_left.play.clicked()
+                if "2" in args.players:
+                    self.player_right.play.clicked()
+                if "3" in args.players:
+                    self.jingles.interlude.play.clicked()
+        except:
+            pass
 
     def main(self):
         Gtk.main()
