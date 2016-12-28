@@ -1,3 +1,29 @@
+idjc-x README
+
+* THIS REPOSITORY IS ALWAYS REBASED ON TOP OF THE ORIGINAL SOURCE TREE *
+* BE CAREFUL WHEN YOU PULL IT INSTEAD OF CLONE IT                      *
+
+This is an unofficial port of Internet DJ Console to Python3 and Gtk3 using python-gi.
+This port is fully functional although considered in alpha stage.
+The main branch of this port is NOT intended to diverge from the original application,
+with the exception of the language version and UI framework version. This means:
+
+    * if you want to merge new features from the original source code just notify
+    it without sending patches, since the main branch is always rebased on top
+    of the original source code
+
+    * if you have enhancements and feature requests, please contact the original
+    author (http://idjc.sourceforge.net)
+
+    * if you discover issues in this port that alter the original intended behaviour of the
+    application, feel free to submit patches
+
+    * if you want to propose enhancements on the python3/gtk3 UI codebase that doesn't alter
+    the original intended behaviour, feel free to submit patches
+
+
+--------------------------
+
 Internet DJ Console README.
 
 A full set of documentation for this particular version can be
